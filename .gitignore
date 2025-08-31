@@ -1,18 +1,23 @@
-﻿# Node
-node_modules/
+# Node & general
+**/node_modules/
+**/.env
+**/.env.local
+**/.env.*.local
 npm-debug.log*
-dist/
-
-# PHP/Laravel
-vendor/
-storage/*.key
-.env
-.env.*
-public/storage
-
-# OS/editor
+yarn-error.log*
+pnpm-debug.log*
 .DS_Store
-Thumbs.db
 
-# Others
-*.log
+# Backend (Laravel)
+backend/vendor/
+backend/storage/*.key
+backend/storage/logs/
+backend/storage/framework/
+backend/storage/debugbar/
+backend/public/storage/
+backend/.phpunit.result.cache
+
+# Frontend build output
+web/dist/
+mobile/android/
+mobile/ios/
