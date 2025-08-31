@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\Admin\AuthController as AdminAuth;
+use App\Http\Controllers\Api\Admin\ProductController as AdminProducts;
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategories;
+
+Route::prefix('admin')->group(function () {
+    Route::post('/login', [AdminAuth::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AdminAuth::class, 'logout']);
+
+        // Categorías
+        Route::get('/categories', [AdminCategories::class, 'index']);
+        Route::get('/categories/{id}', [AdminCategories::class, 'show']);
+        Route::post('/categories', [AdminCategories::class, 'store']);
+        Route::put('/categories/{id}', [AdminCategories::class, 'update']);
+        Route::delete('/categories/{id}', [AdminCategories::class, 'destroy']);
+
+        // Productos
+        Route::get('/products', [AdminProducts::class, 'index']);
+        Route::post('/products', [AdminProducts::class, 'store']); // FormData
+        Route::get('/products/{id}', [AdminProducts::class, 'show']);
+        Route::post('/products/{id}', [AdminProducts::class, 'update']); // FormData
+        Route::delete('/products/{id}', [AdminProducts::class, 'destroy']);
+    });
+});
+
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{slug}', [ProductController::class, 'show']);
+
+Route::post('/checkout', [CheckoutController::class, 'checkout']);
