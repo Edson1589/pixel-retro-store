@@ -46,3 +46,29 @@ export async function checkout(payload: CheckoutPayload): Promise<CheckoutRespon
     const data: CheckoutResponse = await res.json();
     return data;
 }
+
+export async function fetchEvents(params?: { type?: 'event' | 'tournament'; search?: string; upcoming?: boolean; page?: number; per_page?: number }) {
+    const qs = new URLSearchParams();
+    if (params?.type) qs.set('type', params.type);
+    if (params?.search) qs.set('search', params.search);
+    if (params?.upcoming !== undefined) qs.set('upcoming', params.upcoming ? '1' : '0');
+    if (params?.page) qs.set('page', String(params.page));
+    qs.set('per_page', String(params?.per_page ?? 12));
+    const res = await fetch(`${API_URL}/api/events?${qs.toString()}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+export async function fetchEventBySlug(slug: string) {
+    const res = await fetch(`${API_URL}/api/events/${slug}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+export async function registerToEvent(slug: string, payload: { name: string; email: string; gamer_tag?: string; team?: string; notes?: string }) {
+    const res = await fetch(`${API_URL}/api/events/${slug}/register`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}

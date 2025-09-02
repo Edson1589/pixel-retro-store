@@ -19,13 +19,23 @@ import AdminCategoryShow from './pages/admin/categories/AdminCategoryShow'
 import AdminCategoryEdit from './pages/admin/categories/AdminCategoryEdit'
 import AdminCategoryDelete from './pages/admin/categories/AdminCategoryDelete'
 
+import EventsList from './pages/EventsList'
+import EventDetail from './pages/EventDetail'
 
+import AdminEventsList from './pages/admin/events/AdminEventsList'
+import AdminEventCreate from './pages/admin/events/AdminEventCreate'
+import AdminEventShow from './pages/admin/events/AdminEventShow'
+import AdminEventEdit from './pages/admin/events/AdminEventEdit'
+import AdminEventDelete from './pages/admin/events/AdminEventDelete'
+import AdminEventRegistrations from './pages/admin/events/AdminEventRegistrations'
 
 export default function App() {
   return (
     <BrowserRouter>
       <CartProvider>
         <Routes>
+          <Route path="/events" element={<EventsList />} />
+          <Route path="/events/:slug" element={<EventDetail />} />
           <Route path="/" element={<ProductsPage />} />
           <Route path="/cart" element={<CartPage />} />
 
@@ -46,6 +56,14 @@ export default function App() {
             <Route path="categories/:id" element={<AdminCategoryShow />} />
             <Route path="categories/:id/edit" element={<AdminCategoryEdit />} />
             <Route path="categories/:id/delete" element={<AdminCategoryDelete />} />
+
+            <Route path="events" element={<AdminEventsList />} />
+            <Route path="events/new" element={<AdminEventCreate />} />
+            <Route path="events/:id" element={<AdminEventShow />} />
+            <Route path="events/:id/edit" element={<AdminEventEdit />} />
+            <Route path="events/:id/delete" element={<AdminEventDelete />} />
+            <Route path="events/:id/registrations" element={<AdminEventRegistrations />} />
+
           </Route>
         </Routes>
       </CartProvider>

@@ -16,6 +16,7 @@ export default function AdminLayout() {
             <header className="flex items-center gap-3 mb-6">
                 <h1 className="text-2xl font-bold">Admin · Pixel Retro</h1>
                 <nav className="ml-auto flex gap-3">
+                    <Link to="/admin/events" className="underline">Eventos</Link>
                     <Link to="/admin/products" className="underline">Productos</Link>
                     <Link to="/admin/categories" className="underline">Categorías</Link>
                     {!!getToken() && <button onClick={logout} className="underline" disabled={busy}>{busy ? '...' : 'Salir'}</button>}

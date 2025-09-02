@@ -137,3 +137,37 @@ export async function deleteProduct(id: number) {
     if (!res.ok) throw new Error(await res.text());
     return res.json();
 }
+
+
+
+export async function adminListEvents() {
+    const r = await fetch(`${API_URL}/api/admin/events`, { headers: { ...authHeaders() } });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
+export async function adminGetEvent(id: number) {
+    const r = await fetch(`${API_URL}/api/admin/events/${id}`, { headers: { ...authHeaders() } });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
+export async function adminCreateEvent(fd: FormData) {
+    const r = await fetch(`${API_URL}/api/admin/events`, { method: 'POST', headers: { ...authHeaders() }, body: fd });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
+export async function adminUpdateEvent(id: number, fd: FormData) {
+    const r = await fetch(`${API_URL}/api/admin/events/${id}`, { method: 'POST', headers: { ...authHeaders() }, body: fd });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
+export async function adminDeleteEvent(id: number) {
+    const r = await fetch(`${API_URL}/api/admin/events/${id}`, { method: 'DELETE', headers: { ...authHeaders() } });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
+export async function adminListEventRegs(eventId: number, status?: 'pending' | 'confirmed' | 'cancelled') {
+    const qs = new URLSearchParams(); if (status) qs.set('status', status);
+    const r = await fetch(`${API_URL}/api/admin/events/${eventId}/registrations?${qs}`, { headers: { ...authHeaders() } });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
+export async function adminUpdateRegStatus(eventId: number, regId: number, status: 'pending' | 'confirmed' | 'cancelled') {
+    const r = await fetch(`${API_URL}/api/admin/events/${eventId}/registrations/${regId}/status`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ status })
+    });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
