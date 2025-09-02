@@ -1,18 +1,1 @@
-﻿# Node
-node_modules/
-npm-debug.log*
-dist/
 
-# PHP/Laravel
-vendor/
-storage/*.key
-.env
-.env.*
-public/storage
-
-# OS/editor
-.DS_Store
-Thumbs.db
-
-# Others
-*.log
