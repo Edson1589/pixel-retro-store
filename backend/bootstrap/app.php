@@ -3,7 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-// 👇 importa la excepción y (opcional) Request si quieres tiparla
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 
@@ -15,7 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Equivalente a: protected $routeMiddleware = [...]
+        $middleware->alias([
+            'role' => \App\Http\Middleware\EnsureRole::class,
+        ]);
+
+        // (Opcional) agregar globales o grupos:
+        // $middleware->append(\App\Http\Middleware\EnsureSomething::class);
+        // $middleware->web(append: [\App\Http\Middleware\Foo::class]);
+        // $middleware->api(prepend: [\App\Http\Middleware\Bar::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Equivalente al antiguo Handler::render para AuthenticationException

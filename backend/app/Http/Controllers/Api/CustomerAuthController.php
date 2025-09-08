@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\CustomerLoginRequest;
+use App\Http\Requests\Auth\CustomerRegisterRequest;
+use App\Models\Customer;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
+class CustomerAuthController extends Controller
+{
+    public function register(CustomerRegisterRequest $request)
+    {
+        $data = $request->validated();
+
+        // Crear usuario con rol "customer"
+        $user = User::create([
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'password' => $data['password'], // hashed por cast en el modelo
+            'role'     => 'customer',
+        ]);
+
+        // Sincronizar/crear perfil en tabla customers (para ventas)
+        Customer::updateOrCreate(
+            ['email' => $data['email']],
+            [
+                'name'    => $data['name'],
+                'phone'   => $data['phone']    ?? null,
+                'address' => $data['address']  ?? null,
+            ]
+        );
+
+        $token = $user->createToken('customer')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user'  => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+                'role'  => $user->role,
+            ]
+        ], 201);
+    }
+
+    public function login(CustomerLoginRequest $request)
+    {
+        $data = $request->validated();
+
+        $user = User::where('email', $data['email'])->first();
+        if (!$user || !Hash::check($data['password'], $user->password)) {
+            return response()->json(['message' => 'Credenciales inválidas'], 401);
+        }
+        if ($user->role !== 'customer') {
+            // Si prefieres permitir que seller/technician usen otra app, bloquea aquí.
+            return response()->json(['message' => 'Rol no permitido en este endpoint'], 403);
+        }
+
+        $token = $user->createToken('customer')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user'  => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+                'role'  => $user->role,
+            ]
+        ]);
+    }
+
+    public function me(Request $request)
+    {
+        $u = $request->user();
+        return response()->json([
+            'id'    => $u->id,
+            'name'  => $u->name,
+            'email' => $u->email,
+            'role'  => $u->role,
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()?->delete();
+        return response()->json(['message' => 'Sesión cerrada']);
+    }
+}

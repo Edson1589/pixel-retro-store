@@ -17,9 +17,10 @@ class AuthController extends Controller
         ]);
 
         $u = User::where('email', $data['email'])->first();
-        if (!$u || !Hash::check($data['password'], $u->password) || !$u->is_admin) {
+        if (!$u || !Hash::check($data['password'], $u->password) || $u->role !== 'admin') {
             return response()->json(['message' => 'Credenciales inválidas'], 401);
         }
+
 
         $token = $u->createToken('admin')->plainTextToken;
 

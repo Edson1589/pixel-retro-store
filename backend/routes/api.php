@@ -12,6 +12,10 @@ use App\Http\Controllers\Api\EventController as PublicEvents;
 use App\Http\Controllers\Api\Admin\EventController as AdminEvents;
 use App\Http\Controllers\Api\Admin\EventRegistrationController as AdminEventRegs;
 
+use App\Http\Controllers\Api\PaymentController;
+
+use App\Http\Controllers\Api\CustomerAuthController;
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuth::class, 'login']);
 
@@ -53,3 +57,24 @@ Route::post('/checkout', [CheckoutController::class, 'checkout']);
 Route::get('/events', [PublicEvents::class, 'index']);
 Route::get('/events/{slug}', [PublicEvents::class, 'show']);
 Route::post('/events/{slug}/register', [PublicEvents::class, 'register']);
+
+// Pasarela simulada
+Route::post('/payments/intents', [PaymentController::class, 'createIntent']);
+Route::post('/payments/intents/{intentId}/confirm', [PaymentController::class, 'confirmIntent']);
+Route::post('/payments/intents/{intentId}/3ds/verify', [PaymentController::class, 'verify3ds']);
+
+// Auth Cliente
+Route::post('/auth/register', [CustomerAuthController::class, 'register']);
+Route::post('/auth/login',    [CustomerAuthController::class,  'login']);
+
+Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+    Route::get('/auth/me',     [CustomerAuthController::class, 'me']);
+    Route::post('/auth/logout', [CustomerAuthController::class, 'logout']);
+
+    // Requiere sesión de cliente: comprar y registrarse a eventos
+    Route::post('/payments/intents', [PaymentController::class, 'createIntent']);
+    Route::post('/payments/intents/{intentId}/confirm', [PaymentController::class, 'confirmIntent']);
+    Route::post('/payments/intents/{intentId}/3ds/verify', [PaymentController::class, 'verify3ds']);
+
+    Route::post('/events/{slug}/register', [PublicEvents::class, 'register']);
+});

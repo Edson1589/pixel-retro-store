@@ -1,4 +1,5 @@
 import type { Product } from '../types';
+import { withCustomerAuth } from './customerApi';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
@@ -67,7 +68,9 @@ export async function fetchEventBySlug(slug: string) {
 
 export async function registerToEvent(slug: string, payload: { name: string; email: string; gamer_tag?: string; team?: string; notes?: string }) {
     const res = await fetch(`${API_URL}/api/events/${slug}/register`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...withCustomerAuth() }, // 👈
+        body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(await res.text());
     return res.json();

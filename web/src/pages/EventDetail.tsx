@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchEventBySlug, registerToEvent } from '../services/api';
-import { useParams } from 'react-router-dom';
+import { getCustomerToken } from '../services/customerApi';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
 type EventKind = 'event' | 'tournament';
 
@@ -51,20 +52,26 @@ export default function EventDetail() {
         })();
     }, [slug]);
 
+    const nav = useNavigate();
+    const loc = useLocation();
+
     const submit = async () => {
         if (!slug) return;
         try {
-            setBusy(true);
-            setMsg(null);
+            setBusy(true); setMsg(null);
+
+            if (!getCustomerToken()) {
+                nav('/login', { state: { next: loc.pathname } });
+                return;
+            }
+
             const res = (await registerToEvent(slug, form)) as RegisterResponse;
             setMsg(res?.message ?? 'Registro enviado');
             setForm({ name: '', email: '', gamer_tag: '', team: '', notes: '' });
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Error en registro';
             setMsg(message);
-        } finally {
-            setBusy(false);
-        }
+        } finally { setBusy(false); }
     };
 
     if (!event) return <p>Cargando...</p>;
