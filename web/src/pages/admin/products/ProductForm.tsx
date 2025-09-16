@@ -1,29 +1,28 @@
-// src/pages/admin/ProductForm.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { listCategories } from '../../../services/adminApi';
 import type { Category, Product } from '../../../types';
 
 type Props = {
-    initial?: Product;                       // producto existente (solo en edit)
+    initial?: Product;
     onSubmit: (form: FormData) => Promise<void>;
     submitLabel?: string;
 };
 
 type FormState = {
-    category_id: string | '';                // mantenemos string porque viene de <select>
+    category_id: string | '';
     name: string;
     slug: string;
     sku: string;
     description: string;
-    price: string;                           // string por <input type="number">
-    stock: string;                           // string por <input type="number">
+    price: string;
+    stock: string;
     condition: Product['condition'];
     is_unique: boolean;
     status: Product['status'];
     image: File | null;
 };
 
-type ListResponse<T> = { data: T[] };      // ajusta si tu API cambia el shape
+type ListResponse<T> = { data: T[] };
 
 export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar' }: Props) {
     const [cats, setCats] = useState<Category[]>([]);
@@ -45,12 +44,10 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
 
     const [form, setForm] = useState<FormState>(() => makeInitialForm(initial));
 
-    // Si cambia el producto inicial (por ejemplo al cargar datos), sincroniza el formulario
     useEffect(() => {
         setForm(makeInitialForm(initial));
     }, [initial]);
 
-    // Cargar categorías
     useEffect(() => {
         (async () => {
             const c = (await listCategories()) as ListResponse<Category>;
@@ -68,7 +65,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
         setBusy(true);
         try {
             const fd = new FormData();
-            // Solo agregamos campos con valor
             (['category_id', 'name', 'slug', 'sku', 'description', 'price', 'stock', 'condition', 'status'] as const)
                 .forEach((k) => {
                     const v = form[k];

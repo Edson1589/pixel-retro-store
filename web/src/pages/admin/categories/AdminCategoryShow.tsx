@@ -1,4 +1,3 @@
-// src/pages/admin/categories/AdminCategoryShow.tsx
 import { useEffect, useState } from 'react';
 import { getCategory } from '../../../services/adminApi';
 import { Link, useParams } from 'react-router-dom';
@@ -16,8 +15,8 @@ export default function AdminCategoryShow() {
 
         let cancelled = false;
         (async () => {
-            const cat = await getCategory(cid); // Promise<Category>
-            if (!cancelled) setC(cat);          // Compatible con CategoryView
+            const cat = await getCategory(cid);
+            if (!cancelled) setC(cat);
         })();
 
         return () => { cancelled = true; };

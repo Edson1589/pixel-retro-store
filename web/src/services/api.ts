@@ -1,10 +1,10 @@
 import type { Product } from '../types';
 import { withCustomerAuth } from './customerApi';
-
+import type { Category } from '../types';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
 export type ProductsResponse = { data: Product[] };
-export type ProductResponse = Product; // ajusta a { data: Product } si tu API lo devuelve así
+export type ProductResponse = Product;
 
 type CheckoutItem = { product_id: number; quantity: number };
 type CheckoutCustomer = {
@@ -69,9 +69,15 @@ export async function fetchEventBySlug(slug: string) {
 export async function registerToEvent(slug: string, payload: { name: string; email: string; gamer_tag?: string; team?: string; notes?: string }) {
     const res = await fetch(`${API_URL}/api/events/${slug}/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...withCustomerAuth() }, // 👈
+        headers: { 'Content-Type': 'application/json', ...withCustomerAuth() },
         body: JSON.stringify(payload),
     });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+    const res = await fetch(`${API_URL}/api/categories`);
     if (!res.ok) throw new Error(await res.text());
     return res.json();
 }

@@ -1,10 +1,9 @@
-// src/pages/admin/categories/AdminCategoriesList.tsx
 import { useEffect, useState } from 'react';
 import { listCategories } from '../../../services/adminApi';
 import { Link } from 'react-router-dom';
 import type { Category } from '../../../types';
 
-type ListResponse<T> = { data: T[] }; // ajusta si tu API usa otro shape
+type ListResponse<T> = { data: T[] };
 
 export default function AdminCategoriesList() {
     const [data, setData] = useState<ListResponse<Category>>({ data: [] });
@@ -13,7 +12,7 @@ export default function AdminCategoriesList() {
     const load = async () => {
         setLoading(true);
         try {
-            const res = await listCategories(); // Promise<ListResponse<Category>>
+            const res = await listCategories();
             setData(res);
         } finally {
             setLoading(false);

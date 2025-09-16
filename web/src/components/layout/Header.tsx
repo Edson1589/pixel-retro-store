@@ -8,14 +8,12 @@ export default function Header() {
     const loc = useLocation();
     const nav = useNavigate();
 
-    // Oculta header en /admin/*
     if (loc.pathname.startsWith('/admin')) return null;
 
     const qty = items.reduce((a, b) => a + b.quantity, 0);
 
     const doLogout = async () => {
         await logout();
-        // Si estabas en una pantalla sensible, llévalo al home
         if (loc.pathname.startsWith('/cart')) nav('/');
     };
 
@@ -25,6 +23,7 @@ export default function Header() {
                 <Link to="/" className="font-bold">Pixel Retro Store</Link>
                 <nav className="ml-auto flex items-center gap-3 text-sm">
                     <Link to="/events" className="underline">Eventos</Link>
+                    {user && <Link to="/account/orders" className="px-3 py-2 rounded-xl border">Mis compras</Link>}
 
                     <Link to="/cart" className="underline relative">
                         Carrito

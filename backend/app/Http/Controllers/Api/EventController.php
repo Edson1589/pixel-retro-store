@@ -16,7 +16,7 @@ class EventController extends Controller
         $q = Event::query()->where('status', 'published');
 
         if ($type = $request->string('type')->toString()) {
-            $q->where('type', $type); // event | tournament
+            $q->where('type', $type);
         }
         if ($search = $request->string('search')->toString()) {
             $q->where(function ($w) use ($search) {
@@ -25,7 +25,7 @@ class EventController extends Controller
                     ->orWhere('location', 'like', "%$search%");
             });
         }
-        // upcoming por defecto
+
         $upcoming = $request->boolean('upcoming', true);
         if ($upcoming) {
             $q->where('start_at', '>=', Carbon::now());
@@ -54,17 +54,15 @@ class EventController extends Controller
             abort(422, 'El registro ya cerró.');
         }
 
-        // capacidad
         if ($event->capacity) {
             $count = $event->registrations()->where('status', '!=', 'cancelled')->count();
             if ($count >= $event->capacity) abort(422, 'Cupo completo.');
         }
 
-        // evita duplicado (único por email)
         $exists = $event->registrations()->where('email', $request->input('email'))->exists();
         if ($exists) abort(422, 'Este email ya está registrado para este evento.');
 
-        $reg = $event->registrations()->create($request->validated()); // status = pending por defecto
+        $reg = $event->registrations()->create($request->validated());
         return response()->json([
             'message' => 'Registro recibido. Te contactaremos para confirmar.',
             'registration_id' => $reg->id,

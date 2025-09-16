@@ -1,4 +1,3 @@
-// src/pages/admin/AdminProductDelete.tsx
 import { useEffect, useState } from 'react';
 import { deleteProduct, getProduct } from '../../../services/adminApi';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -8,7 +7,6 @@ export default function AdminProductDelete() {
     const { id } = useParams<{ id: string }>();
     const nav = useNavigate();
 
-    // 👇 Nada de any
     const [p, setP] = useState<Product | null>(null);
     const [busy, setBusy] = useState(false);
 

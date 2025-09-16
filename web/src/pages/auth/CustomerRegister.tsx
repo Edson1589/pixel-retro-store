@@ -40,7 +40,7 @@ export default function CustomerRegister() {
         try {
             setBusy(true);
             setMsg(null);
-            await register(form); // asume que register recibe este shape
+            await register(form);
             nav(next, { replace: true });
         } catch (err: unknown) {
             setMsg(err instanceof Error ? err.message : 'Error de registro');

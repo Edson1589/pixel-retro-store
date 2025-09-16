@@ -10,6 +10,7 @@ use App\Models\SaleDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Models\Cart;
 
 class CheckoutController extends Controller
 {
@@ -50,19 +51,20 @@ class CheckoutController extends Controller
             }
 
             $sale = Sale::create([
+                'user_id'     => auth()->id(),
                 'customer_id' => $customer->id,
-                'total' => $total,
-                'status' => 'pending',
+                'total'       => $total,
+                'status'      => 'pending',
                 'payment_ref' => null,
             ]);
 
             foreach ($lines as $l) {
                 SaleDetail::create([
-                    'sale_id' => $sale->id,
+                    'sale_id'    => $sale->id,
                     'product_id' => $l['p']->id,
-                    'quantity' => $l['qty'],
+                    'quantity'   => $l['qty'],
                     'unit_price' => $l['p']->price,
-                    'subtotal' => $l['subtotal'],
+                    'subtotal'   => $l['subtotal'],
                 ]);
                 $l['p']->decrement('stock', $l['qty']);
             }
@@ -70,11 +72,18 @@ class CheckoutController extends Controller
             $ref = 'SIM-' . Str::upper(Str::random(10));
             $sale->update(['status' => 'paid', 'payment_ref' => $ref]);
 
+            if ($uid = auth()->id()) {
+                $cart = Cart::where('user_id', $uid)->first();
+                if ($cart) {
+                    $cart->items()->delete();
+                }
+            }
+
             return response()->json([
-                'message' => 'Pago simulado aprobado',
-                'sale_id' => $sale->id,
+                'message'     => 'Pago simulado aprobado',
+                'sale_id'     => $sale->id,
                 'payment_ref' => $ref,
-                'total' => $total,
+                'total'       => $total,
             ], 201);
         });
     }

@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('payment_events', function (Blueprint $t) {
             $t->id();
             $t->foreignId('payment_id')->constrained('payments')->cascadeOnDelete();
-            $t->string('type', 40);      // intent.created, payment.requires_action, payment.succeeded, etc.
+            $t->string('type', 40);
             $t->json('data')->nullable();
             $t->timestamps();
         });

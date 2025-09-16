@@ -1,4 +1,3 @@
-// src/pages/admin/categories/AdminCategoryDelete.tsx
 import { useEffect, useState } from 'react';
 import { deleteCategory, getCategory } from '../../../services/adminApi';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -16,7 +15,7 @@ export default function AdminCategoryDelete() {
 
         let cancelled = false;
         (async () => {
-            const cat = await getCategory(cid); // Promise<Category>
+            const cat = await getCategory(cid);
             if (!cancelled) setC(cat);
         })();
 
@@ -29,7 +28,7 @@ export default function AdminCategoryDelete() {
 
         try {
             setBusy(true);
-            await deleteCategory(cid); // Promise<void>
+            await deleteCategory(cid);
             nav('/admin/categories');
         } finally {
             setBusy(false);

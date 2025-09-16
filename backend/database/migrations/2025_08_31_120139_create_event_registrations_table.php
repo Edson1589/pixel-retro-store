@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
             $table->timestamps();
 
-            $table->unique(['event_id', 'email']); // evita registros duplicados por email
+            $table->unique(['event_id', 'email']);
         });
     }
     public function down(): void

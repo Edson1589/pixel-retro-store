@@ -1,8 +1,5 @@
-// src/context/CustomerAuthContext.tsx
 import { createContext, useContext, useEffect, useState } from 'react';
-// 1) TS con `verbatimModuleSyntax`: importa los tipos con `import type`
 import type { CustomerUser } from '../services/customerApi';
-// y los valores en un import separado
 import {
     customerLogin,
     customerLogout,
@@ -67,9 +64,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         clearCustomerToken();
         setUser(null);
 
-        // Limpia el carrito de invitado para no “heredar” items tras logout
         try { localStorage.removeItem('pixelretro_cart_guest'); } catch (e) { void e; }
-        // Pide a CartProvider que limpie el estado en memoria ya mismo
         window.dispatchEvent(new CustomEvent('cart:clear'));
     };
 
@@ -81,9 +76,6 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
     );
 }
 
-// 3) Vite/ESLint: regla react-refresh/only-export-components.
-//    Permite esta exportación (hook) en este archivo que también exporta un componente.
-//    Si prefieres, puedes mover este hook a src/hooks/useCustomerAuth.ts y quitar esta línea.
 // eslint-disable-next-line react-refresh/only-export-components
 export function useCustomerAuth() {
     const v = useContext(Ctx);

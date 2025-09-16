@@ -15,7 +15,7 @@ class CustomerRegisterRequest extends FormRequest
         return [
             'name'     => ['required', 'string', 'max:150'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'], // requiere password_confirmation
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
             'phone'    => ['nullable', 'string', 'max:40'],
             'address'  => ['nullable', 'string', 'max:255'],
         ];

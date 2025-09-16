@@ -1,4 +1,3 @@
-// src/pages/admin/categories/AdminCategoryEdit.tsx
 import { useEffect, useState } from 'react';
 import { getCategory, updateCategory } from '../../../services/adminApi';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -17,7 +16,7 @@ export default function AdminCategoryEdit() {
 
         let cancelled = false;
         (async () => {
-            const cat = await getCategory(cid); // Promise<Category>
+            const cat = await getCategory(cid);
             if (!cancelled) setC(cat);
         })();
 
@@ -30,7 +29,7 @@ export default function AdminCategoryEdit() {
 
         try {
             setBusy(true);
-            await updateCategory(cid, payload); // Promise<void> o Promise<Category>
+            await updateCategory(cid, payload);
             nav(`/admin/categories/${cid}`);
         } finally {
             setBusy(false);

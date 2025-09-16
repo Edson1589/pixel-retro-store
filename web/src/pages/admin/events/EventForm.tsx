@@ -15,12 +15,12 @@ type EventInitial = {
     type?: EventKind | null;
     description?: string | null;
     location?: string | null;
-    start_at?: string | null;                 // ISO string
-    end_at?: string | null;                   // ISO string
+    start_at?: string | null;
+    end_at?: string | null;
     capacity?: number | string | null;
     status?: EventStatus | null;
-    registration_open_at?: string | null;     // ISO string
-    registration_close_at?: string | null;    // ISO string
+    registration_open_at?: string | null;
+    registration_close_at?: string | null;
     banner_url?: string | null;
 };
 
@@ -30,14 +30,14 @@ type EventFormState = {
     type: EventKind;
     description: string;
     location: string;
-    start_at: string;               // 'YYYY-MM-DDTHH:mm'
-    end_at: string;                 // 'YYYY-MM-DDTHH:mm'
-    capacity: string;               // lo guardamos como string; se envía como string
+    start_at: string;
+    end_at: string;
+    capacity: string;
     status: EventStatus;
-    registration_open_at: string;   // 'YYYY-MM-DDTHH:mm'
-    registration_close_at: string;  // 'YYYY-MM-DDTHH:mm'
+    registration_open_at: string;
+    registration_close_at: string;
     banner: File | null;
-    banner_url: string;             // URL existente (cuando se edita)
+    banner_url: string;
 };
 
 export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }: Props) {
@@ -68,7 +68,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
         return form.banner_url || null;
     }, [form.banner, form.banner_url]);
 
-    // Limpia el ObjectURL cuando cambie el archivo o al desmontar
     useEffect(() => {
         return () => {
             if (preview && form.banner) URL.revokeObjectURL(preview);
@@ -81,7 +80,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
         try {
             const fd = new FormData();
 
-            // Campos string que se envían tal cual
             const keys: Array<
                 keyof Pick<
                     EventFormState,

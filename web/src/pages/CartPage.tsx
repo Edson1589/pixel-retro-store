@@ -9,7 +9,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 type Customer = { name: string; email: string; phone?: string; address?: string };
 type Intent = { id: string; client_secret: string; amount: number; currency: string; status: string };
 
-// Ítems del carrito aceptados (soporta tanto {product, quantity} como {id,name,price,qty})
 type CartListItem = {
     product?: { id: number; name: string; price: number | string };
     id?: number;
@@ -56,7 +55,6 @@ export default function CartPage() {
     const [msg, setMsg] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
 
-    // Estado de pago
     const [intent, setIntent] = useState<Intent | null>(null);
     const [showCard, setShowCard] = useState(false);
     const [showOtp, setShowOtp] = useState(false);
@@ -68,7 +66,6 @@ export default function CartPage() {
     });
     const [otp, setOtp] = useState('123456');
 
-    // Normaliza items a {product_id, qty}
     const toLines = (): CreateIntentPayload['items'] =>
         (items as CartListItem[]).map((i) => ({
             product_id: i.product?.id ?? (i.id as number),
@@ -83,7 +80,6 @@ export default function CartPage() {
             if (items.length === 0) throw new Error('Tu carrito está vacío.');
             if (!form.name || !form.email) throw new Error('Completa nombre y email.');
 
-            // exige sesión de cliente
             if (!getCustomerToken()) {
                 nav('/login', { state: { next: loc.pathname } });
                 return;
@@ -241,7 +237,6 @@ export default function CartPage() {
                 </>
             )}
 
-            {/* Modal tarjeta */}
             <Modal open={showCard} onClose={() => { setShowCard(false); setIntent(null); }} title="Pago con tarjeta">
                 {intent && (
                     <>
@@ -259,7 +254,6 @@ export default function CartPage() {
                 )}
             </Modal>
 
-            {/* Modal OTP */}
             <Modal open={showOtp} onClose={() => { setShowOtp(false); setIntent(null); }} title="Verificación 3-D Secure">
                 <p className="text-sm text-gray-600 mb-2">
                     Ingresa el código OTP (usa <b>123456</b> para aprobar).

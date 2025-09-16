@@ -11,7 +11,7 @@ interface AdminEvent {
     title: string;
     slug: string;
     type: EventKind;
-    start_at: string;                    // ISO
+    start_at: string;
     end_at?: string | null;
     location?: string | null;
     description?: string | null;
@@ -31,14 +31,14 @@ export default function AdminEventEdit() {
     useEffect(() => {
         (async () => {
             if (!id) return;
-            const data = (await adminGetEvent(Number(id))) as AdminEvent; // ideal: tipar adminGetEvent
+            const data = (await adminGetEvent(Number(id))) as AdminEvent;
             setEv(data);
         })();
     }, [id]);
 
     const submit = async (fd: FormData) => {
         if (!id) return;
-        const saved = (await adminUpdateEvent(Number(id), fd)) as AdminEvent; // ideal: tipar adminUpdateEvent
+        const saved = (await adminUpdateEvent(Number(id), fd)) as AdminEvent;
         nav(`/admin/events/${saved.id}`);
     };
 

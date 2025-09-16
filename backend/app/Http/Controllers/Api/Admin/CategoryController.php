@@ -15,7 +15,7 @@ class CategoryController extends Controller
     }
 
     public function show(int $id)
-    { // 👈 NUEVO
+    {
         $cat = Category::withCount('products')->findOrFail($id);
         return response()->json($cat);
     }

@@ -21,7 +21,6 @@ export const withCustomerAuth = (extra: HeadersInit = {}) => {
     return t ? { ...extra, Authorization: `Bearer ${t}` } : extra;
 };
 
-// -------- AUTH --------
 export async function customerRegister(payload: AuthPayload): Promise<AuthResponse> {
     const r = await fetch(`${API}/api/auth/register`, {
         method: 'POST',

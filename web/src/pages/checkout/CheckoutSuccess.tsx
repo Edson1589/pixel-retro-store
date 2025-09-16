@@ -3,7 +3,7 @@ import { useLocation, Link } from 'react-router-dom';
 type CheckoutState = {
     payment_ref: string;
     sale_id: number;
-    total: number; // en BOB
+    total: number;
 };
 
 export default function CheckoutSuccess() {

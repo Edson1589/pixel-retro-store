@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('location', 200)->nullable();
             $table->timestamp('start_at');
             $table->timestamp('end_at')->nullable();
-            $table->unsignedInteger('capacity')->nullable(); // null = ilimitado
+            $table->unsignedInteger('capacity')->nullable();
             $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
             $table->string('banner_url')->nullable();
             $table->timestamp('registration_open_at')->nullable();

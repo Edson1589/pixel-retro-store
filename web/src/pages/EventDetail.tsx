@@ -10,8 +10,8 @@ interface StoreEvent {
     title: string;
     type: EventKind;
     location?: string | null;
-    start_at: string;           // ISO date-time
-    end_at?: string | null;     // ISO date-time o null
+    start_at: string;
+    end_at?: string | null;
     description?: string | null;
     banner_url?: string | null;
 }
@@ -29,7 +29,6 @@ interface RegisterResponse {
 }
 
 export default function EventDetail() {
-    // <{ slug: string }> evita el non-null assertion "!"
     const { slug } = useParams<{ slug: string }>();
 
     const [event, setEvent] = useState<StoreEvent | null>(null);
@@ -46,7 +45,6 @@ export default function EventDetail() {
     useEffect(() => {
         (async () => {
             if (!slug) return;
-            // Si tus funciones ya devuelven tipos, quita el "as".
             const data = (await fetchEventBySlug(slug)) as StoreEvent;
             setEvent(data);
         })();

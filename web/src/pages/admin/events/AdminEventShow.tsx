@@ -9,7 +9,7 @@ interface AdminEvent {
     id: number | string;
     title: string;
     type: EventKind;
-    start_at: string;                 // ISO datetime
+    start_at: string;
     end_at?: string | null;
     location?: string | null;
     status: EventStatus;
@@ -26,7 +26,7 @@ export default function AdminEventShow() {
     useEffect(() => {
         (async () => {
             if (!id) return;
-            const data = (await adminGetEvent(Number(id))) as AdminEvent; // ideal: tipar adminGetEvent
+            const data = (await adminGetEvent(Number(id))) as AdminEvent;
             setEv(data);
         })();
     }, [id]);

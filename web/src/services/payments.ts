@@ -56,7 +56,7 @@ export async function verify3ds(
     try {
         data = await r.json();
     } catch {
-        data = undefined; // el backend podría devolver texto plano en errores
+        data = undefined;
     }
 
     if (!r.ok) {

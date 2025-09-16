@@ -1,4 +1,3 @@
-// src/pages/admin/AdminProductEdit.tsx
 import { useEffect, useState } from 'react';
 import { getProduct, updateProduct } from '../../../services/adminApi';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -9,7 +8,6 @@ export default function AdminProductEdit() {
     const { id } = useParams<{ id: string }>();
     const nav = useNavigate();
 
-    // 👇 Tipado correcto
     const [p, setP] = useState<Product | null>(null);
     const [busy, setBusy] = useState(false);
 
@@ -19,7 +17,7 @@ export default function AdminProductEdit() {
 
         let cancelled = false;
         (async () => {
-            const prod = await getProduct(pid); // Promise<Product>
+            const prod = await getProduct(pid);
             if (!cancelled) setP(prod);
         })();
 
@@ -34,7 +32,7 @@ export default function AdminProductEdit() {
 
         try {
             setBusy(true);
-            const saved = await updateProduct(pid, fd); // Promise<Product>
+            const saved = await updateProduct(pid, fd);
             nav(`/admin/products/${saved.id}`);
         } finally {
             setBusy(false);

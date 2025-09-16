@@ -2,10 +2,34 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CartContext } from './CartContext';
 import type { CartItem, Product } from '../types';
 import { useCustomerAuth } from './CustomerAuthContext';
+import { cartGet, cartPut } from '../services/cartApi';
+import type { CartPutItem, CartGetItem, CartResponse, CartProductLite } from '../services/cartApi';
 
-// Helpers
 const parseNum = (v: number | string) => (typeof v === 'number' ? v : parseFloat(v || '0'));
 const keyFor = (userId?: number | null) => `pixelretro_cart_${userId ?? 'guest'}`;
+
+const toFullProduct = (
+    lite: CartProductLite | undefined,
+    fallbackId: number,
+    unit_price: number
+): Product => {
+    const p = lite ?? { id: fallbackId, name: 'Producto', price: unit_price, image_url: null };
+    return {
+        id: p.id,
+        category_id: null,
+        name: p.name,
+        slug: '',
+        sku: null,
+        description: null,
+        price: p.price,
+        stock: 0,
+        condition: 'new',
+        is_unique: false,
+        image_url: p.image_url ?? null,
+        status: 'active',
+    };
+};
+
 
 function readCart(storageKey: string): CartItem[] {
     try {
@@ -23,14 +47,14 @@ function readCart(storageKey: string): CartItem[] {
         return [];
     }
 }
-
 function writeCart(storageKey: string, items: CartItem[]) {
-    try { localStorage.setItem(storageKey, JSON.stringify(items)); } catch (e) { void e; }
+    try {
+        localStorage.setItem(storageKey, JSON.stringify(items));
+    } catch (e) {
+        void e;
+    }
 }
-
 function mergeItems(base: CartItem[], incoming: CartItem[]): CartItem[] {
-    // base = items ya existentes del usuario
-    // incoming = items del invitado (a fusionar)
     const map = new Map<number, CartItem>();
     for (const it of base) map.set(it.product.id, { ...it });
     for (const it of incoming) {
@@ -40,17 +64,17 @@ function mergeItems(base: CartItem[], incoming: CartItem[]): CartItem[] {
     }
     return Array.from(map.values());
 }
+const toPutLines = (items: CartItem[]): CartPutItem[] =>
+    items.map((i) => ({ product_id: i.product.id, quantity: i.quantity }));
 
 export default function CartProvider({ children }: { children: React.ReactNode }) {
     const { user } = useCustomerAuth();
     const storageKey = keyFor(user?.id);
 
-    // Estado + refs para controlar migración/persistencia
     const [items, setItems] = useState<CartItem[]>(() => readCart(storageKey));
     const prevKeyRef = useRef(storageKey);
     const justMigratedRef = useRef(false);
 
-    // 1) MIGRACIÓN DE CLAVE (guest→user, user→guest, userA→userB)
     useEffect(() => {
         if (prevKeyRef.current === storageKey) return;
 
@@ -62,29 +86,71 @@ export default function CartProvider({ children }: { children: React.ReactNode }
 
         let resolved: CartItem[];
 
-        // Invitado -> Usuario: fusiona "invitado" dentro del carrito del usuario
         if (prevKey.endsWith('_guest') && !nextKey.endsWith('_guest')) {
             resolved = mergeItems(nextItems, prevItems);
         } else {
-            // Cualquier otro cambio: usa el carrito ya guardado del nuevo key
             resolved = nextItems;
         }
 
-        // Escribe de inmediato en la nueva clave y marca que acabamos de migrar
         writeCart(nextKey, resolved);
         justMigratedRef.current = true;
-
-        // Actualiza estado y referencias
         setItems(resolved);
         prevKeyRef.current = nextKey;
 
-        // Limpia el key viejo si era invitado (no acumular basura)
         if (prevKey.endsWith('_guest')) {
-            try { localStorage.removeItem(prevKey); } catch (e) { void e; }
+            try {
+                localStorage.removeItem(prevKey);
+            } catch (e) {
+                void e;
+            }
         }
+
+        (async () => {
+            if (nextKey.endsWith('_guest')) return;
+            try {
+                if (prevKey.endsWith('_guest')) {
+                    await cartPut(toPutLines(resolved));
+                    return;
+                }
+                let server: CartResponse;
+                try {
+                    server = (await cartGet()) as CartResponse;
+                } catch {
+                    server = { items: [] };
+                }
+
+                const serverItems = server.items.map((i: CartGetItem) => ({
+                    product_id: i.product_id,
+                    quantity: i.quantity,
+                }));
+                const localItems = toPutLines(resolved);
+
+                const localEmpty = localItems.length === 0;
+                const serverEmpty = serverItems.length === 0;
+
+                if (!localEmpty && serverEmpty) {
+                    await cartPut(localItems);
+                } else if (localEmpty && !serverEmpty) {
+                    const rebuilt: CartItem[] = server.items.map((si: CartGetItem) => ({
+                        product: toFullProduct(si.product, si.product_id, si.unit_price),
+                        quantity: si.quantity,
+                    }));
+
+                    setItems(rebuilt);
+                    writeCart(nextKey, rebuilt);
+                } else if (!localEmpty && !serverEmpty) {
+                    const map = new Map<number, number>();
+                    for (const it of serverItems) map.set(it.product_id, it.quantity);
+                    for (const it of localItems) map.set(it.product_id, (map.get(it.product_id) ?? 0) + it.quantity);
+                    const mergedArr = Array.from(map.entries()).map(([product_id, quantity]) => ({ product_id, quantity }));
+                    await cartPut(mergedArr);
+                }
+            } catch (e) {
+                void e;
+            }
+        })();
     }, [storageKey]);
 
-    // 2) PERSISTENCIA NORMAL (evita escribir en el primer ciclo tras migrar)
     useEffect(() => {
         if (justMigratedRef.current) {
             justMigratedRef.current = false;
@@ -93,7 +159,15 @@ export default function CartProvider({ children }: { children: React.ReactNode }
         writeCart(storageKey, items);
     }, [storageKey, items]);
 
-    // API
+    useEffect(() => {
+        if (!user?.id) return;
+        if (justMigratedRef.current) return;
+        const h = setTimeout(() => {
+            cartPut(toPutLines(items)).catch(() => { });
+        }, 300);
+        return () => clearTimeout(h);
+    }, [user?.id, items]);
+
     const add = (p: Product, qty = 1) => {
         setItems((prev) => {
             const i = prev.findIndex((x) => x.product.id === p.id);
@@ -105,7 +179,6 @@ export default function CartProvider({ children }: { children: React.ReactNode }
             return [...prev, { product: p, quantity: qty }];
         });
     };
-
     const remove = (id: number) => setItems((prev) => prev.filter((x) => x.product.id !== id));
     const clear = () => setItems([]);
 
@@ -114,16 +187,11 @@ export default function CartProvider({ children }: { children: React.ReactNode }
         [items]
     );
 
-    // Listener global (p.ej., en logout)
     useEffect(() => {
         const onClear = () => setItems([]);
         window.addEventListener('cart:clear', onClear);
         return () => window.removeEventListener('cart:clear', onClear);
     }, []);
 
-    return (
-        <CartContext.Provider value={{ items, add, remove, clear, total }}>
-            {children}
-        </CartContext.Provider>
-    );
+    return <CartContext.Provider value={{ items, add, remove, clear, total }}>{children}</CartContext.Provider>;
 }

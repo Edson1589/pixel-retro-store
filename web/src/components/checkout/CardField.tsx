@@ -42,7 +42,7 @@ export default function CardField({ value, onChange }: Props) {
                     placeholder="Número de tarjeta"
                     inputMode="numeric"
                     autoComplete="cc-number"
-                    maxLength={23} // 19 dígitos + espacios
+                    maxLength={23}
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-0.5 rounded bg-gray-100">
                     {brand(raw)}

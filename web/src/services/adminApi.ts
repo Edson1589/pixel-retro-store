@@ -1,12 +1,10 @@
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 const KEY = 'pixelretro_admin_token';
 
-/** Storage helpers */
 export const getToken = () => localStorage.getItem(KEY);
 export const setToken = (t: string) => localStorage.setItem(KEY, t);
 export const clearToken = () => localStorage.removeItem(KEY);
 
-/** Header helpers (siempre tipos consistentes) */
 type HeaderMap = Record<string, string>;
 
 const authHeaders = (): HeaderMap => {
@@ -19,7 +17,6 @@ const jsonHeaders = (): HeaderMap => ({
     ...authHeaders(),
 });
 
-/** Auth */
 export async function adminLogin(email: string, password: string) {
     const res = await fetch(`${API_URL}/api/admin/login`, {
         method: 'POST',
@@ -27,7 +24,7 @@ export async function adminLogin(email: string, password: string) {
         body: JSON.stringify({ email, password }),
     });
     if (!res.ok) throw new Error(await res.text());
-    return res.json(); // { token, user }
+    return res.json();
 }
 
 export async function adminLogout() {
@@ -39,7 +36,6 @@ export async function adminLogout() {
     clearToken();
 }
 
-/** Categories */
 export async function listCategories() {
     const res = await fetch(`${API_URL}/api/admin/categories`, {
         headers: authHeaders(),
@@ -87,7 +83,6 @@ export async function deleteCategory(id: number) {
     return res.json();
 }
 
-/** Products */
 export async function listProducts() {
     const res = await fetch(`${API_URL}/api/admin/products`, {
         headers: authHeaders(),
@@ -105,9 +100,7 @@ export async function getProduct(id: number) {
     return res.json();
 }
 
-
 export async function createProduct(fd: FormData) {
-    // OJO: no establecer Content-Type manual con FormData
     const res = await fetch(`${API_URL}/api/admin/products`, {
         method: 'POST',
         headers: authHeaders(),
@@ -118,10 +111,8 @@ export async function createProduct(fd: FormData) {
 }
 
 export async function updateProduct(id: number, fd: FormData) {
-    // Si tu backend espera PUT con FormData y usas Laravel, podrías necesitar:
-    // fd.append('_method', 'PUT');
     const res = await fetch(`${API_URL}/api/admin/products/${id}`, {
-        method: 'POST', // Cambia a PUT si tu backend lo soporta directamente
+        method: 'POST',
         headers: authHeaders(),
         body: fd,
     });
@@ -137,8 +128,6 @@ export async function deleteProduct(id: number) {
     if (!res.ok) throw new Error(await res.text());
     return res.json();
 }
-
-
 
 export async function adminListEvents() {
     const r = await fetch(`${API_URL}/api/admin/events`, { headers: { ...authHeaders() } });

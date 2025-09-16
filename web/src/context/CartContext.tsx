@@ -9,7 +9,6 @@ type Ctx = {
     total: number;
 };
 
-// Exporta SOLO el contexto y el hook (no componentes)
 export const CartContext = createContext<Ctx | null>(null);
 
 export function useCart() {

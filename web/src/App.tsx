@@ -1,4 +1,3 @@
-// src/App.tsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ProductsPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
@@ -37,13 +36,15 @@ import CustomerRegister from './pages/auth/CustomerRegister';
 
 import Header from './components/layout/Header';
 
+import OrdersPage from './pages/account/OrdersPage';
+import OrderDetailPage from './pages/account/OrderDetailPage';
+
 export default function App() {
   return (
     <BrowserRouter>
       <CartProvider>
         <Header />
         <Routes>
-          {/* públicas */}
           <Route path="/" element={<ProductsPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
@@ -51,11 +52,11 @@ export default function App() {
           <Route path="/events" element={<EventsList />} />
           <Route path="/events/:slug" element={<EventDetail />} />
 
-          {/* auth cliente */}
           <Route path="/login" element={<CustomerLogin />} />
           <Route path="/register" element={<CustomerRegister />} />
+          <Route path="/account/orders" element={<OrdersPage />} />
+          <Route path="/account/orders/:id" element={<OrderDetailPage />} />
 
-          {/* admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
             <Route index element={<AdminProductsList />} />

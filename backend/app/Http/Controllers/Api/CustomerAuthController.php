@@ -16,15 +16,13 @@ class CustomerAuthController extends Controller
     {
         $data = $request->validated();
 
-        // Crear usuario con rol "customer"
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
-            'password' => $data['password'], // hashed por cast en el modelo
+            'password' => $data['password'],
             'role'     => 'customer',
         ]);
 
-        // Sincronizar/crear perfil en tabla customers (para ventas)
         Customer::updateOrCreate(
             ['email' => $data['email']],
             [
@@ -56,7 +54,6 @@ class CustomerAuthController extends Controller
             return response()->json(['message' => 'Credenciales inválidas'], 401);
         }
         if ($user->role !== 'customer') {
-            // Si prefieres permitir que seller/technician usen otra app, bloquea aquí.
             return response()->json(['message' => 'Rol no permitido en este endpoint'], 403);
         }
 

@@ -9,13 +9,12 @@ interface AdminEvent {
     id: number | string;
     title: string;
     type: EventKind;
-    start_at: string;   // ISO datetime
+    start_at: string;
     status: EventStatus;
 }
 
 interface AdminEventsResponse {
     data: AdminEvent[];
-    // si tu API retorna más campos (meta, links, etc.), agrégalos aquí
 }
 
 export default function AdminEventsList() {
@@ -25,7 +24,7 @@ export default function AdminEventsList() {
     const load = async (): Promise<void> => {
         setLoading(true);
         try {
-            const res = (await adminListEvents()) as AdminEventsResponse; // ideal: tipar adminListEvents
+            const res = (await adminListEvents()) as AdminEventsResponse;
             setData(res);
         } finally {
             setLoading(false);

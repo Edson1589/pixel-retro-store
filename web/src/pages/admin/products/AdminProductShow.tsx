@@ -1,4 +1,3 @@
-// src/pages/admin/AdminProductShow.tsx
 import { useEffect, useState } from 'react';
 import { getProduct } from '../../../services/adminApi';
 import { Link, useParams } from 'react-router-dom';
@@ -14,7 +13,7 @@ export default function AdminProductShow() {
 
         let cancelled = false;
         (async () => {
-            const prod = await getProduct(pid); // Promise<Product>
+            const prod = await getProduct(pid);
             if (!cancelled) setP(prod);
         })();
 

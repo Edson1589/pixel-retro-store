@@ -1,10 +1,9 @@
-// src/pages/admin/AdminProductsList.tsx
 import { useEffect, useState } from 'react';
 import { listProducts } from '../../../services/adminApi';
 import { Link } from 'react-router-dom';
 import type { Product } from '../../../types';
 
-type ListResponse<T> = { data: T[] }; // ajusta si tu API incluye meta/links
+type ListResponse<T> = { data: T[] };
 
 export default function AdminProductsList() {
     const [data, setData] = useState<ListResponse<Product>>({ data: [] });
@@ -13,7 +12,7 @@ export default function AdminProductsList() {
     const load = async () => {
         setLoading(true);
         try {
-            const r = await listProducts(); // Promise<ListResponse<Product>>
+            const r = await listProducts();
             setData(r);
         } finally {
             setLoading(false);

@@ -9,7 +9,7 @@ interface AdminEvent {
     id: number | string;
     title: string;
     type: EventKind;
-    start_at: string;              // ISO
+    start_at: string;
     end_at?: string | null;
     location?: string | null;
     status: EventStatus;
@@ -43,11 +43,11 @@ export default function AdminEventRegistrations() {
 
     const load = async (): Promise<void> => {
         if (!id) return;
-        const eventData = (await adminGetEvent(Number(id))) as AdminEvent; // ideal: tipar adminGetEvent
+        const eventData = (await adminGetEvent(Number(id))) as AdminEvent;
         const regs = (await adminListEventRegs(
             Number(id),
             status === 'all' ? undefined : status
-        )) as RegistrationsResponse; // ideal: tipar adminListEventRegs
+        )) as RegistrationsResponse;
         setEv(eventData);
         setData(regs);
     };

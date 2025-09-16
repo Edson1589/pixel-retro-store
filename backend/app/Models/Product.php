@@ -22,7 +22,7 @@ class Product extends Model
     ];
     protected $casts = [
         'is_unique' => 'boolean',
-        'price' => 'float', // para que el frontend reciba número
+        'price' => 'float',
     ];
     public function category(): BelongsTo
     {

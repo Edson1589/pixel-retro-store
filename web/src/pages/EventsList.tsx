@@ -10,14 +10,12 @@ interface StoreEvent {
     slug: string;
     title: string;
     type: EventKind;
-    start_at: string;              // ISO
+    start_at: string;
     banner_url?: string | null;
 }
 
 interface EventsListResponse {
     data: StoreEvent[];
-    // Si tu backend devuelve más (paginación, links, meta), agrégalo aquí.
-    // meta?: { current_page: number; last_page: number; total: number; }
 }
 
 export default function EventsList() {
@@ -34,7 +32,7 @@ export default function EventsList() {
                 type: type === 'all' ? undefined : type,
                 upcoming: true,
                 per_page: 24,
-            }) as EventsListResponse; // ← Idealmente tipa fetchEvents para evitar este "as"
+            }) as EventsListResponse;
             setData(res);
         } finally {
             setLoading(false);

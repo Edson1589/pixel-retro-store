@@ -14,7 +14,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'admin@pixelretro.dev'],
             [
                 'name' => 'Admin PixelRetro',
-                'password' => Hash::make('Admin123!'), // cámbiala luego
+                'password' => Hash::make('Admin123!'),
                 'role' => 'admin',
                 'is_admin' => true,
             ]
