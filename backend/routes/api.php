@@ -20,6 +20,8 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\Customer\OrderController as CustomerOrders;
 use App\Http\Controllers\Api\CategoryController as PublicCategories;
 
+use App\Http\Controllers\Api\ReceiptController;
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuth::class, 'login']);
 
@@ -86,4 +88,5 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
 
     Route::get('/me/orders', [CustomerOrders::class, 'index']);
     Route::get('/me/orders/{id}', [CustomerOrders::class, 'show']);
+    Route::get('/account/orders/{sale}/receipt', [ReceiptController::class, 'download']);
 });

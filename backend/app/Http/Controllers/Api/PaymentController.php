@@ -240,6 +240,7 @@ class PaymentController extends Controller
                     'payment_ref' => $payment->intent_id,
                     'sale_id'     => $sale->id,
                     'total'       => $sale->total,
+                    'receipt_url' => url("/api/account/orders/{$sale->id}/receipt"),
                 ]);
             });
         } catch (\Throwable $e) {
