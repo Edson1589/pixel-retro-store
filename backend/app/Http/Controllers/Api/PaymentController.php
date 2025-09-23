@@ -121,6 +121,7 @@ class PaymentController extends Controller
             ], 202);
         }
 
+        // Este es un prueba
         return $this->finalizeSale($payment);
     }
 
