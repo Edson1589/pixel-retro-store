@@ -97,6 +97,8 @@ class PaymentController extends Controller
             ], 409);
         }
 
+
+        // Este cambio es para pruebas
         [$status, $reason, $needsAction, $nextAction] = $this->simulateCardFlow($data['card_number']);
 
         $payment->update([
