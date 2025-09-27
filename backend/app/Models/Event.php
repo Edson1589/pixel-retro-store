@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Event extends Model
+{
+    protected $fillable = [
+        'title',
+        'slug',
+        'type',
+        'description',
+        'location',
+        'start_at',
+        'end_at',
+        'capacity',
+        'status',
+        'banner_url',
+        'registration_open_at',
+        'registration_close_at'
+    ];
+    protected $casts = [
+        'start_at' => 'datetime',
+        'end_at' => 'datetime',
+        'registration_open_at' => 'datetime',
+        'registration_close_at' => 'datetime',
+        'capacity' => 'integer',
+    ];
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+}

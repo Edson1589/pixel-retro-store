@@ -1,0 +1,4 @@
+DROP DATABASE pixelretro;
+CREATE DATABASE pixelretro
+
+php artisan migrate:fresh --seed
