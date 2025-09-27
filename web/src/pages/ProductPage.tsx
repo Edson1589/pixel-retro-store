@@ -4,6 +4,9 @@ import { fetchProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import CategorySidebar from '../components/CategorySidebar';
 import type { Product } from '../types';
+import { useCart } from '../context/CartContext';
+import ErrorCard from '../components/ErrorCard';
+import CartErrorToast from '../components/CartErrorToast';
 
 type ProductsResponse = { data: Product[] };
 
@@ -17,6 +20,9 @@ export default function ProductsPage() {
     const urlSearch = sp.get('search') ?? '';
 
     const [q, setQ] = useState(urlSearch);
+
+    const { cartError } = useCart();
+
 
     useEffect(() => {
         setQ(urlSearch);
@@ -73,6 +79,7 @@ export default function ProductsPage() {
                 <CategorySidebar />
 
                 <main>
+                     <CartErrorToast />
                     {activeCategory && (
                         <div className="text-sm text-gray-600 mb-3">
                             Filtrando por categoría: <b>{activeCategory}</b>

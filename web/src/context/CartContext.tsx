@@ -2,12 +2,14 @@ import { createContext, useContext } from 'react';
 import type { CartItem, Product } from '../types';
 
 type Ctx = {
-    items: CartItem[];
-    add: (p: Product, qty?: number) => void;
-    remove: (productId: number) => void;
-    clear: () => void;
-    total: number;
+  items: CartItem[];
+  addItem: (p: Product, qty?: number) => void; // renombrado
+  remove: (productId: number) => void;
+  clear: () => void;
+  total: number;
+  cartError: string | null;
 };
+
 
 export const CartContext = createContext<Ctx | null>(null);
 
