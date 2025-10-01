@@ -26,3 +26,11 @@ export type EventRegistration = {
     gamer_tag?: string | null; team?: string | null; notes?: string | null;
     status: 'pending' | 'confirmed' | 'cancelled';
 };
+
+export type Page<T> = {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+};

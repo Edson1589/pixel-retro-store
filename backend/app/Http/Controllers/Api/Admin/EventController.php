@@ -12,6 +12,7 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
+        $per = max(1, min(100, (int) $request->integer('per_page', 15)));
         $q = Event::query();
         if ($s = $request->string('search')->toString()) {
             $q->where('title', 'like', "%$s%");
@@ -19,7 +20,7 @@ class EventController extends Controller
         if ($t = $request->string('type')->toString()) {
             $q->where('type', $t);
         }
-        return response()->json($q->orderByDesc('start_at')->paginate(20));
+        return response()->json($q->orderByDesc('start_at')->paginate($per));
     }
 
     public function show(int $id)
@@ -37,6 +38,7 @@ class EventController extends Controller
         $e = Event::create($data);
         return response()->json($e, 201);
     }
+
 
     public function update(EventRequest $request, int $id)
     {

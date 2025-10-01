@@ -7,6 +7,16 @@ export const clearToken = () => localStorage.removeItem(KEY);
 
 type HeaderMap = Record<string, string>;
 
+import type { Product } from '../types';
+
+export type Page<T> = {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+};
+
 const authHeaders = (): HeaderMap => {
     const t = getToken();
     return t ? { Authorization: `Bearer ${t}` } : {};
@@ -36,12 +46,25 @@ export async function adminLogout() {
     clearToken();
 }
 
-export async function listCategories() {
-    const res = await fetch(`${API_URL}/api/admin/categories`, {
-        headers: authHeaders(),
-    });
+export async function adminListCategories<T = unknown>(params?: {
+    page?: number;
+    perPage?: number;
+    search?: string;
+    status?: 'active' | 'inactive' | 'all';
+}): Promise<Page<T>> {
+    const qs = new URLSearchParams();
+    if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.perPage != null) qs.set('per_page', String(params.perPage));
+    if (params?.search) qs.set('search', params.search);
+    if (params?.status && params.status !== 'all') qs.set('status', params.status);
+
+    const base = `${API_URL}/api/admin/categories`; // ojo si API_URL ya incluye /api
+    const query = qs.toString();
+    const url = query ? `${base}?${query}` : base;
+
+    const res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return res.json() as Promise<Page<T>>;
 }
 
 export async function createCategory(payload: { name: string; slug: string }) {
@@ -83,12 +106,23 @@ export async function deleteCategory(id: number) {
     return res.json();
 }
 
-export async function listProducts() {
-    const res = await fetch(`${API_URL}/api/admin/products`, {
+export async function listProducts(params?: {
+    page?: number;
+    perPage?: number;
+    search?: string;
+    status?: 'active' | 'draft';
+}): Promise<Page<Product>> {
+    const qs = new URLSearchParams();
+    if (params?.page) qs.set('page', String(params.page));
+    if (params?.perPage) qs.set('per_page', String(params.perPage));
+    if (params?.search) qs.set('search', params.search);
+    if (params?.status) qs.set('status', params.status);
+
+    const res = await fetch(`${API_URL}/api/admin/products?${qs}`, {
         headers: authHeaders(),
     });
     if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return res.json() as Promise<Page<Product>>;
 }
 
 export async function getProduct(id: number) {
@@ -129,9 +163,22 @@ export async function deleteProduct(id: number) {
     return res.json();
 }
 
-export async function adminListEvents() {
-    const r = await fetch(`${API_URL}/api/admin/events`, { headers: { ...authHeaders() } });
-    if (!r.ok) throw new Error(await r.text()); return r.json();
+export async function adminListEvents<T = Event>(params?: {
+    page?: number; perPage?: number; search?: string; type?: 'event' | 'tournament' | 'all';
+}): Promise<Page<T>> {
+    const qs = new URLSearchParams();
+    if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.perPage != null) qs.set('per_page', String(params.perPage));
+    if (params?.search) qs.set('search', params.search);
+    if (params?.type && params.type !== 'all') qs.set('type', params.type);
+
+    const base = `${API_URL}/api/admin/events`;
+    const query = qs.toString();
+    const url = query ? `${base}?${query}` : base;
+
+    const r = await fetch(url, { headers: { ...authHeaders() } });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json() as Promise<Page<T>>;
 }
 export async function adminGetEvent(id: number) {
     const r = await fetch(`${API_URL}/api/admin/events/${id}`, { headers: { ...authHeaders() } });
@@ -149,11 +196,31 @@ export async function adminDeleteEvent(id: number) {
     const r = await fetch(`${API_URL}/api/admin/events/${id}`, { method: 'DELETE', headers: { ...authHeaders() } });
     if (!r.ok) throw new Error(await r.text()); return r.json();
 }
-export async function adminListEventRegs(eventId: number, status?: 'pending' | 'confirmed' | 'cancelled') {
-    const qs = new URLSearchParams(); if (status) qs.set('status', status);
-    const r = await fetch(`${API_URL}/api/admin/events/${eventId}/registrations?${qs}`, { headers: { ...authHeaders() } });
-    if (!r.ok) throw new Error(await r.text()); return r.json();
+// Puedes ajustar o quitar el genérico <T> si ya tienes un tipo para el registro (p.ej. EventRegistration)
+export async function adminListEventRegs<T = unknown>(
+    eventId: number,
+    params?: {
+        page?: number;
+        perPage?: number;
+        status?: 'pending' | 'confirmed' | 'cancelled';
+        search?: string; // opcional si luego lo soportas en backend
+    }
+): Promise<Page<T>> {
+    const qs = new URLSearchParams();
+    if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.perPage != null) qs.set('per_page', String(params.perPage));
+    if (params?.status) qs.set('status', params.status);
+    if (params?.search) qs.set('search', params.search);
+
+    const base = `${API_URL}/api/admin/events/${eventId}/registrations`; // ojo si API_URL ya incluye /api
+    const query = qs.toString();
+    const url = query ? `${base}?${query}` : base;
+
+    const r = await fetch(url, { headers: { ...authHeaders() } });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json() as Promise<Page<T>>;
 }
+
 export async function adminUpdateRegStatus(eventId: number, regId: number, status: 'pending' | 'confirmed' | 'cancelled') {
     const r = await fetch(`${API_URL}/api/admin/events/${eventId}/registrations/${regId}/status`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ status })

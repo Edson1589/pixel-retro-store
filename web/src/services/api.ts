@@ -1,10 +1,20 @@
 import type { Product } from '../types';
 import { withCustomerAuth } from './customerApi';
 import type { Category } from '../types';
+import type { EventItem } from '../types';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
-export type ProductsResponse = { data: Product[] };
+export type Page<T> = {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+};
+
+export type ProductsResponse = Page<Product>;
 export type ProductResponse = Product;
+export type EventsResponse = Page<EventItem>;
 
 type CheckoutItem = { product_id: number; quantity: number };
 type CheckoutCustomer = {
@@ -17,14 +27,19 @@ export type CheckoutPayload = { customer: CheckoutCustomer; items: CheckoutItem[
 export type CheckoutResponse = { payment_ref: string; total: number };
 
 export async function fetchProducts(
-    params?: { search?: string; category?: string; page?: number }
+    params?: { search?: string; category?: string; page?: number; per_page?: number }
 ): Promise<ProductsResponse> {
     const qs = new URLSearchParams();
     if (params?.search) qs.set('search', params.search);
     if (params?.category) qs.set('category', params.category);
     if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.per_page != null) qs.set('per_page', String(params.per_page));
 
-    const res = await fetch(`${API_URL}/api/products?${qs.toString()}`);
+    const base = `${API_URL}/api/products`;
+    const query = qs.toString();
+    const url = query ? `${base}?${query}` : base;
+
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Error cargando productos');
     const data: ProductsResponse = await res.json();
     return data;
@@ -48,16 +63,26 @@ export async function checkout(payload: CheckoutPayload): Promise<CheckoutRespon
     return data;
 }
 
-export async function fetchEvents(params?: { type?: 'event' | 'tournament'; search?: string; upcoming?: boolean; page?: number; per_page?: number }) {
+export async function fetchEvents<T = EventItem>(params?: {
+    type?: 'event' | 'tournament' | 'all';
+    search?: string;
+    upcoming?: boolean;
+    page?: number;
+    per_page?: number;
+}): Promise<Page<T>> {
     const qs = new URLSearchParams();
-    if (params?.type) qs.set('type', params.type);
+    if (params?.type && params.type !== 'all') qs.set('type', params.type);
     if (params?.search) qs.set('search', params.search);
-    if (params?.upcoming !== undefined) qs.set('upcoming', params.upcoming ? '1' : '0');
-    if (params?.page) qs.set('page', String(params.page));
-    qs.set('per_page', String(params?.per_page ?? 12));
-    const res = await fetch(`${API_URL}/api/events?${qs.toString()}`);
+    if (params?.upcoming != null) qs.set('upcoming', params.upcoming ? '1' : '0');
+    if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.per_page != null) qs.set('per_page', String(params.per_page));
+
+    const base = `${API_URL}/api/events`;
+    const url = qs.toString() ? `${base}?${qs}` : base;
+
+    const res = await fetch(url);
     if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return res.json() as Promise<Page<T>>;
 }
 
 export async function fetchEventBySlug(slug: string) {

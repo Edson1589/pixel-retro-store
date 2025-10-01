@@ -7,6 +7,7 @@ use App\Models\Category;
 
 class CategoryController extends Controller
 {
+    //PR
     public function index()
     {
         return response()->json(

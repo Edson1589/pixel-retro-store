@@ -12,11 +12,14 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
+        $per = max(1, min(100, (int) $request->integer('per_page', 15)));
+
         $q = Product::with('category')->orderByDesc('id');
+
         if ($s = $request->string('search')->toString()) {
             $q->where('name', 'like', "%$s%");
         }
-        return response()->json($q->paginate(20));
+        return response()->json($q->paginate($per));
     }
 
     public function store(ProductRequest $request)

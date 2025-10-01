@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useCart } from '../../context/CartContext';
+import TopBar from '../TopBar';
 
 export default function Header() {
     const { user, loading, logout } = useCustomerAuth();
@@ -18,35 +19,35 @@ export default function Header() {
     };
 
     return (
-        <header className="border-b">
-            <div className="max-w-6xl mx-auto p-3 flex items-center gap-3">
-                <Link to="/" className="font-bold">Pixel Retro Store</Link>
-                <nav className="ml-auto flex items-center gap-3 text-sm">
-                    <Link to="/events" className="underline">Eventos</Link>
-                    {user && <Link to="/account/orders" className="px-3 py-2 rounded-xl border">Mis compras</Link>}
+        <TopBar
+            left={
+                <Link to="/" className="flex items-center gap-2 font-semibold tracking-wide">
+                    <span className="grid place-items-center h-5 w-5 rounded-[3px] bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
+                        <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 7h4V5h6v2h4v6h-2v4h-4v-2h-4v2H7v-4H5z" fill="currentColor" />
+                        </svg>
+                    </span>
+                    <span className="text-sm"><strong>Pixel Retro</strong></span>
+                </Link>
+            }
+            items={[
+                { label: 'Productos', to: '/' },
+                { label: 'Eventos', to: '/events' },
+                ...(user ? [{ label: 'Mis compras', to: '/account/orders' }] : []),
+                { label: 'Carrito', to: '/cart', badge: qty },
+                ...(!loading
+                    ? (user
+                        ? [
+                            { label: `Hola, ${user.name}`, onClick: doLogout },
+                            { label: 'Salir', onClick: doLogout },
+                        ]
 
-                    <Link to="/cart" className="underline relative">
-                        Carrito
-                        {qty > 0 && (
-                            <span className="ml-1 inline-flex items-center justify-center text-xs px-1.5 rounded-full bg-black text-white">
-                                {qty}
-                            </span>
-                        )}
-                    </Link>
-
-                    {!loading && (user ? (
-                        <>
-                            <span className="hidden sm:inline">Hola, {user.name}</span>
-                            <button onClick={doLogout} className="underline">Salir</button>
-                        </>
-                    ) : (
-                        <>
-                            <Link to="/login" className="underline">Ingresar</Link>
-                            <Link to="/register" className="underline">Crear cuenta</Link>
-                        </>
-                    ))}
-                </nav>
-            </div>
-        </header>
+                        : [
+                            { label: 'Ingresar', to: '/login' },
+                            { label: 'Crear cuenta', to: '/register' },
+                        ])
+                    : []),
+            ]}
+        />
     );
 }

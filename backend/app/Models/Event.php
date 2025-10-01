@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Event extends Model
 {
@@ -28,8 +30,28 @@ class Event extends Model
         'registration_close_at' => 'datetime',
         'capacity' => 'integer',
     ];
+
     public function registrations(): HasMany
     {
         return $this->hasMany(EventRegistration::class);
+    }
+
+    public function getBannerUrlAttribute($value)
+    {
+        if (!$value) return null;
+
+        if (Str::startsWith($value, 'public/')) {
+            $value = substr($value, 7);
+        }
+
+        if (Str::startsWith($value, ['http://', 'https://'])) {
+            return $value;
+        }
+
+        if (Str::startsWith($value, '/')) {
+            return asset(ltrim($value, '/'));
+        }
+
+        return asset(Storage::url($value));
     }
 }

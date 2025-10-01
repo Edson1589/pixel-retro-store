@@ -10,6 +10,8 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
+        $per = max(1, min(100, (int) $request->integer('per_page', 15)));
+
         $q = Product::query()->with('category')->where('status', 'active');
 
         if ($search = $request->string('search')->toString()) {
@@ -23,7 +25,7 @@ class ProductController extends Controller
             $q->whereHas('category', fn($w) => $w->where('slug', $cat));
         }
 
-        return response()->json($q->orderBy('name')->paginate(12));
+        return response()->json($q->orderBy('name')->paginate($per));
     }
 
     public function show(string $slug)

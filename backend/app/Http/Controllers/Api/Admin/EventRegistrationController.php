@@ -11,12 +11,14 @@ class EventRegistrationController extends Controller
 {
     public function index(int $eventId, Request $request)
     {
+        $per = max(1, min(100, (int) $request->integer('per_page', 15)));
+
         $event = Event::findOrFail($eventId);
         $q = $event->registrations()->orderByDesc('id');
         if ($status = $request->string('status')->toString()) {
             $q->where('status', $status);
         }
-        return response()->json($q->paginate(30));
+        return response()->json($q->paginate($per));
     }
 
     public function updateStatus(int $eventId, int $registrationId, Request $request)

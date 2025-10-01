@@ -39,6 +39,8 @@ import Header from './components/layout/Header';
 import OrdersPage from './pages/account/OrdersPage';
 import OrderDetailPage from './pages/account/OrderDetailPage';
 
+import ProductDetail from './pages/ProductDetail';
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -46,6 +48,7 @@ export default function App() {
         <Header />
         <Routes>
           <Route path="/" element={<ProductsPage />} />
+          <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
 

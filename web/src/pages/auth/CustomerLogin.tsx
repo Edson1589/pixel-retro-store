@@ -33,36 +33,69 @@ export default function CustomerLogin() {
     const onPassword = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
 
     return (
-        <div className="max-w-sm mx-auto p-4">
-            <h2 className="text-xl font-bold mb-4">Iniciar sesión</h2>
-            <form onSubmit={submit} className="grid gap-3">
-                <input
-                    className="border rounded-xl px-3 py-2"
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={onEmail}
-                    autoComplete="email"
-                />
-                <input
-                    className="border rounded-xl px-3 py-2"
-                    type="password"
-                    placeholder="Contraseña"
-                    value={password}
-                    onChange={onPassword}
-                    autoComplete="current-password"
-                />
-                <button
-                    className="px-4 py-2 rounded-xl bg-black text-white disabled:opacity-50"
-                    disabled={busy || !email || !password}
-                >
-                    {busy ? 'Ingresando...' : 'Ingresar'}
-                </button>
-            </form>
-            {msg && <p className="text-red-600 mt-3">{msg}</p>}
-            <p className="mt-3 text-sm">
-                ¿No tienes cuenta? <Link to="/register" className="underline">Crear cuenta</Link>
-            </p>
+        <div className="min-h-screen grid place-items-center bg-[#07101B] p-4">
+            <div className="w-[420px] max-w-full rounded-[22px] p-6
+                      bg-white/[0.04] border border-white/10 backdrop-blur-xl
+                      shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)]">
+
+                {/* Título */}
+                <h1 className="text-center text-2xl font-extrabold
+                       bg-clip-text text-transparent
+                       bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]">
+                    Iniciar sesión
+                </h1>
+                <p className="mt-1 text-center text-white/70 text-sm">
+                    Accede a tu cuenta para continuar
+                </p>
+
+                {/* Form */}
+                <form onSubmit={submit} className="mt-6 grid gap-3">
+                    <label htmlFor="email" className="sr-only">Email</label>
+                    <input
+                        id="email"
+                        className="w-full rounded-xl px-3 py-2
+                       bg-white/[0.05] text-white/90 placeholder:text-white/45
+                       border border-white/10
+                       focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={onEmail}
+                        autoComplete="email"
+                    />
+
+                    <label htmlFor="password" className="sr-only">Contraseña</label>
+                    <input
+                        id="password"
+                        className="w-full rounded-xl px-3 py-2
+                       bg-white/[0.05] text-white/90 placeholder:text-white/45
+                       border border-white/10
+                       focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                        type="password"
+                        placeholder="Contraseña"
+                        value={password}
+                        onChange={onPassword}
+                        autoComplete="current-password"
+                    />
+
+                    <button
+                        className="mt-1 px-4 py-2 rounded-xl text-white font-medium
+                       bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] hover:brightness-110 transition
+                       shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={busy || !email || !password}
+                    >
+                        {busy ? 'Ingresando...' : 'Ingresar'}
+                    </button>
+                </form>
+
+                {msg && <p className="mt-3 text-sm text-red-400">{msg}</p>}
+
+                <p className="mt-4 text-sm text-white/80 text-center">
+                    ¿No tienes cuenta?{' '}
+                    <Link to="/register" className="text-[#06B6D4] hover:underline">Crear cuenta</Link>
+                </p>
+            </div>
         </div>
     );
 }

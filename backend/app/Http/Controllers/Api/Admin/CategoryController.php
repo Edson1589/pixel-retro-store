@@ -11,7 +11,10 @@ class CategoryController extends Controller
 {
     public function index(Request $request)
     {
-        return response()->json(Category::orderBy('name')->paginate(20));
+        $per = min(max((int)$request->query('per_page', 50), 1), 100);
+        $q = Category::query()->withCount('products');
+
+        return response()->json($q->orderBy('name')->paginate($per));
     }
 
     public function show(int $id)
