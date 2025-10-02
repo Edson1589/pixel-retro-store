@@ -2,6 +2,7 @@ import type { Product } from '../types';
 import { withCustomerAuth } from './customerApi';
 import type { Category } from '../types';
 import type { EventItem } from '../types';
+
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
 export type Page<T> = {
@@ -26,6 +27,7 @@ type CheckoutCustomer = {
 export type CheckoutPayload = { customer: CheckoutCustomer; items: CheckoutItem[] };
 export type CheckoutResponse = { payment_ref: string; total: number };
 
+// ----------------- Productos -----------------
 export async function fetchProducts(
     params?: { search?: string; category?: string; page?: number; per_page?: number }
 ): Promise<ProductsResponse> {
@@ -36,8 +38,7 @@ export async function fetchProducts(
     if (params?.per_page != null) qs.set('per_page', String(params.per_page));
 
     const base = `${API_URL}/api/products`;
-    const query = qs.toString();
-    const url = query ? `${base}?${query}` : base;
+    const url = qs.toString() ? `${base}?${qs}` : base;
 
     const res = await fetch(url);
     if (!res.ok) throw new Error('Error cargando productos');
@@ -52,6 +53,7 @@ export async function fetchProduct(slug: string): Promise<ProductResponse> {
     return data;
 }
 
+// ----------------- Checkout -----------------
 export async function checkout(payload: CheckoutPayload): Promise<CheckoutResponse> {
     const res = await fetch(`${API_URL}/api/checkout`, {
         method: 'POST',
@@ -63,6 +65,7 @@ export async function checkout(payload: CheckoutPayload): Promise<CheckoutRespon
     return data;
 }
 
+// ----------------- Eventos -----------------
 export async function fetchEvents<T = EventItem>(params?: {
     type?: 'event' | 'tournament' | 'all';
     search?: string;
@@ -91,7 +94,10 @@ export async function fetchEventBySlug(slug: string) {
     return res.json();
 }
 
-export async function registerToEvent(slug: string, payload: { name: string; email: string; gamer_tag?: string; team?: string; notes?: string }) {
+export async function registerToEvent(
+    slug: string,
+    payload: { name: string; email: string; gamer_tag?: string; team?: string; notes?: string }
+) {
     const res = await fetch(`${API_URL}/api/events/${slug}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...withCustomerAuth() },
@@ -101,8 +107,23 @@ export async function registerToEvent(slug: string, payload: { name: string; ema
     return res.json();
 }
 
+// ----------------- Categorías -----------------
 export async function fetchCategories(): Promise<Category[]> {
     const res = await fetch(`${API_URL}/api/categories`);
     if (!res.ok) throw new Error(await res.text());
     return res.json();
+}
+
+// ----------------- Historial de Búsqueda -----------------
+export async function fetchSearchHistory(term: string): Promise<string[]> {
+    const qs = new URLSearchParams();
+    qs.set('term', term);
+
+    const res = await fetch(`${API_URL}/api/search-history?${qs.toString()}`, {
+        credentials: 'include', // si tu API usa auth por cookies
+    });
+
+    if (!res.ok) return [];
+    const data: string[] = await res.json();
+    return data;
 }

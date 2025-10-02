@@ -22,10 +22,12 @@ class Product extends Model
         'image_url',
         'status'
     ];
+
     protected $casts = [
         'is_unique' => 'boolean',
         'price' => 'float',
     ];
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -45,4 +47,27 @@ class Product extends Model
 
         return asset(Storage::url($value));
     }
+
+    /**
+     * Scope para búsquedas avanzadas.
+     * Ahora soporta múltiples palabras con lógica OR:
+     * "Cartucho Control" -> devuelve productos que tengan
+     * cartucho O control en name, description o sku.
+     */
+    public function scopeSearch($query, $term)
+    {
+        $terms = preg_split('/\s+/', trim($term)); // separar por espacios
+
+        return $query->where(function ($q) use ($terms) {
+            foreach ($terms as $t) {
+                $t = strtolower($t);
+                $q->orWhere(function ($sub) use ($t) {
+                    $sub->whereRaw('LOWER(name) LIKE ?', ["%{$t}%"])
+                        ->orWhereRaw('LOWER(description) LIKE ?', ["%{$t}%"])
+                        ->orWhereRaw('LOWER(sku) LIKE ?', ["%{$t}%"]);
+                });
+            }
+        });
+    }
 }
+

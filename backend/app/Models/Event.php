@@ -23,6 +23,7 @@ class Event extends Model
         'registration_open_at',
         'registration_close_at'
     ];
+
     protected $casts = [
         'start_at' => 'datetime',
         'end_at' => 'datetime',
@@ -53,5 +54,27 @@ class Event extends Model
         }
 
         return asset(Storage::url($value));
+    }
+
+    /**
+     * Scope para búsquedas avanzadas en eventos.
+     * Soporta múltiples palabras (OR lógico).
+     * Ej: "feria retro" -> encuentra eventos con "feria" O "retro"
+     */
+    public function scopeSearch($query, $term)
+    {
+        $terms = preg_split('/\s+/', trim($term));
+
+        return $query->where(function ($q) use ($terms) {
+            foreach ($terms as $t) {
+                $t = strtolower($t);
+                $q->orWhere(function ($sub) use ($t) {
+                    $sub->whereRaw('LOWER(title) LIKE ?', ["%{$t}%"])
+                        ->orWhereRaw('LOWER(description) LIKE ?', ["%{$t}%"])
+                        ->orWhereRaw('LOWER(location) LIKE ?', ["%{$t}%"])
+                        ->orWhereRaw('LOWER(type) LIKE ?', ["%{$t}%"]);
+                });
+            }
+        });
     }
 }

@@ -18,7 +18,6 @@ interface StoreEvent {
 
 interface EventsListResponse { data: StoreEvent[]; }
 
-// ⬇️ metadatos de paginación (sin tocar el tipo de tus items)
 type PageMeta = {
     current_page: number;
     last_page: number;
@@ -36,7 +35,7 @@ const ts = (iso: string) => new Date(iso).getTime();
 
 export default function EventsList() {
     const [data, setData] = useState<EventsListResponse>({ data: [] });
-    const [meta, setMeta] = useState<PageMeta>({ current_page: 1, last_page: 1, per_page: 24, total: 0 });
+    const [meta, setMeta] = useState<PageMeta>({ current_page: 1, last_page: 1, per_page: 15, total: 0 });
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -45,7 +44,6 @@ export default function EventsList() {
     const [type, setType] = useState<TypeFilter>('all');
     const [sort, setSort] = useState<SortKey>('date_asc');
 
-    // ⬇️ controles de paginación
     const [page, setPage] = useState(1);
     const [perPage] = useState(15);
 
@@ -54,7 +52,6 @@ export default function EventsList() {
         setError(null);
         try {
             const pageToUse = forcePage ?? page;
-            // 👇 Tipamos la respuesta con StoreEvent
             const res = await fetchEvents<StoreEvent>({
                 search: q || undefined,
                 type: type === 'all' ? undefined : type,
@@ -63,7 +60,6 @@ export default function EventsList() {
                 per_page: perPage,
             });
 
-            // ✅ sin any: res ya es Page<StoreEvent>
             const { data: items, current_page, last_page, per_page, total } = res;
             setData({ data: items });
             setMeta({ current_page, last_page, per_page, total });
@@ -76,13 +72,11 @@ export default function EventsList() {
         }
     };
 
-    // Cargar cuando cambie página, tamaño o tipo
     useEffect(() => { void load(); }, [page, perPage, type]);
 
-    // Al cambiar el tipo, volver a página 1
-    useEffect(() => { setPage(1); }, [type]);
+    // resetear página cuando cambie búsqueda o tipo
+    useEffect(() => { setPage(1); }, [q, type]);
 
-    // Ordenar en cliente (sobre la página actual)
     const sorted = useMemo(() => {
         const list = [...data.data];
         if (sort === 'date_asc') list.sort((a, b) => ts(a.start_at) - ts(b.start_at));
@@ -90,7 +84,6 @@ export default function EventsList() {
         return list;
     }, [data, sort]);
 
-    // Métricas (sobre la página actual)
     const totals = useMemo(() => {
         const items = data.data;
         return {
@@ -100,7 +93,6 @@ export default function EventsList() {
         };
     }, [data]);
 
-    // Options
     const typeOptions: Option[] = [
         { label: 'Todos', value: 'all' },
         { label: 'Eventos', value: 'event' },
@@ -111,13 +103,11 @@ export default function EventsList() {
         { label: 'Más lejanos', value: 'date_desc' },
     ];
 
-    // Paginación: helpers
     const canPrev = meta.current_page > 1;
     const canNext = meta.current_page < meta.last_page;
     const from = meta.total === 0 ? 0 : (meta.current_page - 1) * meta.per_page + 1;
     const to = Math.min(meta.current_page * meta.per_page, meta.total);
 
-    // Aplicar búsqueda -> volver a pág 1
     const applySearch = () => {
         if (page !== 1) setPage(1);
         else void load(1);
@@ -198,7 +188,6 @@ export default function EventsList() {
                             options={sortOptions}
                         />
 
-                        {/* Botón aplicar */}
                         <button
                             onClick={applySearch}
                             className="px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)] text-white font-medium
@@ -233,7 +222,6 @@ export default function EventsList() {
                                shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]
                                hover:shadow-[0_20px_60px_-25px_rgba(99,102,241,0.35)] hover:-translate-y-0.5"
                                         >
-                                            {/* Banner */}
                                             <div
                                                 className={`aspect-[16/9] flex items-center justify-center
                                   ${item.banner_url ? '' : `${fallback} text-white text-3xl md:text-4xl font-semibold`}`}
@@ -250,7 +238,6 @@ export default function EventsList() {
                                                 )}
                                             </div>
 
-                                            {/* Meta */}
                                             <div className="p-4 border-t border-white/10 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02),transparent)]">
                                                 <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
                                                     {item.type === 'tournament' ? 'TORNEO' : 'EVENTO'}
@@ -283,7 +270,6 @@ export default function EventsList() {
                                         disabled={!canPrev}
                                         className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
                                 ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                        title="Primera página"
                                     >
                                         « Primero
                                     </button>
@@ -293,7 +279,6 @@ export default function EventsList() {
                                         disabled={!canPrev}
                                         className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
                                 ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                        title="Anterior"
                                     >
                                         ‹ Anterior
                                     </button>
@@ -303,7 +288,6 @@ export default function EventsList() {
                                         disabled={!canNext}
                                         className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
                                 ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                        title="Siguiente"
                                     >
                                         Siguiente ›
                                     </button>
@@ -313,7 +297,6 @@ export default function EventsList() {
                                         disabled={!canNext}
                                         className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
                                 ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                        title="Última página"
                                     >
                                         Última »
                                     </button>
