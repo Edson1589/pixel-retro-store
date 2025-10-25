@@ -43,7 +43,9 @@ export default function AdminProductEdit() {
 
     return (
         <div>
-            <h2 className="text-lg font-bold mb-3">Editar producto · #{p.id}</h2>
+            <h2 className="text-xl font-extrabold bg-clip-text text-transparent
+                     bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)]">Editar producto · #{p.id}</h2>
+            <br />
             <ProductForm initial={p} onSubmit={submit} submitLabel={busy ? 'Guardando...' : 'Guardar cambios'} />
         </div>
     );

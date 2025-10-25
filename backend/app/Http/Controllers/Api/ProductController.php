@@ -5,28 +5,62 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Services\ProductSearch;
+use App\Services\ProductTrending;
+use App\Services\ProductPersonalized;
 
 class ProductController extends Controller
 {
+
     public function index(Request $request)
     {
-        $per = max(1, min(100, (int) $request->integer('per_page', 15)));
+        $per = max(1, min(100, (int) $request->integer('per_page', 20)));
+        $page = max(1, (int) $request->integer('page', 1));
+        $search = trim((string)$request->query('search', ''));
+        $category = (string)$request->query('category', '');
+        $sort = (string)$request->query('sort', 'trending');
 
-        $q = Product::query()->with('category')->where('status', 'active');
+        $rawCond  = strtolower((string) $request->query('condition', ''));
+        $condition = match ($rawCond) {
+            'nuevo' => 'new',
+            'usado' => 'used',
+            'reacondicionado' => 'refurbished',
+            'new', 'used', 'refurbished' => $rawCond,
+            default => '',
+        };
 
-        if ($search = $request->string('search')->toString()) {
-            $q->where(function ($w) use ($search) {
-                $w->where('name', 'like', "%$search%")
-                    ->orWhere('description', 'like', "%$search%")
-                    ->orWhere('sku', 'like', "%$search%");
-            });
+        $cond = $condition !== '' ? $condition : null;
+
+        if ($search !== '') {
+            $engine = app(ProductSearch::class);
+            $paginator = $engine->search($search, $category ?: null, $page, $per, $cond);
+
+            return response()->json([
+                'data' => $paginator->items(),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ]);
         }
-        if ($cat = $request->string('category')->toString()) {
-            $q->whereHas('category', fn($w) => $w->where('slug', $cat));
+
+        if (auth('sanctum')->check()) {
+            $engine = app(ProductPersonalized::class);
+            $paginator = $engine->listForUser(auth('sanctum')->id(), $category ?: null, $page, $per, $cond);
+        } else {
+            $engine = app(ProductTrending::class);
+            $paginator = $engine->list($category ?: null, $page, $per, $cond);
         }
 
-        return response()->json($q->orderBy('name')->paginate($per));
+        return response()->json([
+            'data' => $paginator->items(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ]);
     }
+
 
     public function show(string $slug)
     {

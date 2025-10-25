@@ -22,11 +22,27 @@ use App\Http\Controllers\Api\CategoryController as PublicCategories;
 
 use App\Http\Controllers\Api\ReceiptController;
 
+use App\Http\Controllers\Api\SearchTelemetryController;
+
+use App\Http\Controllers\Api\ProductPreferenceController;
+use App\Http\Controllers\Api\EventPreferenceController;
+use App\Http\Controllers\Api\UserSignalsController;
+
+use App\Http\Controllers\Api\Admin\SaleController;
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuth::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AdminAuth::class, 'logout']);
+
+        Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])
+            ->whereNumber('sale')->name('admin.sales.receipt');
+        Route::get('sales/summary', [SaleController::class, 'summary']);
+        Route::get('sales/export',  [SaleController::class, 'export']);
+        Route::get('sales', [SaleController::class, 'index']);
+        Route::get('sales/{sale}', [SaleController::class, 'show']);
+        Route::patch('sales/{sale}/status', [SaleController::class, 'updateStatus']);
 
         Route::get('/categories', [AdminCategories::class, 'index']);
         Route::get('/categories/{id}', [AdminCategories::class, 'show']);
@@ -51,7 +67,7 @@ Route::prefix('admin')->group(function () {
     });
 });
 
-Route::get('/products', [ProductController::class, 'index']);
+Route::middleware('optional.sanctum')->get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 
 Route::post('/checkout', [CheckoutController::class, 'checkout']);
@@ -89,4 +105,20 @@ Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     Route::get('/me/orders', [CustomerOrders::class, 'index']);
     Route::get('/me/orders/{id}', [CustomerOrders::class, 'show']);
     Route::get('/account/orders/{sale}/receipt', [ReceiptController::class, 'download']);
+
+    Route::post('/me/products/interact', [UserSignalsController::class, 'interact']);
 });
+
+Route::post('/products/search/click', [SearchTelemetryController::class, 'productClick'])
+    ->middleware('throttle:60,1');
+
+Route::post('/events/search/click', [SearchTelemetryController::class, 'eventClick'])
+    ->middleware('throttle:60,1');
+
+Route::post('/products/{id}/prefer', [ProductPreferenceController::class, 'prefer'])
+    ->whereNumber('id')
+    ->middleware('throttle:120,1');
+
+Route::post('/events/{id}/prefer', [EventPreferenceController::class, 'prefer'])
+    ->whereNumber('id')
+    ->middleware('throttle:120,1');

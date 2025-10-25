@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useCart } from '../context/CartContext';
 import Modal from '../components/ui/Modal';
 import CardField, { type CardValue } from '../components/checkout/CardField';
 import { createPaymentIntent, confirmPaymentIntent, verify3ds } from '../services/payments';
 import { getCustomerToken } from '../services/customerApi';
 import { useNavigate, useLocation } from 'react-router-dom';
+import type { Product } from '../types';
 
 type Customer = { name: string; email: string; phone?: string; address?: string };
 type Intent = { id: string; client_secret: string; amount: number; currency: string; status: string };
 
 type CartListItem = {
-    product?: { id: number; name: string; price: number | string };
+    product?: (Product & { stock?: number }) | { id: number; name: string; price: number | string; stock?: number; image_url?: string };
     id?: number;
     name?: string;
     price?: number | string;
@@ -47,9 +48,25 @@ type Verify3DSResponse = {
 const err = (e: unknown) => (e instanceof Error ? e.message : typeof e === 'string' ? e : 'Error en checkout');
 
 export default function CartPage() {
-    const { items, remove, clear, total } = useCart();
+    const { items, remove, clear, total, add } = useCart();
     const nav = useNavigate();
     const loc = useLocation();
+
+    const stockIssues = useMemo(() => {
+        const issues: { id: number; name: string; want: number; have: number }[] = [];
+        (items as CartListItem[]).forEach((i) => {
+            const id = i.product?.id ?? (i.id as number);
+            const name = i.product?.name ?? i.name ?? `#${id}`;
+            const want = i.quantity ?? i.qty ?? 1;
+            const have = typeof i.product?.stock === 'number' ? i.product.stock! : Infinity;
+            if (want > have) {
+                issues.push({ id, name, want, have });
+            }
+        });
+        return issues;
+    }, [items]);
+
+    const hasStockIssue = stockIssues.length > 0;
 
     const [form, setForm] = useState<Customer>({ name: '', email: '', phone: '', address: '' });
     const [msg, setMsg] = useState<string | null>(null);
@@ -163,7 +180,6 @@ export default function CartPage() {
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-4xl mx-auto p-4">
-                {/* HERO */}
                 <section
                     className="rounded-[20px] px-6 py-5 text-white
                      bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -182,7 +198,6 @@ export default function CartPage() {
                     </div>
                 ) : (
                     <>
-                        {/* LISTA DE ITEMS */}
                         <section className="rounded-2xl overflow-hidden bg-white/[0.04] border border-white/10 text-white mb-6">
                             <ul className="divide-y divide-white/10">
                                 {(items as CartListItem[]).map((i) => {
@@ -192,24 +207,77 @@ export default function CartPage() {
                                     const price = Number(i.product?.price ?? i.price ?? 0);
                                     return (
                                         <li key={id} className="p-4 flex items-center gap-3">
-                                            <div className="flex-1">
-                                                <div className="text-[15px] font-semibold text-white/90">{name}</div>
+                                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex-shrink-0">
+                                                {(() => {
+                                                    const img =
+                                                        (i.product as { image_url?: string } | undefined)?.image_url ??
+                                                        (i as unknown as { image_url?: string })?.image_url ??
+                                                        undefined;
+                                                    return img ? (
+                                                        <img src={img} alt={name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-[linear-gradient(135deg,rgba(124,58,237,.25),rgba(6,182,212,.25))]" />
+                                                    );
+                                                })()}
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-[15px] font-semibold text-white/90 truncate">{name}</div>
                                                 <div className="text-sm text-white/60">
-                                                    {qty} × Bs. {price.toFixed(2)}
+                                                    Bs. {price.toFixed(2)}{' '}
+                                                    <span className="text-white/35">/ unidad</span>
+                                                </div>
+                                                <div className="text-xs text-white/45 mt-0.5">
+                                                    {(typeof (i.product as { stock?: number } | undefined)?.stock === 'number') &&
+                                                        `Stock: ${(i.product as { stock?: number })?.stock}`}
                                                 </div>
                                             </div>
+
+                                            <div className="flex items-center gap-2">
+
+                                                <input
+                                                    className="w-16 text-center rounded-lg px-2 py-1 bg-white/[0.06] border border-white/10 text-white/90 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                                    type="number"
+                                                    min={1}
+                                                    max={
+                                                        typeof (i.product as { stock?: number } | undefined)?.stock === 'number'
+                                                            ? (i.product as { stock?: number })!.stock!
+                                                            : undefined
+                                                    }
+                                                    value={qty}
+                                                    onChange={(e) => {
+                                                        const current = qty;
+                                                        let next = parseInt(e.target.value.replace(/\D+/g, '') || '1', 10);
+                                                        if (Number.isNaN(next) || next < 1) next = 1;
+
+                                                        const maxStock =
+                                                            typeof (i.product as { stock?: number } | undefined)?.stock === 'number'
+                                                                ? (i.product as { stock?: number })!.stock!
+                                                                : Infinity;
+                                                        if (next > maxStock) next = maxStock;
+
+                                                        const p = i.product as Product | undefined;
+                                                        if (!p) return;
+
+                                                        const delta = next - current;
+                                                        if (delta > 0) add(p, delta);
+                                                        if (delta < 0) add(p, delta);
+                                                    }}
+                                                />
+                                            </div>
+
                                             <button
                                                 onClick={() => remove(i.product?.id ?? (i.id as number))}
-                                                className="text-sm px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10"
+                                                className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/70"
                                             >
                                                 Quitar
                                             </button>
                                         </li>
+
                                     );
                                 })}
                             </ul>
 
-                            {/* TOTAL + ACCIONES */}
                             <div className="p-4 flex flex-wrap gap-3 items-center justify-between">
                                 <div className="text-lg font-bold">
                                     <span className="text-white/70">Total:</span>{' '}
@@ -224,7 +292,6 @@ export default function CartPage() {
                             </div>
                         </section>
 
-                        {/* DATOS DEL COMPRADOR */}
                         <section className="rounded-2xl p-5 text-white bg-white/[0.04] border border-white/10 mb-4">
                             <h3 className="text-[15px] font-semibold mb-3 text-white/90">Datos del comprador</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
@@ -263,21 +330,31 @@ export default function CartPage() {
                             </div>
 
                             <button
-                                disabled={busy || items.length === 0 || !form.name || !form.email}
+                                disabled={busy || items.length === 0 || !form.name || !form.email || hasStockIssue}
                                 onClick={start}
                                 className="mt-1 px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white font-medium
-                           shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
-                           hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                                shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
+                                hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {busy ? 'Creando pago...' : 'Ir a pagar'}
                             </button>
 
-                            {msg && <p className="mt-3 text-sm text-[#06B6D4]">{msg}</p>}
+                            {hasStockIssue && (
+                                <div className="mt-2 text-sm text-amber-300/90">
+                                    <p className="font-semibold">No hay stock suficiente:</p>
+                                    <ul className="list-disc list-inside">
+                                        {stockIssues.map((x) => (
+                                            <li key={x.id}>
+                                                {x.name}: solicitado {x.want}, disponible {x.have}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </section>
                     </>
                 )}
 
-                {/* MODAL TARJETA */}
                 <Modal open={showCard} onClose={() => { setShowCard(false); setIntent(null); }} title="Pago con tarjeta">
                     {intent && (
                         <div className="text-white">
@@ -307,11 +384,11 @@ export default function CartPage() {
                             >
                                 {busy ? 'Procesando...' : 'Confirmar pago'}
                             </button>
+                            {msg && <p className="mt-3 text-sm text-[#06B6D4]">{msg}</p>}
                         </div>
                     )}
                 </Modal>
 
-                {/* MODAL OTP */}
                 <Modal open={showOtp} onClose={() => { setShowOtp(false); setIntent(null); }} title="Verificación 3-D Secure">
                     <div className="text-white">
                         <p className="text-sm text-white/70 mb-2">
@@ -331,12 +408,13 @@ export default function CartPage() {
                         <button
                             onClick={confirmOtp}
                             disabled={busy}
-                            className="mt-3 px-4 py-2 rounded-xl bg-[#7C3AED] text-white font-medium
+                            className="mt-3 px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white font-medium
                          shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
                          hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {busy ? 'Verificando...' : 'Aprobar pago'}
                         </button>
+                        {msg && <p className="mt-3 text-sm text-[#06B6D4]">{msg}</p>}
                     </div>
                 </Modal>
             </div>

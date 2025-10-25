@@ -6,7 +6,6 @@ import type { Category } from "../types";
 function CatIcon({ name }: { name?: string }) {
     const key = (name ?? "").toLowerCase();
     const common = "h-4 w-4";
-    // íconos inline (sin librerías)
     if (key.includes("consol")) {
         return (
             <svg viewBox="0 0 24 24" className={common} aria-hidden>
@@ -73,6 +72,7 @@ export default function CategorySidebar() {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [sp, setSp] = useSearchParams();
+    const getCount = (c: Category) => c.products_count ?? 0;
 
     const active = sp.get("category") ?? "";
 
@@ -98,7 +98,6 @@ export default function CategorySidebar() {
 
     return (
         <>
-            {/* Toggle móvil */}
             <div className="md:hidden mb-3">
                 <button
                     className="w-full text-left px-3 py-2 rounded-xl
@@ -120,7 +119,6 @@ export default function CategorySidebar() {
                     </div>
 
                     <nav className="p-2">
-                        {/* Todas */}
                         <button
                             onClick={() => select(undefined)}
                             className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
@@ -136,27 +134,33 @@ export default function CategorySidebar() {
                             )}
                         </button>
 
-                        {/* Dinámicas */}
                         {loading ? (
                             <div className="px-3 py-2 text-sm text-white/50">Cargando…</div>
                         ) : (
-                            cats.map((c) => (
-                                <button
-                                    key={c.id}
-                                    onClick={() => select(c.slug)}
-                                    className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
-                              ${active === c.slug ? "bg-white/8 text-white" : "text-white/80 hover:bg-white/5"}`}
-                                >
-                                    <span className="text-white/80">
-                                        <CatIcon name={c.name} />
-                                    </span>
-                                    <span className="truncate">{c.name}</span>
-                                    {active === c.slug && (
-                                        <span className="pointer-events-none absolute left-0 my-auto h-5 w-1.5 rounded-r-full
-                                     bg-[linear-gradient(180deg,#7C3AED_0%,#06B6D4_100%)]" />
-                                    )}
-                                </button>
-                            ))
+                            cats
+                                .filter(c => getCount(c) > 0)
+                                .map((c) => (
+                                    <button
+                                        key={c.id}
+                                        onClick={() => select(c.slug)}
+                                        className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
+                                        ${active === c.slug ? "bg-white/8 text-white" : "text-white/80 hover:bg-white/5"}`}
+                                    >
+                                        <span className="text-white/80">
+                                            <CatIcon name={c.name} />
+                                        </span>
+                                        <span className="truncate">{c.name}</span>
+
+                                        <span className="ml-auto text-xs tabular-nums text-white/70">
+                                            {getCount(c)}
+                                        </span>
+
+                                        {active === c.slug && (
+                                            <span className="pointer-events-none absolute left-0 my-auto h-5 w-1.5 rounded-r-full
+                                            bg-[linear-gradient(180deg,#7C3AED_0%,#06B6D4_100%)]" />
+                                        )}
+                                    </button>
+                                ))
                         )}
                     </nav>
                 </div>

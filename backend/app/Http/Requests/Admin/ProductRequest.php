@@ -19,13 +19,13 @@ class ProductRequest extends FormRequest
             'name'        => ['required', 'string', 'max:180'],
             'slug'        => ['required', 'string', 'max:200', "unique:products,slug,$id"],
             'sku'         => ['nullable', 'string', 'max:80', "unique:products,sku,$id"],
-            'description' => ['nullable', 'string'],
+            'description' => ['required', 'string'],
             'price'       => ['required', 'numeric', 'min:0'],
             'stock'       => ['required', 'integer', 'min:0'],
             'condition'   => ['required', 'in:new,used,refurbished'],
             'is_unique'   => ['boolean'],
             'status'      => ['required', 'in:active,draft'],
-            'image'       => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image'       => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:4048'],
             'image_url'   => ['nullable', 'url'],
         ];
     }

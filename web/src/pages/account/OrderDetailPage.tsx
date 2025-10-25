@@ -89,7 +89,6 @@ export default function OrderDetailPage() {
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-4xl mx-auto p-4 space-y-6">
-                {/* HERO */}
                 <section
                     className="rounded-[20px] px-8 py-6 text-white
                      bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -112,9 +111,7 @@ export default function OrderDetailPage() {
                     </p>
                 </section>
 
-                {/* CONTENIDO */}
                 <div className="grid md:grid-cols-2 gap-4">
-                    {/* RESUMEN */}
                     <section className="rounded-2xl p-5 text-white bg-white/[0.04] border border-white/10">
                         <div className="flex items-center gap-2">
                             <div className="text-white/80">Estado:</div>
@@ -153,7 +150,6 @@ export default function OrderDetailPage() {
                         </div>
                     </section>
 
-                    {/* PRODUCTOS */}
                     <section className="rounded-2xl p-5 text-white bg-white/[0.04] border border-white/10">
                         <h2 className="text-[15px] font-semibold mb-3 text-white/90">Productos</h2>
                         <ul className="divide-y divide-white/10">
@@ -190,7 +186,6 @@ export default function OrderDetailPage() {
                     </section>
                 </div>
 
-                {/* CTA */}
                 <div className="rounded-[18px] p-5 text-center text-white
                         bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]/15
                         border border-white/10">

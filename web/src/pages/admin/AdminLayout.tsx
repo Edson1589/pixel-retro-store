@@ -14,12 +14,10 @@ export default function AdminLayout() {
 
     return (
         <div className="relative min-h-screen overflow-hidden bg-[#07101B]">
-            {/* textura sutil opcional */}
             <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06]
         bg-[radial-gradient(#ffffff_1px,transparent_1.2px)] [background-size:16px_16px]
         [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]" />
 
-            {/* glows opcionales */}
             <div className="pointer-events-none absolute -z-10 top-1/2 left-1/2 h-[720px] w-[720px]
         -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl
         bg-[radial-gradient(closest-side,rgba(124,58,237,0.28),transparent_70%)]" />
@@ -42,6 +40,7 @@ export default function AdminLayout() {
                     { label: 'Eventos', to: '/admin/events' },
                     { label: 'Productos', to: '/admin/products' },
                     { label: 'Categorías', to: '/admin/categories' },
+                    { label: 'Ventas', to: '/admin/sales' },
                     ...(getToken()
                         ? [{ label: busy ? '...' : 'Salir', onClick: () => void logout(), disabled: busy }]
                         : []),

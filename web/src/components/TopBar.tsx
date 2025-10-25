@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 
 type Item = {
     label: string;
-    to?: string;                 // si es Link
-    onClick?: () => void;        // si es botón
-    badge?: number;              // ej. cantidad del carrito
+    to?: string;
+    onClick?: () => void;
+    badge?: number;
     disabled?: boolean;
 };
 
@@ -13,8 +13,8 @@ export default function TopBar({
     left,
     items,
 }: {
-    left: ReactNode;             // logo / título
-    items: Item[];               // ítems de navegación
+    left: ReactNode;
+    items: Item[];
 }) {
     return (
         <header className="sticky top-0 z-40">

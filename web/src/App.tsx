@@ -41,6 +41,9 @@ import OrderDetailPage from './pages/account/OrderDetailPage';
 
 import ProductDetail from './pages/ProductDetail';
 
+import AdminSalesList from './pages/admin/sales/AdminSalesList';
+import AdminSaleShow from './pages/admin/sales/AdminSaleShow';
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -81,6 +84,9 @@ export default function App() {
             <Route path="events/:id/edit" element={<AdminEventEdit />} />
             <Route path="events/:id/delete" element={<AdminEventDelete />} />
             <Route path="events/:id/registrations" element={<AdminEventRegistrations />} />
+
+            <Route path="sales" element={<AdminSalesList />} />
+            <Route path="sales/:id" element={<AdminSaleShow />} />
           </Route>
         </Routes>
       </CartProvider>

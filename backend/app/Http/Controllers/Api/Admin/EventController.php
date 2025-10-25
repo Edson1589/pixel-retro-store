@@ -12,7 +12,7 @@ class EventController extends Controller
 {
     public function index(Request $request)
     {
-        $per = max(1, min(100, (int) $request->integer('per_page', 15)));
+        $per = max(1, min(100, (int) $request->integer('per_page', 20)));
         $q = Event::query();
         if ($s = $request->string('search')->toString()) {
             $q->where('title', 'like', "%$s%");

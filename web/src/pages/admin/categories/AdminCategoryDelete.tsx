@@ -3,7 +3,6 @@ import { deleteCategory, getCategory } from '../../../services/adminApi';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { Category } from '../../../types';
 
-// Helper seguro para leer "slug" sin usar `any`
 function getSlug(obj: unknown): string | undefined {
     if (typeof obj === 'object' && obj !== null && 'slug' in obj) {
         const v = (obj as Record<string, unknown>).slug;
@@ -52,7 +51,6 @@ export default function AdminCategoryDelete() {
 
     return (
         <div className="text-white space-y-5 max-w-2xl mx-auto px-4">
-            {/* Título */}
             <h2
                 className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
                    bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]"
@@ -60,12 +58,10 @@ export default function AdminCategoryDelete() {
                 Eliminar categoría
             </h2>
 
-            {/* Card de confirmación */}
             <div
                 className="rounded-2xl border border-white/10 bg-white/[0.04] p-5
                    shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)] space-y-4"
             >
-                {/* Resumen */}
                 <div className="flex items-start gap-3">
                     <div className="flex-1">
                         <div className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
@@ -83,7 +79,6 @@ export default function AdminCategoryDelete() {
                     </div>
                 </div>
 
-                {/* Alerta destructiva */}
                 <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-4">
                     <div className="text-sm">
                         ¿Seguro que deseas eliminar <b>{c.name}</b> (#{String(c.id)})?{' '}
@@ -93,7 +88,6 @@ export default function AdminCategoryDelete() {
                     </div>
                 </div>
 
-                {/* Acciones */}
                 <div className="flex gap-2">
                     <button
                         disabled={busy}

@@ -28,7 +28,6 @@ export default function AdminCategoryShow() {
 
     return (
         <div className="text-white space-y-5 max-w-2xl mx-auto px-4">
-            {/* Header */}
             <div className="flex items-center gap-3">
                 <h2
                     className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
@@ -60,12 +59,10 @@ export default function AdminCategoryShow() {
                 </div>
             </div>
 
-            {/* Card */}
             <div
                 className="rounded-2xl border border-white/10 bg-white/[0.04] p-5
                    shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)] space-y-4"
             >
-                {/* Nombre + slug */}
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
                      bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]">{c.name}</div>
@@ -75,7 +72,6 @@ export default function AdminCategoryShow() {
                     </span>
                 </div>
 
-                {/* Métricas */}
                 {'products_count' in c && c.products_count !== undefined && (
                     <div className="grid sm:grid-cols-1 gap-3">
                         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">

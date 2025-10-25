@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { adminGetEvent, adminListEventRegs, adminUpdateRegStatus } from '../../../services/adminApi';
 import { useParams } from 'react-router-dom';
 import FancySelect, { type Option } from "../../../components/FancySelect";
-import type { Page } from '../../../services/adminApi'; // ⬅️ para tipar la paginación
+import type { Page } from '../../../services/adminApi';
 
 type EventKind = 'event' | 'tournament';
 type EventStatus = 'draft' | 'published' | 'archived';
@@ -37,7 +37,6 @@ export default function AdminEventRegistrations() {
     const { id } = useParams<{ id: string }>();
     const [ev, setEv] = useState<AdminEvent | null>(null);
 
-    // ⬇️ datos paginados
     const [data, setData] = useState<Page<Registration>>({
         data: [],
         current_page: 1,
@@ -49,9 +48,8 @@ export default function AdminEventRegistrations() {
     const [status, setStatus] = useState<StatusFilter>('all');
     const [loading, setLoading] = useState(false);
 
-    // ⬇️ controles de paginación
     const [page, setPage] = useState(1);
-    const [perPage] = useState(15);
+    const [perPage] = useState(20);
 
     const loadEvent = async () => {
         if (!id) return;
@@ -79,10 +77,8 @@ export default function AdminEventRegistrations() {
 
     useEffect(() => { void loadEvent(); }, [id]);
 
-    // Cargar cuando cambian id/page/perPage/status
     useEffect(() => { void loadRegs(); }, [id, page, perPage, status]);
 
-    // Al cambiar el filtro de estado o perPage, vuelve a página 1
     useEffect(() => { setPage(1); }, [status, perPage]);
     useEffect(() => { if (id) setPage(1); }, [id]);
 
@@ -116,7 +112,6 @@ export default function AdminEventRegistrations() {
 
     return (
         <div className="text-white space-y-4">
-            {/* Header */}
             <div className="flex items-center gap-3">
                 <h2 className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
                  bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)]">
@@ -136,7 +131,6 @@ export default function AdminEventRegistrations() {
                 </div>
             </div>
 
-            {/* Table card */}
             <div
                 className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04]
                    shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]"
@@ -218,7 +212,6 @@ export default function AdminEventRegistrations() {
                 </table>
             </div>
 
-            {/* Controles de página */}
             <div className="flex flex-wrap items-center gap-3 justify-between">
                 <div className="text-white/70 text-sm">
                     {data.total > 0

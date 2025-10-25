@@ -4,6 +4,44 @@
   color-scheme: light;
 }
 
+/* A) Ocultar scrollbar (sigue siendo desplazable con rueda/touch) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* B/C) Scrollbar fino y oscuro (Firefox + WebKit) */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .35) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, .25);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  /* “padding” */
+  background-clip: content-box;
+}
+
+/* más visible al pasar el mouse sobre el contenedor */
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(6, 182, 212, .7);
+  /* cian */
+}
+
 /* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

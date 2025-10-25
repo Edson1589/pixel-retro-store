@@ -6,7 +6,7 @@ type Props = {
     onChange: (v: string) => void;
     options: Option[];
     placeholder?: string;
-    className?: string; // permite pasar width, etc.
+    className?: string;
 };
 
 export default function FancySelect({
@@ -26,7 +26,6 @@ export default function FancySelect({
         [options, value]
     );
 
-    // cerrar al hacer click fuera
     useEffect(() => {
         const handler = (e: MouseEvent) => {
             if (!open) return;
@@ -39,7 +38,6 @@ export default function FancySelect({
         return () => window.removeEventListener("mousedown", handler);
     }, [open]);
 
-    // navegación por teclado
     useEffect(() => {
         if (!open) return;
         const onKey = (e: KeyboardEvent) => {
@@ -65,7 +63,6 @@ export default function FancySelect({
         return () => window.removeEventListener("keydown", onKey);
     }, [open, hover, options, onChange]);
 
-    // asegurar que el item hover esté visible
     useEffect(() => {
         if (!open || hover < 0) return;
         const el = listRef.current?.querySelector<HTMLButtonElement>(

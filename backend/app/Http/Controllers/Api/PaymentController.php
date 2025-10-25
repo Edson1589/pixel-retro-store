@@ -97,8 +97,6 @@ class PaymentController extends Controller
             ], 409);
         }
 
-
-        // Este cambio es para pruebas
         [$status, $reason, $needsAction, $nextAction] = $this->simulateCardFlow($data['card_number']);
 
         $payment->update([
@@ -123,7 +121,6 @@ class PaymentController extends Controller
             ], 202);
         }
 
-        // Este es un prueba
         return $this->finalizeSale($payment);
     }
 
@@ -143,7 +140,7 @@ class PaymentController extends Controller
 
         if ($payment->status !== 'requires_action') {
             return response()->json([
-                'message' => 'No requiere verificación',
+                'message' => 'No requiere verificación o stock invalido',
                 'status'  => $payment->status
             ], 409);
         }
@@ -250,7 +247,7 @@ class PaymentController extends Controller
             logger()->error('finalizeSale error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             $payment->update(['status' => 'failed', 'failure_reason' => 'stock_or_transaction']);
             $this->logEvent($payment, 'payment.failed', ['reason' => 'stock_or_transaction']);
-            return response()->json(['message' => 'Error de stock o transacción', 'status' => 'failed'], 409);
+            return response()->json(['Error' => 'Error de stock o transaccion', 'status' => 'failed'], 409);
         }
     }
 }

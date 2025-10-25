@@ -1,7 +1,8 @@
 import { useLocation, Link } from 'react-router-dom';
-import { useState } from 'react';
-import { downloadReceipt } from '../../services/ordersApi';
+import { useState, useEffect } from 'react';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { downloadReceipt, getMyOrder } from '../../services/ordersApi';
+import { signalInteract } from '../../services/telemetry';
 
 type CheckoutState = {
     payment_ref: string;
@@ -15,6 +16,27 @@ export default function CheckoutSuccess() {
     const { user } = useCustomerAuth();
     const [busy, setBusy] = useState(false);
     const [msg, setMsg] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!state?.sale_id || !user) return;
+
+        const key = `purchases-signalled-${state.sale_id}`;
+        if (sessionStorage.getItem(key)) return;
+
+        (async () => {
+            try {
+                const order = await getMyOrder(state.sale_id);
+                await Promise.allSettled(
+                    order.details.map(d =>
+                        signalInteract(d.product_id, 'purchase', d.quantity || 1)
+                    )
+                );
+                sessionStorage.setItem(key, '1');
+            } catch {
+                // no bloquees la UI si falla; es telemetría
+            }
+        })();
+    }, [state?.sale_id, user?.id]);
 
     const onDownload = async () => {
         try {
@@ -64,7 +86,6 @@ export default function CheckoutSuccess() {
     return (
         <div className="min-h-screen grid place-items-center bg-[#07101B] p-4">
             <div className="w-[620px] max-w-full space-y-6">
-                {/* HERO */}
                 <section
                     className="rounded-[20px] px-8 py-6 text-white text-center
                      bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -72,7 +93,6 @@ export default function CheckoutSuccess() {
                      border border-white/10"
                 >
                     <div className="mx-auto h-10 w-10 rounded-full bg-white/15 grid place-items-center mb-2">
-                        {/* check icon */}
                         <svg width="18" height="18" viewBox="0 0 24 24">
                             <path d="M20 6L9 17l-5-5" stroke="white" strokeWidth="2" fill="none" />
                         </svg>
@@ -83,7 +103,6 @@ export default function CheckoutSuccess() {
                     </p>
                 </section>
 
-                {/* DETALLE */}
                 <section className="rounded-2xl p-5 text-white bg-white/[0.04] border border-white/10">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="rounded-xl p-3 bg-white/[0.05] border border-white/10">

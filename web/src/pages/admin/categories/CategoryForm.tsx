@@ -36,22 +36,21 @@ export default function CategoryForm({ initial, onSubmit, submitLabel = 'Guardar
 
     return (
         <div className="space-y-5 text-white">
-            {/* Título */}
             <h2 className="text-xl font-extrabold bg-clip-text text-transparent
                      bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)]">
                 Formulario Categoría
             </h2>
 
-            {/* Card */}
             <form
                 onSubmit={handleSubmit}
                 className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 md:p-6
                    shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)]"
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <label className="md:col-span-1">
+                    <label className="md:col-span-1 mb-3 text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">
+                        Nombre <span className="text-red-500">*</span>
                         <span className="sr-only">Nombre</span>
-                        <input
+                        <input required
                             className="w-full rounded-xl px-3 py-2
                          bg-white/[0.05] text-white/90 placeholder:text-white/45
                          border border-white/10 focus:outline-none
@@ -62,9 +61,10 @@ export default function CategoryForm({ initial, onSubmit, submitLabel = 'Guardar
                         />
                     </label>
 
-                    <label className="md:col-span-1">
+                    <label className="md:col-span-1 mb-3 text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">
+                        Slug <span className="text-red-500">*</span>
                         <span className="sr-only">Slug</span>
-                        <input
+                        <input required
                             className="w-full rounded-xl px-3 py-2
                          bg-white/[0.05] text-white/90 placeholder:text-white/45
                          border border-white/10 focus:outline-none
@@ -99,10 +99,6 @@ export default function CategoryForm({ initial, onSubmit, submitLabel = 'Guardar
                     </button>
 
                 </div>
-
-                <p className="mt-3 text-xs text-white/60">
-                    Si dejas el <em>slug</em> vacío, se generará automáticamente a partir del nombre.
-                </p>
             </form>
         </div>
     );

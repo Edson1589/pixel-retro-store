@@ -1,4 +1,4 @@
-export type Category = { id: number; name: string; slug: string };
+export type Category = { id: number; name: string; slug: string; products_count: number; };
 export type Product = {
     id: number; category_id: number | null; name: string; slug: string; sku: string | null;
     description: string | null; price: number | string; stock: number;
@@ -33,4 +33,46 @@ export type Page<T> = {
     last_page: number;
     per_page: number;
     total: number;
+};
+
+export type SlimUser = { id: number; name: string };
+export type SlimCustomer = { id: number; name: string; email: string | null };
+
+export type SaleDetail = {
+    id: number;
+    product?: { id: number; name: string; sku?: string | null; image_url?: string | null };
+    quantity: number;
+    unit_price: number;
+    subtotal: number;
+};
+
+export type Sale = {
+    id: number;
+    status: 'pending' | 'paid' | 'failed';
+    payment_ref?: string | null;
+    total: number;
+    items_qty?: number | null;
+    created_at?: string | null;
+    customer?: SlimCustomer | null;
+    user?: SlimUser | null;
+    details?: SaleDetail[];
+};
+
+export type SalesSummary = {
+    range: { from: string; to: string };
+    totals: {
+        recaudado: number;
+        ventas_total: number;
+        ticket_prom: number;
+        gross_total: number;
+        paid: { count: number; total: number };
+        pending: { count: number; total: number };
+        failed: { count: number; total: number };
+        items_sold: number;
+    };
+    products: {
+        distinct: number;
+        total_qty: number;
+        top: { product: { id: number; name: string; sku?: string | null; image_url?: string | null }, qty: number, revenue: number }[];
+    };
 };

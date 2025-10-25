@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { adminListEvents } from '../../../services/adminApi';
 import { Link } from 'react-router-dom';
-import type { Page } from '../../../services/adminApi'; // ⬅️ importar el tipo Page
+import type { Page } from '../../../services/adminApi';
 
 type EventKind = 'event' | 'tournament';
 type EventStatus = 'draft' | 'published' | 'archived';
@@ -16,7 +16,6 @@ interface AdminEvent {
 
 
 export default function AdminEventsList() {
-    // Estado de paginación + datos
     const [data, setData] = useState<Page<AdminEvent>>({
         data: [],
         current_page: 1,
@@ -26,10 +25,9 @@ export default function AdminEventsList() {
     });
     const [loading, setLoading] = useState(true);
 
-    // UI local
     const [q, setQ] = useState('');
     const [page, setPage] = useState(1);
-    const [perPage] = useState(15);
+    const [perPage] = useState(20);
 
     const load = async (): Promise<void> => {
         setLoading(true);
@@ -41,34 +39,33 @@ export default function AdminEventsList() {
         }
     };
 
-    // Cargar al inicio y cuando cambien page/perPage
     useEffect(() => {
         void load();
     }, [page, perPage]);
 
-    // Si cambia la búsqueda, volvemos a la página 1 (búsqueda local)
     useEffect(() => {
         setPage(1);
     }, [q]);
 
-    // Lista filtrada (local, sobre la página actual)
     const list = useMemo(() => {
         const term = q.trim().toLowerCase();
         if (!term) return data.data;
         return data.data.filter((e) => e.title.toLowerCase().includes(term));
     }, [data, q]);
 
-    // Métricas (como antes, sobre la página actual)
     const stats = useMemo(() => {
+        const items = data?.data ?? [];
         const now = Date.now();
-        const total = data.data.length;
-        const upcoming = data.data.filter((e) => new Date(e.start_at).getTime() >= now).length;
-        const published = data.data.filter((e) => e.status === 'published').length;
-        const drafts = data.data.filter((e) => e.status === 'draft').length;
-        return { total, upcoming, published, drafts };
+
+        const overallTotal: number = data?.total ?? items.length;
+
+        const upcoming = items.filter(e => new Date(e.start_at).getTime() >= now).length;
+        const published = items.filter(e => e.status === 'published').length;
+        const drafts = items.filter(e => e.status === 'draft').length;
+
+        return { total: overallTotal, upcoming, published, drafts };
     }, [data]);
 
-    // Pills
     const pillType = (t: EventKind) =>
         t === 'tournament'
             ? 'inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-violet-400/20 text-violet-300 bg-violet-500/15'
@@ -82,7 +79,6 @@ export default function AdminEventsList() {
         return 'inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-white/15 text-white/70 bg-white/10';
     };
 
-    // Helpers de paginación
     const canPrev = data.current_page > 1;
     const canNext = data.current_page < data.last_page;
     const from = data.total === 0 ? 0 : (data.current_page - 1) * data.per_page + 1;
@@ -91,7 +87,6 @@ export default function AdminEventsList() {
     return (
         <div className="space-y-5 text-white">
 
-            {/* Stats */}
             <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                     { label: 'Total', val: stats.total },
@@ -102,13 +97,14 @@ export default function AdminEventsList() {
                     <div
                         key={s.label}
                         className="rounded-2xl bg-white/[0.04] border border-white/10 p-4
-                       shadow-[0_20px_40px_-24px_rgba(124,58,237,0.35)]"
+                 shadow-[0_20px_40px_-24px_rgba(124,58,237,0.35)]"
                     >
                         <div className="text-white/70 text-sm">{s.label}</div>
-                        <div className="text-2xl font-bold mt-1 text-[#06B6D4]">{s.val}</div>
+                        <div className="text-2xl font-bold mt-1 text-[#06B6D4] tabular-nums">{s.val}</div>
                     </div>
                 ))}
             </section>
+
 
             <div className="flex items-center gap-3">
                 <h2
@@ -140,7 +136,6 @@ export default function AdminEventsList() {
                 </div>
             </div>
 
-            {/* Table */}
             {loading ? (
                 <p className="text-white/70">Cargando…</p>
             ) : (
@@ -162,7 +157,30 @@ export default function AdminEventsList() {
                             <tbody>
                                 {list.map((ev) => (
                                     <tr key={ev.id} className="border-t border-white/10 hover:bg-white/[0.04]">
-                                        <td className="p-3">{ev.title}</td>
+                                        <td className="p-3">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.06]">
+                                                    <img
+                                                        src={
+                                                            typeof (ev as { banner_url?: unknown }).banner_url === 'string' &&
+                                                                (ev as { banner_url?: unknown }).banner_url
+                                                                ? ((ev as { banner_url?: unknown }).banner_url as string)
+                                                                : ''
+                                                        }
+                                                        alt={ev.title}
+                                                        loading="lazy"
+                                                        className="h-full w-full object-cover"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = '/img/placeholder.jfif';
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                <div className="min-w-0">
+                                                    <div className="truncate">{ev.title}</div>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td className="p-3 text-center">
                                             <span className={pillType(ev.type)}>
                                                 {ev.type === 'tournament' ? 'Torneo' : 'Evento'}
@@ -211,7 +229,6 @@ export default function AdminEventsList() {
                         </table>
                     </div>
 
-                    {/* Controles de página */}
                     <div className="flex flex-wrap items-center gap-3 justify-between">
                         <div className="text-white/70 text-sm">
                             {data.total > 0

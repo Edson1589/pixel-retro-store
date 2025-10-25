@@ -11,7 +11,7 @@ class EventRegistrationController extends Controller
 {
     public function index(int $eventId, Request $request)
     {
-        $per = max(1, min(100, (int) $request->integer('per_page', 15)));
+        $per = max(1, min(100, (int) $request->integer('per_page', 20)));
 
         $event = Event::findOrFail($eventId);
         $q = $event->registrations()->orderByDesc('id');

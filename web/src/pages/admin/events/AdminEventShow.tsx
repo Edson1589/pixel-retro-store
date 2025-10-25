@@ -50,7 +50,6 @@ export default function AdminEventShow() {
 
     return (
         <div className="space-y-5 text-white">
-            {/* Header */}
             <div className="flex items-center gap-3">
                 <h2
                     className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
@@ -88,7 +87,6 @@ export default function AdminEventShow() {
                 </div>
             </div>
 
-            {/* Banner + meta */}
             <div className="grid md:grid-cols-3 gap-5">
                 <div
                     className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] p-3
@@ -102,7 +100,6 @@ export default function AdminEventShow() {
                         )}
                     </div>
 
-                    {/* Fecha destacada */}
                     <div className="mt-4 text-center">
                         <div className="text-xs uppercase tracking-widest text-white/60">Inicio</div>
                         <div className="text-lg font-semibold text-[#06B6D4]">{fmtDateTime(ev.start_at)}</div>
@@ -115,12 +112,10 @@ export default function AdminEventShow() {
                     </div>
                 </div>
 
-                {/* Detalles */}
                 <div
                     className="md:col-span-2 rounded-2xl border border-white/10 bg-white/[0.04] p-5
                      shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)] space-y-5"
                 >
-                    {/* Título + chips */}
                     <div>
                         <div className="text-lg font-semibold">{ev.title}</div>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -136,7 +131,6 @@ export default function AdminEventShow() {
                         </div>
                     </div>
 
-                    {/* Métricas cortas */}
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                             <div className="text-xs text-white/60">Cupo</div>
@@ -148,7 +142,6 @@ export default function AdminEventShow() {
                         </div>
                     </div>
 
-                    {/* Descripción */}
                     <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                         <div className="text-xs text-white/60 mb-1">Descripción</div>
                         <p className="text-white/80 whitespace-pre-wrap">{ev.description || '—'}</p>

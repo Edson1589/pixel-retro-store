@@ -16,6 +16,12 @@ class CustomerAuthController extends Controller
     {
         $data = $request->validated();
 
+        if (User::where('email', $data['email'])->exists()) {
+            return response()->json([
+                'message' => 'El usuario ya está registrado.'
+            ], 422);
+        }
+
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
@@ -51,7 +57,7 @@ class CustomerAuthController extends Controller
 
         $user = User::where('email', $data['email'])->first();
         if (!$user || !Hash::check($data['password'], $user->password)) {
-            return response()->json(['message' => 'Credenciales inválidas'], 401);
+            return response()->json(['message' => 'Credenciales invalidas'], 401);
         }
         if ($user->role !== 'customer') {
             return response()->json(['message' => 'Rol no permitido en este endpoint'], 403);

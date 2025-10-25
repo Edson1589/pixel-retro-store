@@ -40,7 +40,6 @@ export default function AdminLogin() {
                       bg-white/[0.04] border border-white/10 backdrop-blur-xl
                       shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)]">
 
-                {/* Título */}
                 <h1 className="text-center text-2xl font-extrabold
                        bg-clip-text text-transparent
                        bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]">
@@ -50,7 +49,6 @@ export default function AdminLogin() {
                     Panel administrativo
                 </p>
 
-                {/* Form */}
                 <form onSubmit={submit} className="mt-6 grid gap-3">
                     <label htmlFor="email" className="sr-only">Email</label>
                     <input

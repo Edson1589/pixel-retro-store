@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { listProducts } from '../../../services/adminApi';
 import { Link } from 'react-router-dom';
 import type { Product } from '../../../types';
-import type { Page } from '../../../services/adminApi'; // <-- NUEVO
+import type { Page } from '../../../services/adminApi';
 
 type StatusFilter = 'all' | 'active' | 'inactive';
 
@@ -22,7 +22,6 @@ const isActive = (p: Product): boolean => {
 };
 
 export default function AdminProductsList() {
-    // 🔁 Ahora guardamos la estructura de paginación completa
     const [data, setData] = useState<Page<Product>>({
         data: [],
         current_page: 1,
@@ -32,18 +31,15 @@ export default function AdminProductsList() {
     });
     const [loading, setLoading] = useState(true);
 
-    // UI local
     const [q, setQ] = useState('');
     const [status, setStatus] = useState<StatusFilter>('all');
 
-    // 📄 Controles de paginación (nuevo)
     const [page, setPage] = useState(1);
-    const [perPage] = useState(15);
+    const [perPage] = useState(20);
 
     const load = async () => {
         setLoading(true);
         try {
-            // 👇 Solo integramos paginación; el filtrado/búsqueda siguen siendo locales
             const r = await listProducts({ page, perPage });
             setData(r);
         } finally {
@@ -51,23 +47,37 @@ export default function AdminProductsList() {
         }
     };
 
-    // Carga inicial y cuando cambian page/perPage
     useEffect(() => { void load(); }, [page, perPage]);
 
-    // Al cambiar búsqueda/estado, volvemos a la primera página (no toca server)
     useEffect(() => { setPage(1); }, [q, status]);
 
-    // métricas (se calculan sobre la página actual, como antes)
+
+    const toNum = (v: unknown): number => {
+        if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+        if (typeof v === 'string') {
+            const n = Number.parseFloat(v.trim());
+            return Number.isFinite(n) ? n : 0;
+        }
+        return 0;
+    };
+
     const metrics = useMemo(() => {
-        const items = data.data;
-        const total = items.length;
-        const stockTotal = items.reduce((a, b) => a + toNumber((b as { stock?: unknown }).stock), 0);
+        const items = data?.data ?? [];
+        const pageTotal = items.length;
+
+        const stockTotal = items.reduce<number>((acc, item) => {
+            const raw = (item as Partial<Product> & { stock?: unknown }).stock;
+            return acc + toNum(raw);
+        }, 0);
+
         const act = items.filter(isActive).length;
-        const inact = total - act;
-        return { total, stockTotal, act, inact };
+        const inact = pageTotal - act;
+
+        const overallTotal: number = data?.total ?? pageTotal;
+
+        return { overallTotal, stockTotal, act, inact };
     }, [data]);
 
-    // filtrado + búsqueda (local sobre la página actual)
     const filtered = useMemo(() => {
         const qn = q.trim().toLowerCase();
         return data.data.filter((p) => {
@@ -86,26 +96,25 @@ export default function AdminProductsList() {
 
     return (
         <div className="space-y-5">
-            {/* MÉTRICAS */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Productos', value: metrics.total },
+                    { label: 'Total Productos', value: metrics.overallTotal },
                     { label: 'Stock Total', value: metrics.stockTotal },
-                    { label: 'Activos', value: metrics.act },
-                    { label: 'Inactivos', value: metrics.inact },
+                    { label: 'Activos – Inactivos', value: `${metrics.act} - ${metrics.inact}` },
                 ].map((m) => (
                     <div
                         key={m.label}
                         className="rounded-2xl p-4 text-white bg-white/[0.05] border border-white/10
-                       shadow-[0_20px_40px_-24px_rgba(124,58,237,0.25)]"
+                 shadow-[0_20px_40px_-24px_rgba(124,58,237,0.25)]"
                     >
                         <div className="text-sm text-white/70">{m.label}</div>
-                        <div className="mt-1 text-2xl font-bold text-[#06B6D4]">{m.value}</div>
+                        <div className="mt-1 text-2xl font-bold text-[#06B6D4] tabular-nums">
+                            {m.value}
+                        </div>
                     </div>
                 ))}
             </section>
 
-            {/* TÍTULO + CONTROLES */}
             <div className="flex flex-wrap items-center gap-2">
                 <h2
                     className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
@@ -124,7 +133,6 @@ export default function AdminProductsList() {
                         onChange={(e) => setQ(e.target.value)}
                     />
 
-                    {/* Filtro de estado (local) */}
                     <div className="p-1 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center gap-1">
                         {(['all', 'active', 'inactive'] as const).map((v) => (
                             <button
@@ -154,7 +162,6 @@ export default function AdminProductsList() {
                 </div>
             </div>
 
-            {/* TABLA */}
             {loading ? (
                 <p className="text-white/70">Cargando…</p>
             ) : (
@@ -178,12 +185,36 @@ export default function AdminProductsList() {
                                     const active = isActive(p);
                                     return (
                                         <tr key={p.id} className="hover:bg-white/[0.035]">
-                                            <td className="py-3 px-2">{(p as { name?: string }).name ?? '—'}</td>
+                                            <td className="py-3 px-2">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.06]">
+                                                        <img
+                                                            src={
+                                                                typeof (p as { image_url?: unknown }).image_url === 'string' &&
+                                                                    (p as { image_url?: unknown }).image_url
+                                                                    ? ((p as { image_url?: unknown }).image_url as string)
+                                                                    : '/img/placeholder.jfif'
+                                                            }
+                                                            alt={String((p as { name?: unknown }).name ?? 'Producto')}
+                                                            loading="lazy"
+                                                            className="h-full w-full object-cover"
+                                                            onError={(e) => {
+                                                                e.currentTarget.src = '';
+                                                            }}
+                                                        />
+                                                    </div>
+
+                                                    <div className="min-w-0">
+                                                        <div className="truncate">
+                                                            {String((p as { name?: unknown }).name ?? '—')}
+                                                        </div>                                   </div>
+                                                </div>
+                                            </td>
                                             <td className="py-3 px-2 text-center">Bs. {price.toFixed(2)}</td>
                                             <td className="py-3 px-2 text-center">
                                                 <span
                                                     className={`inline-flex items-center justify-center min-w-[28px] px-2 py-0.5 rounded-md text-[11px] border
-                          ${stock > 0
+                                                                        ${stock > 0
                                                             ? 'bg-emerald-400/10 text-emerald-300 border-emerald-400/20'
                                                             : 'bg-rose-400/10 text-rose-300 border-rose-400/20'}`}
                                                 >
@@ -193,7 +224,7 @@ export default function AdminProductsList() {
                                             <td className="py-3 px-2 text-center">
                                                 <span
                                                     className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border
-                          ${active
+                                                        ${active
                                                             ? 'bg-emerald-400/10 text-emerald-300 border-emerald-400/20'
                                                             : 'bg-rose-400/10 text-rose-300 border-rose-400/20'}`}
                                                 >
@@ -238,7 +269,6 @@ export default function AdminProductsList() {
                         </table>
                     </div>
 
-                    {/* CONTROLES DE PÁGINA */}
                     <div className="flex flex-wrap items-center gap-3 justify-between">
                         <div className="text-white/70 text-sm">
                             {data.total > 0

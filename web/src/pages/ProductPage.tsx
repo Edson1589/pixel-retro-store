@@ -14,32 +14,26 @@ const getPrice = (p: Product): number => {
     const price = (p as { price?: number | null }).price;
     return typeof price === 'number' ? price : 0;
 };
-const getCategoryName = (p: Product): string => {
-    const cat = (p as { category?: { name?: string | null } | null }).category;
-    const name = typeof cat?.name === 'string' ? cat.name : '';
-    return name.toLowerCase();
-};
 
 export default function ProductsPage() {
     const [data, setData] = useState<ProductsResponse | null>(null);
-    const [cats, setCats] = useState<Category[]>([]);
+    const [, setCats] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [sp, setSp] = useSearchParams();
     const activeCategory = sp.get('category') ?? '';
+    const activeCondition = sp.get('condition') ?? '';
     const urlSearch = sp.get('search') ?? '';
-    const urlPage = Math.max(1, Number(sp.get('page') ?? '1') || 1); // ← página desde URL
+    const urlPage = Math.max(1, Number(sp.get('page') ?? '1') || 1);
 
     const [q, setQ] = useState(urlSearch);
     const [sort, setSort] = useState<SortKey>('popular');
 
-    // tamaño de página (estado local)
-    const [perPage] = useState(15);
+    const [perPage] = useState(20);
 
     useEffect(() => setQ(urlSearch), [urlSearch]);
 
-    // Cargar categorías para el dropdown central
     useEffect(() => {
         (async () => {
             try { setCats(await fetchCategories()); } catch { /* ignore */ }
@@ -52,7 +46,7 @@ export default function ProductsPage() {
         try { return JSON.stringify(e); } catch { return 'Error cargando productos'; }
     };
 
-    const load = async (search?: string, category?: string, page?: number) => {
+    const load = async (search?: string, category?: string, page?: number, condition?: string) => {
         setLoading(true);
         setError(null);
         try {
@@ -61,6 +55,7 @@ export default function ProductsPage() {
                 category,
                 page,
                 per_page: perPage,
+                condition,
             }) as ProductsResponse;
             setData(res);
         } catch (e: unknown) {
@@ -78,10 +73,9 @@ export default function ProductsPage() {
     };
 
     useEffect(() => {
-        void load(urlSearch || undefined, activeCategory || undefined, urlPage);
-    }, [activeCategory, urlSearch, urlPage, perPage]);
+        void load(urlSearch || undefined, activeCategory || undefined, urlPage, activeCondition || undefined);
+    }, [activeCategory, activeCondition, urlSearch, urlPage, perPage]);
 
-    // Ordenamiento en cliente (si tu API no ordena)
     const sorted = useMemo(() => {
         if (!data) return [];
         const list = [...data.data];
@@ -90,22 +84,10 @@ export default function ProductsPage() {
         return list;
     }, [data, sort]);
 
-    // Métricas visuales
-    const totals = useMemo(() => {
-        const items = data?.data ?? [];
-        const by = (needle: string) => items.filter(p => getCategoryName(p).includes(needle)).length;
-        return {
-            total: items.length,
-            consolas: by('consol'),
-            accesorios: by('acces'),
-            juegos: by('jueg'),
-        };
-    }, [data]);
-
     const runSearch = () => {
         const next = new URLSearchParams(sp);
         if (q) next.set('search', q); else next.delete('search');
-        next.delete('page'); // ← reset a página 1
+        next.delete('page');
         setSp(next, { replace: true });
     };
 
@@ -115,9 +97,14 @@ export default function ProductsPage() {
         setSp(params, { replace: true });
     };
 
-    const categoryOptions: Option[] = useMemo(
-        () => [{ label: 'Todas las categorías', value: '' }, ...cats.map(c => ({ label: c.name, value: c.slug }))],
-        [cats]
+    const conditionOptions: Option[] = useMemo(
+        () => [
+            { label: 'Todas las condiciones', value: '' },
+            { label: 'Nuevo', value: 'new' },
+            { label: 'Usado', value: 'used' },
+            { label: 'Reacondicionado', value: 'refurbished' },
+        ],
+        []
     );
 
     const sortOptions: Option[] = [
@@ -130,17 +117,16 @@ export default function ProductsPage() {
     const canNext = (data?.current_page ?? 1) < (data?.last_page ?? 1);
     const from = data && data.total > 0 ? (data.current_page - 1) * data.per_page + 1 : 0;
     const to = data ? Math.min(data.current_page * data.per_page, data.total) : 0;
+    const hasResults = !!data && (data.total ?? 0) > 0;
+    const showPager = hasResults && ((data?.last_page ?? 1) > 1);
 
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-6xl mx-auto p-4">
                 <div className="md:grid md:grid-cols-[16rem_1fr] md:gap-6">
-                    {/* Sidebar */}
                     <CategorySidebar />
 
-                    {/* Main */}
                     <main className="space-y-6">
-                        {/* HERO */}
                         <section
                             className="rounded-[20px] px-8 py-6 text-white
                          bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -164,28 +150,7 @@ export default function ProductsPage() {
                             </div>
                         </section>
 
-                        {/* MÉTRICAS */}
-                        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[
-                                { label: 'Total productos', val: totals.total },
-                                { label: 'Consolas', val: totals.consolas },
-                                { label: 'Accesorios', val: totals.accesorios },
-                                { label: 'Juegos', val: totals.juegos },
-                            ].map((s) => (
-                                <div
-                                    key={s.label}
-                                    className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-white
-                             shadow-[0_20px_40px_-24px_rgba(124,58,237,0.35)]"
-                                >
-                                    <div className="text-white/70 text-sm">{s.label}</div>
-                                    <div className="text-2xl font-bold mt-1 text-[#06B6D4]">{s.val}</div>
-                                </div>
-                            ))}
-                        </section>
-
-                        {/* FILTROS */}
                         <section className="relative z-10 flex flex-wrap items-center gap-2">
-                            {/* Buscador */}
                             <div className="flex-1 min-w-[220px]">
                                 <input
                                     className="w-full rounded-xl px-3 py-2
@@ -197,21 +162,19 @@ export default function ProductsPage() {
                                     onKeyDown={(e) => e.key === 'Enter' && runSearch()}
                                 />
                             </div>
-
-                            {/* Categorías */}
                             <FancySelect
-                                className="min-w-[180px]"
-                                value={activeCategory}
-                                onChange={(slug) => {
+                                className="min-w-[200px]"
+                                value={activeCondition}
+                                onChange={(cond) => {
                                     const next = new URLSearchParams(sp);
-                                    if (slug) next.set('category', slug); else next.delete('category');
-                                    next.delete('page'); // reset a página 1
+                                    if (cond) next.set('condition', String(cond));
+                                    else next.delete('condition');
+                                    next.delete('page');
                                     setSp(next, { replace: true });
                                 }}
-                                options={categoryOptions}
+                                options={conditionOptions}
                             />
 
-                            {/* Orden */}
                             <FancySelect
                                 className="min-w-[160px]"
                                 value={sort}
@@ -219,7 +182,6 @@ export default function ProductsPage() {
                                 options={sortOptions}
                             />
 
-                            {/* Botón buscar */}
                             <button
                                 onClick={runSearch}
                                 className="px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white font-medium
@@ -229,7 +191,6 @@ export default function ProductsPage() {
                             </button>
                         </section>
 
-                        {/* RESULTADOS */}
                         {error && <p className="text-red-400">{error}</p>}
                         {loading && <p className="text-white/70">Cargando…</p>}
 
@@ -237,65 +198,67 @@ export default function ProductsPage() {
                             <>
                                 <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {sorted.map((p) => (
-                                        <ProductCard key={p.id} p={p} />
+                                        <ProductCard key={p.id} p={p} currentQuery={urlSearch} />
                                     ))}
                                     {sorted.length === 0 && (
                                         <p className="col-span-full text-white/70">Sin resultados.</p>
                                     )}
                                 </section>
 
-                                {/* Paginación */}
-                                <div className="flex flex-wrap items-center gap-3 justify-between">
-                                    <div className="text-white/70 text-sm">
-                                        {data.total > 0
-                                            ? <>Mostrando <span className="text-white">{from}</span>–<span className="text-white">{to}</span> de <span className="text-white">{data.total}</span></>
-                                            : 'Sin resultados'}
-                                        <span className="ml-3 text-white/50">Página {data.current_page} de {data.last_page}</span>
-                                    </div>
+                                {hasResults && (
+                                    <div className="flex flex-wrap items-center gap-3 justify-between">
+                                        <div className="text-white/70 text-sm">
+                                            Mostrando <span className="text-white">{from}</span>–<span className="text-white">{to}</span> de <span className="text-white">{data!.total}</span>
+                                            <span className="ml-3 text-white/50">Página {data!.current_page} de {data!.last_page}</span>
+                                        </div>
 
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setPage(1)}
-                                            disabled={!canPrev}
-                                            className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                                                ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                            title="Primera página"
-                                        >
-                                            « Primero
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setPage(Math.max(1, urlPage - 1))}
-                                            disabled={!canPrev}
-                                            className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                                                ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                            title="Anterior"
-                                        >
-                                            ‹ Anterior
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setPage(Math.min(data.last_page, urlPage + 1))}
-                                            disabled={!canNext}
-                                            className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                                                ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                            title="Siguiente"
-                                        >
-                                            Siguiente ›
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setPage(data.last_page)}
-                                            disabled={!canNext}
-                                            className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                                                ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                            title="Última página"
-                                        >
-                                            Última »
-                                        </button>
+                                        {showPager && (
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPage(1)}
+                                                    disabled={!canPrev}
+                                                    className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
+                                                    ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
+                                                    title="Primera página"
+                                                >
+                                                    « Primero
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPage(Math.max(1, urlPage - 1))}
+                                                    disabled={!canPrev}
+                                                    className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
+                                                    ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
+                                                    title="Anterior"
+                                                >
+                                                    ‹ Anterior
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPage(Math.min(data!.last_page, urlPage + 1))}
+                                                    disabled={!canNext}
+                                                    className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
+                                                    ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
+                                                    title="Siguiente"
+                                                >
+                                                    Siguiente ›
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPage(data!.last_page)}
+                                                    disabled={!canNext}
+                                                    className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
+                                                    ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
+                                                    title="Última página"
+                                                >
+                                                    Última »
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
+                                )}
+
                             </>
                         )}
                     </main>

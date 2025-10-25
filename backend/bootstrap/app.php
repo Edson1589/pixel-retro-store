@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
+use Illuminate\Http\Middleware\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,8 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(HandleCors::class);
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
+            'optional.sanctum' => \App\Http\Middleware\OptionalSanctum::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

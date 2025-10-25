@@ -12,7 +12,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $per = max(1, min(100, (int) $request->integer('per_page', 15)));
+        $per = max(1, min(100, (int) $request->integer('per_page', 20)));
 
         $q = Product::with('category')->orderByDesc('id');
 

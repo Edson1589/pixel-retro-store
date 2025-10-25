@@ -29,9 +29,6 @@ class CartController extends Controller
         ]);
     }
 
-    //Hola
-    //Pullrequest
-    //PullRequest 2
     public function put(Request $req)
     {
         $data = $req->validate([

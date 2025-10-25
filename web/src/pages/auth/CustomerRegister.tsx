@@ -49,10 +49,14 @@ export default function CustomerRegister() {
         }
     };
 
+    const PASSWORD_POLICY = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
     const passwordsMatch =
         form.password.length > 0 &&
         form.password_confirmation.length > 0 &&
         form.password === form.password_confirmation;
+
+    const passwordStrong = form.password.length > 0 && PASSWORD_POLICY.test(form.password);
 
     const canSubmit =
         !busy &&
@@ -60,14 +64,16 @@ export default function CustomerRegister() {
         !!form.email &&
         !!form.password &&
         !!form.password_confirmation &&
-        passwordsMatch;
+        passwordsMatch &&
+        passwordStrong;
+
+
 
     return (
         <div className="min-h-screen grid place-items-center bg-[#07101B] p-4">
             <div className="w-[520px] max-w-full rounded-[22px] p-6
                       bg-white/[0.04] border border-white/10 backdrop-blur-xl
                       shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)]">
-                {/* Título */}
                 <h1 className="text-center text-2xl font-extrabold
                        bg-clip-text text-transparent
                        bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]">
@@ -77,10 +83,10 @@ export default function CustomerRegister() {
                     Regístrate para comprar y seguir tus pedidos
                 </p>
 
-                {/* Formulario */}
                 <form onSubmit={submit} className="mt-6 grid gap-3">
-                    <label htmlFor="name" className="sr-only">Nombre</label>
-                    <input
+                    <label htmlFor="name" className="sr-only mb-3 text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Nombre</label>
+                    <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Nombre</span>
+                    <input required
                         id="name"
                         className="w-full rounded-xl px-3 py-2
                        bg-white/[0.05] text-white/90 placeholder:text-white/45
@@ -93,7 +99,8 @@ export default function CustomerRegister() {
                     />
 
                     <label htmlFor="email" className="sr-only">Email</label>
-                    <input
+                    <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Email</span>
+                    <input required
                         id="email"
                         className="w-full rounded-xl px-3 py-2
                        bg-white/[0.05] text-white/90 placeholder:text-white/45
@@ -109,6 +116,7 @@ export default function CustomerRegister() {
                     <div className="grid md:grid-cols-2 gap-3">
                         <div>
                             <label htmlFor="phone" className="sr-only">Teléfono</label>
+                            <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Teléfono</span>
                             <input
                                 id="phone"
                                 className="w-full rounded-xl px-3 py-2
@@ -125,6 +133,7 @@ export default function CustomerRegister() {
 
                         <div>
                             <label htmlFor="address" className="sr-only">Dirección</label>
+                            <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Dirección</span>
                             <input
                                 id="address"
                                 className="w-full rounded-xl px-3 py-2
@@ -142,22 +151,36 @@ export default function CustomerRegister() {
                     <div className="grid md:grid-cols-2 gap-3">
                         <div>
                             <label htmlFor="password" className="sr-only">Contraseña</label>
+                            <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Contraseña</span>
                             <input
                                 id="password"
-                                className="w-full rounded-xl px-3 py-2
-                           bg-white/[0.05] text-white/90 placeholder:text-white/45
-                           border border-white/10
-                           focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                className={`w-full rounded-xl px-3 py-2
+                                bg-white/[0.05] text-white/90 placeholder:text-white/45
+                                border border-white/10
+                                focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]
+                                ${form.password && !passwordStrong ? 'ring-2 ring-red-500 focus:ring-red-500' : ''}`
+                                }
                                 type="password"
                                 placeholder="Contraseña"
                                 value={form.password}
                                 onChange={onChange('password')}
                                 autoComplete="new-password"
+                                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
+                                title="Mínimo 8 caracteres, al menos una mayúscula, una minúscula y un número."
+                                aria-invalid={form.password ? !passwordStrong : undefined}
+                                aria-describedby={!passwordStrong && form.password ? 'pwd-help' : undefined}
                             />
+                            {form.password && !passwordStrong && (
+                                <p id="pwd-help" className="text-xs text-amber-300/90" role="alert" aria-live="polite">
+                                    La contraseña debe tener mínimo 8 caracteres, incluir al menos una mayúscula, una minúscula y un número.
+                                </p>
+                            )}
+
                         </div>
 
                         <div>
                             <label htmlFor="password_confirmation" className="sr-only">Confirmar contraseña</label>
+                            <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Confirmar contraseña</span>
                             <input
                                 id="password_confirmation"
                                 className="w-full rounded-xl px-3 py-2

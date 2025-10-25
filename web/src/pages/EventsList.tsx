@@ -1,7 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchEvents } from '../services/api';
 import { Link } from 'react-router-dom';
+import { trackEventClick } from '../services/telemetry';
 import FancySelect, { type Option } from '../components/FancySelect';
+const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000').replace(/\/$/, '') + '/api';
+
+function preferEvent(id: number | string) {
+    const url = `${API_BASE}/events/${id}/prefer`;
+    const payload = new Blob([JSON.stringify({})], { type: 'application/json' });
+    if ('sendBeacon' in navigator) {
+        navigator.sendBeacon(url, payload);
+    } else {
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+            .catch(() => { });
+    }
+}
 
 type EventKind = 'event' | 'tournament';
 type TypeFilter = 'all' | EventKind;
@@ -18,7 +31,6 @@ interface StoreEvent {
 
 interface EventsListResponse { data: StoreEvent[]; }
 
-// ⬇️ metadatos de paginación (sin tocar el tipo de tus items)
 type PageMeta = {
     current_page: number;
     last_page: number;
@@ -45,16 +57,14 @@ export default function EventsList() {
     const [type, setType] = useState<TypeFilter>('all');
     const [sort, setSort] = useState<SortKey>('date_asc');
 
-    // ⬇️ controles de paginación
     const [page, setPage] = useState(1);
-    const [perPage] = useState(15);
+    const [perPage] = useState(20);
 
     const load = async (forcePage?: number) => {
         setLoading(true);
         setError(null);
         try {
             const pageToUse = forcePage ?? page;
-            // 👇 Tipamos la respuesta con StoreEvent
             const res = await fetchEvents<StoreEvent>({
                 search: q || undefined,
                 type: type === 'all' ? undefined : type,
@@ -63,7 +73,6 @@ export default function EventsList() {
                 per_page: perPage,
             });
 
-            // ✅ sin any: res ya es Page<StoreEvent>
             const { data: items, current_page, last_page, per_page, total } = res;
             setData({ data: items });
             setMeta({ current_page, last_page, per_page, total });
@@ -76,13 +85,10 @@ export default function EventsList() {
         }
     };
 
-    // Cargar cuando cambie página, tamaño o tipo
     useEffect(() => { void load(); }, [page, perPage, type]);
 
-    // Al cambiar el tipo, volver a página 1
     useEffect(() => { setPage(1); }, [type]);
 
-    // Ordenar en cliente (sobre la página actual)
     const sorted = useMemo(() => {
         const list = [...data.data];
         if (sort === 'date_asc') list.sort((a, b) => ts(a.start_at) - ts(b.start_at));
@@ -90,7 +96,6 @@ export default function EventsList() {
         return list;
     }, [data, sort]);
 
-    // Métricas (sobre la página actual)
     const totals = useMemo(() => {
         const items = data.data;
         return {
@@ -100,7 +105,6 @@ export default function EventsList() {
         };
     }, [data]);
 
-    // Options
     const typeOptions: Option[] = [
         { label: 'Todos', value: 'all' },
         { label: 'Eventos', value: 'event' },
@@ -111,13 +115,14 @@ export default function EventsList() {
         { label: 'Más lejanos', value: 'date_desc' },
     ];
 
-    // Paginación: helpers
     const canPrev = meta.current_page > 1;
     const canNext = meta.current_page < meta.last_page;
     const from = meta.total === 0 ? 0 : (meta.current_page - 1) * meta.per_page + 1;
     const to = Math.min(meta.current_page * meta.per_page, meta.total);
 
-    // Aplicar búsqueda -> volver a pág 1
+    const hasResults = meta.total > 0;
+    const showPager = hasResults && meta.last_page > 1;
+
     const applySearch = () => {
         if (page !== 1) setPage(1);
         else void load(1);
@@ -127,7 +132,6 @@ export default function EventsList() {
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-6xl mx-auto p-4">
                 <main className="space-y-6">
-                    {/* HERO */}
                     <section className="rounded-[20px] px-8 py-6 text-white
                        bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
                        shadow-[0_20px_60px_-20px_rgba(6,182,212,0.35)]
@@ -149,7 +153,6 @@ export default function EventsList() {
                         </div>
                     </section>
 
-                    {/* MÉTRICAS */}
                     <section className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {[
                             { label: 'Próximos', val: totals.total },
@@ -167,9 +170,7 @@ export default function EventsList() {
                         ))}
                     </section>
 
-                    {/* FILTROS */}
                     <section className="relative z-10 flex flex-wrap items-center gap-2">
-                        {/* Buscador */}
                         <div className="flex-1 min-w-[220px]">
                             <input
                                 className="w-full rounded-xl px-3 py-2
@@ -182,7 +183,6 @@ export default function EventsList() {
                             />
                         </div>
 
-                        {/* Tipo */}
                         <FancySelect
                             className="min-w-[160px]"
                             value={type}
@@ -190,7 +190,6 @@ export default function EventsList() {
                             options={typeOptions}
                         />
 
-                        {/* Orden */}
                         <FancySelect
                             className="min-w-[150px]"
                             value={sort}
@@ -198,7 +197,6 @@ export default function EventsList() {
                             options={sortOptions}
                         />
 
-                        {/* Botón aplicar */}
                         <button
                             onClick={applySearch}
                             className="px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)] text-white font-medium
@@ -208,7 +206,6 @@ export default function EventsList() {
                         </button>
                     </section>
 
-                    {/* RESULTADOS */}
                     {error && <p className="text-red-400">{error}</p>}
                     {loading && <p className="text-white/70">Cargando…</p>}
 
@@ -228,12 +225,13 @@ export default function EventsList() {
                                         <Link
                                             to={`/events/${item.slug}`}
                                             key={item.id}
+                                            onClick={() => { if (q.trim()) trackEventClick(Number(item.id), q, 'events_grid'); preferEvent(item.id) }}
+                                            onAuxClick={() => { if (q.trim()) trackEventClick(Number(item.id), q, 'events_grid'); preferEvent(item.id) }}
                                             className="group rounded-2xl overflow-hidden transition
                                border border-white/10 bg-white/[0.04] backdrop-blur
                                shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]
                                hover:shadow-[0_20px_60px_-25px_rgba(99,102,241,0.35)] hover:-translate-y-0.5"
                                         >
-                                            {/* Banner */}
                                             <div
                                                 className={`aspect-[16/9] flex items-center justify-center
                                   ${item.banner_url ? '' : `${fallback} text-white text-3xl md:text-4xl font-semibold`}`}
@@ -250,7 +248,6 @@ export default function EventsList() {
                                                 )}
                                             </div>
 
-                                            {/* Meta */}
                                             <div className="p-4 border-t border-white/10 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02),transparent)]">
                                                 <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
                                                     {item.type === 'tournament' ? 'TORNEO' : 'EVENTO'}
@@ -267,58 +264,62 @@ export default function EventsList() {
                                 )}
                             </section>
 
-                            {/* PAGINACIÓN */}
-                            <div className="flex flex-wrap items-center gap-3 justify-between">
-                                <div className="text-white/70 text-sm">
-                                    {meta.total > 0
-                                        ? <>Mostrando <span className="text-white">{from}</span>–<span className="text-white">{to}</span> de <span className="text-white">{meta.total}</span></>
-                                        : 'Sin resultados'}
-                                    <span className="ml-3 text-white/50">Página {meta.current_page} de {meta.last_page}</span>
-                                </div>
+                            {hasResults && (
+                                <div className="flex flex-wrap items-center gap-3 justify-between">
+                                    <div className="text-white/70 text-sm">
+                                        {meta.total > 0
+                                            ? <>Mostrando <span className="text-white">{from}</span>–<span className="text-white">{to}</span> de <span className="text-white">{meta.total}</span></>
+                                            : 'Sin resultados'}
+                                        <span className="ml-3 text-white/50">Página {meta.current_page} de {meta.last_page}</span>
+                                    </div>
 
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setPage(1)}
-                                        disabled={!canPrev}
-                                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                                ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                        title="Primera página"
-                                    >
-                                        « Primero
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={!canPrev}
-                                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                                ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                        title="Anterior"
-                                    >
-                                        ‹ Anterior
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setPage(p => Math.min(meta.last_page, p + 1))}
-                                        disabled={!canNext}
-                                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                                ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                        title="Siguiente"
-                                    >
-                                        Siguiente ›
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setPage(meta.last_page)}
-                                        disabled={!canNext}
-                                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                                ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                                        title="Última página"
-                                    >
-                                        Última »
-                                    </button>
+                                    {showPager && (
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setPage(1)}
+                                                disabled={!canPrev}
+                                                className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
+                                            ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
+                                                title="Primera página"
+                                            >
+                                                « Primero
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                                disabled={!canPrev}
+                                                className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
+                                            ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
+                                                title="Anterior"
+                                            >
+                                                ‹ Anterior
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setPage(p => Math.min(meta.last_page, p + 1))}
+                                                disabled={!canNext}
+                                                className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
+                                            ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
+                                                title="Siguiente"
+                                            >
+                                                Siguiente ›
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setPage(meta.last_page)}
+                                                disabled={!canNext}
+                                                className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
+                                            ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
+                                                title="Última página"
+                                            >
+                                                Última »
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
+                            )}
+
                         </>
                     )}
                 </main>

@@ -66,7 +66,6 @@ export default function OrdersPage() {
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-4xl mx-auto p-4 space-y-6">
-                {/* HERO */}
                 <section
                     className="rounded-[20px] px-8 py-6 text-white
                      bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -79,12 +78,10 @@ export default function OrdersPage() {
                     </p>
                 </section>
 
-                {/* MENSAJES */}
                 {err && <p className="text-sm text-red-400">{err}</p>}
                 {dlErr && <p className="text-sm text-red-400">{dlErr}</p>}
                 {busy && <p className="text-white/70">Cargando…</p>}
 
-                {/* LISTA */}
                 {!busy && data && (
                     <>
                         {data.data.length === 0 ? (
@@ -131,7 +128,6 @@ export default function OrdersPage() {
                                     ))}
                                 </ul>
 
-                                {/* PAGINACIÓN */}
                                 {hasPagination && (
                                     <div className="p-4 flex flex-wrap items-center gap-3 justify-between">
                                         <div className="text-sm text-white/70">
@@ -164,7 +160,6 @@ export default function OrdersPage() {
                     </>
                 )}
 
-                {/* CTA */}
                 <div className="rounded-[18px] p-5 text-center text-white
                         bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]/15
                         border border-white/10">

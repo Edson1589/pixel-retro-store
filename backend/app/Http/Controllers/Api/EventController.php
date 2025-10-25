@@ -8,32 +8,44 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Services\EventSearch;
+use App\Services\EventTrending;
 
 class EventController extends Controller
 {
     public function index(Request $request)
     {
-        $q = Event::query()->where('status', 'published');
-
-        if ($type = $request->string('type')->toString()) {
-            $q->where('type', $type);
-        }
-        if ($search = $request->string('search')->toString()) {
-            $q->where(function ($w) use ($search) {
-                $w->where('title', 'like', "%$search%")
-                    ->orWhere('description', 'like', "%$search%")
-                    ->orWhere('location', 'like', "%$search%");
-            });
-        }
-
+        $per = min(max((int)$request->query('per_page', 20), 1), 100);
+        $page = max(1, (int)$request->query('page', 1));
+        $search = trim((string)$request->query('search', ''));
+        $type = $request->string('type')->toString() ?: null;
         $upcoming = $request->boolean('upcoming', true);
-        if ($upcoming) {
-            $q->where('start_at', '>=', Carbon::now());
+
+        if ($search !== '') {
+            $engine = app(\App\Services\EventSearch::class);
+            $paginator = $engine->search($search, $type, $upcoming, $page, $per);
+
+            return response()->json([
+                'data' => $paginator->items(),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ]);
         }
 
-        $per = min(max((int)$request->query('per_page', 12), 1), 100);
-        return response()->json($q->orderBy('start_at')->paginate($per));
+        $engine = app(EventTrending::class);
+        $paginator = $engine->list($type, $upcoming, $page, $per);
+
+        return response()->json([
+            'data' => $paginator->items(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ]);
     }
+
 
     public function show(string $slug)
     {

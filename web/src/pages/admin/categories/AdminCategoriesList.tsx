@@ -5,7 +5,6 @@ import type { Category } from '../../../types';
 
 type SortKey = 'name' | 'slug' | 'count_desc';
 
-// helpers tipados (sin any)
 const toNumber = (v: unknown) => {
     const n = Number(v);
     return Number.isFinite(n) ? n : 0;
@@ -17,7 +16,6 @@ const getCount = (c: Category): number => {
 };
 
 export default function AdminCategoriesList() {
-    // ⬇️ datos paginados
     const [data, setData] = useState<Page<Category>>({
         data: [],
         current_page: 1,
@@ -27,18 +25,15 @@ export default function AdminCategoriesList() {
     });
     const [loading, setLoading] = useState(true);
 
-    // ui local
     const [q, setQ] = useState('');
     const [sort] = useState<SortKey>('name');
 
-    // ⬇️ controles de paginación
     const [page, setPage] = useState(1);
-    const [perPage] = useState(12);
+    const [perPage] = useState(20);
 
     const load = async () => {
         setLoading(true);
         try {
-            // 👇 sólo añadimos paginación; búsqueda/orden siguen siendo locales
             const res = (await adminListCategories({ page, perPage })) as Page<Category>;
             setData(res);
         } finally {
@@ -48,10 +43,8 @@ export default function AdminCategoriesList() {
 
     useEffect(() => { void load(); }, [page, perPage]);
 
-    // Al cambiar búsqueda, volvemos a la primera página (filtrado local)
     useEffect(() => { setPage(1); }, [q]);
 
-    // métricas (sobre la página actual, como en tus otras vistas)
     const metrics = useMemo(() => {
         const cats = data.data;
         const totalCats = cats.length;
@@ -66,7 +59,6 @@ export default function AdminCategoriesList() {
         return { totalCats, totalProducts, largest };
     }, [data]);
 
-    // búsqueda + orden (locales)
     const list = useMemo(() => {
         const qn = q.trim().toLowerCase();
         const filtered = data.data.filter(c =>
@@ -75,13 +67,11 @@ export default function AdminCategoriesList() {
         const sorted = [...filtered].sort((a, b) => {
             if (sort === 'name') return String(a.name ?? '').localeCompare(String(b.name ?? ''));
             if (sort === 'slug') return String(a.slug ?? '').localeCompare(String(b.slug ?? ''));
-            // count_desc
             return getCount(b) - getCount(a);
         });
         return sorted;
     }, [data, q, sort]);
 
-    // helpers de paginación
     const canPrev = data.current_page > 1;
     const canNext = data.current_page < data.last_page;
     const from = data.total === 0 ? 0 : (data.current_page - 1) * data.per_page + 1;
@@ -90,7 +80,6 @@ export default function AdminCategoriesList() {
     return (
         <div className="space-y-5">
 
-            {/* Métricas */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="rounded-2xl p-4 text-white bg-white/[0.05] border border-white/10">
                     <div className="text-sm text-white/70">Total categorías</div>
@@ -137,7 +126,6 @@ export default function AdminCategoriesList() {
                 </div>
             </div>
 
-            {/* Tabla */}
             {loading ? (
                 <p className="text-white/70">Cargando…</p>
             ) : (
@@ -157,7 +145,6 @@ export default function AdminCategoriesList() {
                                         <td className="py-3 pl-4 pr-2">
                                             <div className="flex items-center gap-2">
                                                 <span>{c.name}</span>
-                                                {/* pill con cantidad */}
                                                 <span className="ml-1 inline-flex items-center justify-center px-2 h-5 rounded-full
                                        text-[11px] text-[#07101B] bg-[#06B6D4] font-semibold">
                                                     {getCount(c)}
@@ -188,7 +175,6 @@ export default function AdminCategoriesList() {
                         </table>
                     </div>
 
-                    {/* Controles de página */}
                     <div className="flex flex-wrap items-center gap-3 justify-between">
                         <div className="text-white/70 text-sm">
                             {data.total > 0
