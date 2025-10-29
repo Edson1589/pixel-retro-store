@@ -15,6 +15,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Cart;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SaleReceiptCustomer;
+use App\Mail\SaleReceiptAdmin;
+use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
@@ -53,6 +57,11 @@ class PaymentController extends Controller
             $amountCents += (int) round($p->price * 100) * (int) $it['qty'];
         }
 
+        $pickupDocPath = null;
+        if (!empty($data['pickup_doc_b64'])) {
+            $pickupDocPath = $this->storeBase64Doc($data['pickup_doc_b64']);
+        }
+
         $intent = 'pi_' . Str::random(24);
         $secret = 'sec_' . Str::random(32);
 
@@ -66,6 +75,7 @@ class PaymentController extends Controller
             'metadata'      => [
                 'customer' => $data['customer'],
                 'items'    => $data['items'],
+                'pickup_doc_path'  => $pickupDocPath,
             ],
         ]);
 
@@ -166,34 +176,39 @@ class PaymentController extends Controller
     private function finalizeSale(Payment $payment)
     {
         try {
-            return DB::transaction(function () use ($payment) {
+            [$sale, $responsePayload] = DB::transaction(function () use ($payment) {
+
                 $meta  = $payment->metadata ?? [];
                 $cust  = $meta['customer'] ?? null;
                 $items = $meta['items'] ?? [];
 
+                $pickupDocPath = $meta['pickup_doc_path'] ?? null;
+
                 $customerId = null;
                 if ($cust && isset($cust['email'])) {
-                    $c = Customer::updateOrCreate(
-                        ['email' => $cust['email']],
-                        [
-                            'name'    => $cust['name'] ?? 'Invitado',
-                            'phone'   => $cust['phone'] ?? null,
-                            'address' => $cust['address'] ?? null
-                        ]
-                    );
+                    $c = Customer::create([
+                        'name'    => $cust['name']    ?? 'Invitado',
+                        'email'   => $cust['email'],
+                        'ci'      => $cust['ci']      ?? null,
+                        'phone'   => $cust['phone']   ?? null,
+                        'address' => $cust['address'] ?? null,
+                    ]);
+
                     $customerId = $c->id;
                 }
+
 
                 $total   = 0;
                 $details = [];
                 foreach ($items as $it) {
                     $p   = Product::lockForUpdate()->findOrFail((int)$it['product_id']);
                     $qty = (int) $it['qty'];
+
                     if ($qty < 1) abort(422, 'Cantidad inválida');
                     if ($p->is_unique && $qty > 1) abort(409, 'Pieza única, solo 1 unidad');
                     if ($p->stock < $qty) abort(409, 'Stock insuficiente para ' . $p->name);
 
-                    $total    += $p->price * $qty;
+                    $total     += $p->price * $qty;
                     $details[] = [$p, $qty];
                 }
 
@@ -207,6 +222,8 @@ class PaymentController extends Controller
                     'total'       => $total,
                     'status'      => 'paid',
                     'payment_ref' => $payment->intent_id,
+                    'delivery_status' => 'to_deliver',
+                    'pickup_doc_path' => $pickupDocPath,
                 ]);
 
                 foreach ($details as [$p, $qty]) {
@@ -235,19 +252,75 @@ class PaymentController extends Controller
                     }
                 }
 
-                return response()->json([
+                $payload = [
                     'status'      => 'succeeded',
                     'payment_ref' => $payment->intent_id,
                     'sale_id'     => $sale->id,
                     'total'       => $sale->total,
                     'receipt_url' => url("/api/account/orders/{$sale->id}/receipt"),
-                ]);
+                ];
+
+                return [$sale, $payload];
             });
+
+            $sale->load(['customer', 'details.product']);
+
+            if ($sale->customer && $sale->customer->email) {
+                Mail::to($sale->customer->email)
+                    ->send(new SaleReceiptCustomer($sale));
+            }
+
+            Mail::to(config('mail.from.admin_address'))
+                ->send(new SaleReceiptAdmin($sale));
+
+            return response()->json($responsePayload);
         } catch (\Throwable $e) {
-            logger()->error('finalizeSale error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            $payment->update(['status' => 'failed', 'failure_reason' => 'stock_or_transaction']);
-            $this->logEvent($payment, 'payment.failed', ['reason' => 'stock_or_transaction']);
-            return response()->json(['Error' => 'Error de stock o transaccion', 'status' => 'failed'], 409);
+            logger()->error('finalizeSale error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $payment->update([
+                'status'          => 'failed',
+                'failure_reason'  => 'stock_or_transaction'
+            ]);
+
+            $this->logEvent($payment, 'payment.failed', [
+                'reason' => 'stock_or_transaction'
+            ]);
+
+            return response()->json([
+                'Error'  => 'Error de stock o transaccion',
+                'status' => 'failed'
+            ], 409);
         }
+    }
+
+    private function storeBase64Doc(?string $dataUrl): ?string
+    {
+        if (!$dataUrl) return null;
+
+        if (!preg_match('#^data:(.*?);base64,(.*)$#', $dataUrl, $m)) {
+            return null;
+        }
+
+        $mime = $m[1];
+        $bin  = base64_decode($m[2]);
+
+        if ($bin === false) {
+            return null;
+        }
+
+        $ext = match ($mime) {
+            'image/jpeg', 'image/jpg' => 'jpg',
+            'image/png'               => 'png',
+            'application/pdf'         => 'pdf',
+            default                   => 'bin',
+        };
+
+        $filename = 'pickup_docs/' . Str::uuid() . '.' . $ext;
+
+        Storage::put($filename, $bin);
+
+        return $filename;
     }
 }

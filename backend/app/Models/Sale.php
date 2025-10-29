@@ -12,7 +12,21 @@ class Sale extends Model
         return $this->belongsTo(\App\Models\User::class);
     }
 
-    protected $fillable = ['user_id', 'customer_id', 'total', 'status', 'payment_ref'];
+    protected $fillable = [
+        'user_id',
+        'customer_id',
+        'total',
+        'status',
+        'payment_ref',
+        'delivery_status',
+        'delivered_at',
+        'delivered_by',
+        'is_canceled',
+        'canceled_at',
+        'canceled_by',
+        'cancel_reason',
+        'pickup_doc_path',
+    ];
 
     public function details(): HasMany
     {
@@ -22,5 +36,15 @@ class Sale extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function deliveredBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'delivered_by');
+    }
+
+    public function canceledBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'canceled_by');
     }
 }

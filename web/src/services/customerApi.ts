@@ -133,7 +133,7 @@ async function request<T>(
 export async function customerRegister(payload: AuthPayload): Promise<AuthResponse> {
     return request<AuthResponse>(`${API}/api/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(payload),
     }, (status, data) => {
         if (status === 409) return 'Este correo ya está registrado.';

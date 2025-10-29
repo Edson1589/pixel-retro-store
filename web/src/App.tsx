@@ -43,6 +43,7 @@ import ProductDetail from './pages/ProductDetail';
 
 import AdminSalesList from './pages/admin/sales/AdminSalesList';
 import AdminSaleShow from './pages/admin/sales/AdminSaleShow';
+import AdminPosSaleCreate from './pages/admin/sales/AdminPosSaleCreate';
 
 export default function App() {
   return (
@@ -87,6 +88,7 @@ export default function App() {
 
             <Route path="sales" element={<AdminSalesList />} />
             <Route path="sales/:id" element={<AdminSaleShow />} />
+            <Route path="pos/sale" element={<AdminPosSaleCreate />} />
           </Route>
         </Routes>
       </CartProvider>

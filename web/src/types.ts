@@ -36,7 +36,16 @@ export type Page<T> = {
 };
 
 export type SlimUser = { id: number; name: string };
-export type SlimCustomer = { id: number; name: string; email: string | null };
+export type SlimCustomer = {
+    id: number;
+    name: string;
+    ci?: string | null;
+    email: string | null;
+    phone?: string | null;
+    address?: string | null;
+};
+
+
 
 export type SaleDetail = {
     id: number;
@@ -56,6 +65,14 @@ export type Sale = {
     customer?: SlimCustomer | null;
     user?: SlimUser | null;
     details?: SaleDetail[];
+    delivery_status: 'to_deliver' | 'delivered';
+    delivered_at: string | null;
+    delivered_by?: { id: number; name: string } | null;
+    is_canceled: boolean;
+    canceled_at: string | null;
+    cancel_reason?: string | null;
+    canceled_by?: { id: number; name: string } | null;
+    pickup_doc_url?: string | null;
 };
 
 export type SalesSummary = {
@@ -65,9 +82,10 @@ export type SalesSummary = {
         ventas_total: number;
         ticket_prom: number;
         gross_total: number;
-        paid: { count: number; total: number };
-        pending: { count: number; total: number };
-        failed: { count: number; total: number };
+        vendidas: number;
+        por_entregar: number;
+        entregado: number;
+        anuladas: number;
         items_sold: number;
     };
     products: {

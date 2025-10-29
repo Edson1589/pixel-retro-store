@@ -1,9 +1,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { adminListSales, adminGetSalesSummary, adminExportSalesReport } from '../../../services/adminApi';
+import {
+    adminListSales,
+    adminGetSalesSummary,
+    adminExportSalesReport,
+    adminDownloadReceipt,
+    adminDeliverSale,
+    adminDownloadDeliveryNote,
+    adminVoidSale,
+} from '../../../services/adminApi';
+
 import type { Page } from '../../../services/adminApi';
 import type { Sale, SalesSummary } from '../../../types';
-import { adminDownloadReceipt } from '../../../services/adminApi';
 
 type StatusFilter = 'all' | 'pending' | 'paid' | 'failed';
 const money = new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' });
@@ -27,13 +35,80 @@ export default function AdminSalesList() {
     const [page, setPage] = useState(1);
     const [perPage] = useState(20);
 
-    const [dlId, setDlId] = useState<number | null>(null);
+    const [rowBusyId, setRowBusyId] = useState<number | null>(null);
+
+    const [rowBusyAction, setRowBusyAction] = useState<'deliver' | 'void' | 'note' | 'receipt' | null>(null);
 
     const onReceipt = async (id: number) => {
-        setDlId(id);
-        try { await adminDownloadReceipt(id); }
-        catch (e) { alert(e instanceof Error ? e.message : 'No se pudo descargar el recibo'); }
-        finally { setDlId(null); }
+        setRowBusyId(id);
+        setRowBusyAction('receipt');
+        try {
+            await adminDownloadReceipt(id);
+        } catch (e) {
+            alert(e instanceof Error ? e.message : 'No se pudo descargar el recibo');
+        } finally {
+            setRowBusyId(null);
+            setRowBusyAction(null);
+        }
+    };
+
+    const onDeliverAndNote = async (s: Sale) => {
+        if (s.is_canceled || s.status !== 'paid' || s.delivery_status !== 'to_deliver') return;
+
+        setRowBusyId(s.id);
+        setRowBusyAction('deliver');
+
+        try {
+            const updated = await adminDeliverSale(s.id);
+
+            setData(prev => ({
+                ...prev,
+                data: prev.data.map(row => row.id === s.id ? updated : row),
+            }));
+
+            await adminDownloadDeliveryNote(s.id);
+
+        } catch (e) {
+            alert(e instanceof Error ? e.message : 'No se pudo marcar como entregada');
+        } finally {
+            setRowBusyId(null);
+            setRowBusyAction(null);
+        }
+    };
+
+    const onDownloadNote = async (s: Sale) => {
+        setRowBusyId(s.id);
+        setRowBusyAction('note');
+        try {
+            await adminDownloadDeliveryNote(s.id);
+        } catch (e) {
+            alert(e instanceof Error ? e.message : 'No se pudo descargar la nota de entrega');
+        } finally {
+            setRowBusyId(null);
+            setRowBusyAction(null);
+        }
+    };
+
+    const onVoidSale = async (s: Sale) => {
+        if (s.is_canceled) return;
+
+        const reason = window.prompt('Motivo de anulación (opcional):') ?? '';
+
+        setRowBusyId(s.id);
+        setRowBusyAction('void');
+        try {
+            const updated = await adminVoidSale(s.id, reason.trim() || undefined);
+
+            setData(prev => ({
+                ...prev,
+                data: prev.data.map(row => row.id === s.id ? updated : row),
+            }));
+        } catch (e) {
+            alert(e instanceof Error ? e.message : 'No se pudo anular la venta');
+        } finally {
+            setRowBusyId(null);
+            setRowBusyAction(null);
+        }
     };
 
     const applyDateFilter = () => {
@@ -81,13 +156,62 @@ export default function AdminSalesList() {
     const from = data.total === 0 ? 0 : (data.current_page - 1) * data.per_page + 1;
     const to = Math.min(data.current_page * data.per_page, data.total);
 
-    const statusPill = (st: Sale['status']) => {
-        const map: Record<Sale['status'], string> = {
-            paid: 'bg-emerald-400/10 text-emerald-300 border-emerald-400/20',
-            pending: 'bg-amber-400/10 text-amber-300 border-amber-400/20',
-            failed: 'bg-rose-400/10 text-rose-300 border-rose-400/20',
-        };
-        return `inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border ${map[st]}`;
+    const paidBadge = (s: Sale) => {
+        if (s.is_canceled) {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border
+                             bg-rose-400/10 text-rose-300 border-rose-400/20">
+                    ANULADA
+                </span>
+            );
+        }
+
+        if (s.status === 'paid') {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border
+                             bg-emerald-400/10 text-emerald-300 border-emerald-400/20">
+                    VENDIDO
+                </span>
+            );
+        }
+
+        if (s.status === 'pending') {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border
+                             bg-amber-400/10 text-amber-300 border-amber-400/20">
+                    PENDIENTE
+                </span>
+            );
+        }
+
+        return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border
+                         bg-rose-400/10 text-rose-300 border-rose-400/20">
+                {s.status.toUpperCase()}
+            </span>
+        );
+    };
+
+    const deliveryBadge = (s: Sale) => {
+        if (s.is_canceled) {
+            return null;
+        }
+
+        if (s.delivery_status === 'delivered') {
+            return (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border
+                             bg-cyan-400/10 text-cyan-300 border-cyan-400/20">
+                    ENTREGADA
+                </span>
+            );
+        }
+
+        return (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] border
+                         bg-indigo-400/10 text-indigo-300 border-indigo-400/20">
+                POR ENTREGAR
+            </span>
+        );
     };
 
     const onExportPdf = async () => {
@@ -116,7 +240,7 @@ export default function AdminSalesList() {
                     <input
                         className="h-9 w-56 rounded-xl px-3 bg-white/[0.06] text-white/90 placeholder:text-white/45
                        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                        placeholder="Buscar por cliente, email, ref, ID…"
+                        placeholder="Buscar por cliente, CI, email, ref, ID…"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                     />
@@ -181,25 +305,47 @@ export default function AdminSalesList() {
 
                 <div className="rounded-2xl p-4 text-white bg-white/[0.05] border border-white/10">
                     <div className="text-sm text-white/70">Ventas (general)</div>
-                    <div className="mt-1 text-xl font-bold tabular-nums">{summary?.totals.ventas_total ?? 0} ventas</div>
-                    <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
+
+                    <div className="mt-1 text-xl font-bold tabular-nums">
+                        {summary?.totals.ventas_total ?? 0} ventas
+                    </div>
+
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                         <div className="rounded-xl px-3 py-2 bg-emerald-400/10 border border-emerald-400/20">
-                            <div className="text-white/70 text-xs">Pagadas</div>
-                            <div className="font-semibold tabular-nums">{summary?.totals.paid.count ?? 0}</div>
+                            <div className="text-white/70 text-xs">Vendidas</div>
+                            <div className="font-semibold tabular-nums">
+                                {summary?.totals.vendidas ?? 0}
+                            </div>
+                        </div>
+                        <div className="rounded-xl px-3 py-2 bg-emerald-400/10 border border-emerald-400/20">
+                            <div className="text-white/70 text-xs">Entregadas</div>
+                            <div className="font-semibold tabular-nums">
+                                {summary?.totals.entregado ?? 0}
+                            </div>
                         </div>
                         <div className="rounded-xl px-3 py-2 bg-amber-400/10 border border-amber-400/20">
-                            <div className="text-white/70 text-xs">Pendientes</div>
-                            <div className="font-semibold tabular-nums">{summary?.totals.pending.count ?? 0}</div>
+                            <div className="text-white/70 text-xs">Por Entregar</div>
+                            <div className="font-semibold tabular-nums">
+                                {summary?.totals.por_entregar ?? 0}
+                            </div>
                         </div>
+
                         <div className="rounded-xl px-3 py-2 bg-rose-400/10 border border-rose-400/20">
-                            <div className="text-white/70 text-xs">Fallidas</div>
-                            <div className="font-semibold tabular-nums">{summary?.totals.failed.count ?? 0}</div>
+                            <div className="text-white/70 text-xs">Anuladas</div>
+                            <div className="font-semibold tabular-nums">
+                                {summary?.totals.anuladas ?? 0}
+                            </div>
                         </div>
                     </div>
+
                     <div className="text-xs text-white/60 mt-2">
-                        Ítems vendidos: <span className="font-semibold">{summary?.totals.items_sold ?? 0}</span>
+                        Ítems vendidos:{' '}
+                        <span className="font-semibold">
+                            {summary?.totals.items_sold ?? 0}
+                        </span>
                     </div>
                 </div>
+
 
                 <div className="rounded-2xl p-4 text-white bg-white/[0.05] border border-white/10">
                     <div className="text-sm text-white/70">Resumen de productos</div>
@@ -273,31 +419,101 @@ export default function AdminSalesList() {
                                         <td className="py-3 px-3">
                                             <div className="truncate">
                                                 {s.customer?.name ?? '—'}
-                                                <div className="text-white/50 text-xs">{s.customer?.email ?? ''}</div>
+                                                <div className="text-white/50 text-[11px] leading-snug">
+                                                    {s.customer?.ci ? <>CI: {s.customer.ci}<br /></> : null}
+                                                    {s.customer?.email ?? ''}
+                                                </div>
                                             </div>
                                         </td>
+
                                         <td className="py-3 px-2 text-center">{s.items_qty ?? '—'}</td>
                                         <td className="py-3 px-2 text-center">{money.format(s.total ?? 0)}</td>
                                         <td className="py-3 px-2 text-center">
-                                            <span className={statusPill(s.status)}>{s.status.toUpperCase()}</span>
+                                            <div className="flex flex-col items-center gap-1">
+                                                {paidBadge(s)}
+                                                {deliveryBadge(s)}
+                                            </div>
                                         </td>
+
                                         <td className="p-3">
-                                            <div className="flex items-center justify-center gap-2 text-[13px]">
-                                                <Link className="text-cyan-300 hover:underline" to={`/admin/sales/${s.id}`}>Ver</Link>
+                                            <div className="flex flex-wrap items-center justify-center gap-2 text-[13px]">
+
+                                                <Link
+                                                    className="text-cyan-300 hover:underline"
+                                                    to={`/admin/sales/${s.id}`}
+                                                >
+                                                    Ver
+                                                </Link>
+
                                                 <span className="text-white/20">•</span>
+
                                                 <button
                                                     type="button"
                                                     onClick={() => onReceipt(s.id)}
-                                                    disabled={dlId === s.id}
+                                                    disabled={rowBusyId === s.id && rowBusyAction === 'receipt'}
                                                     className={`px-2 py-1 rounded-md border border-white/10
-                  ${dlId === s.id ? 'bg-white/10 text-white/60' :
-                                                            'bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white hover:brightness-110'}
-                 `}
+            ${(rowBusyId === s.id && rowBusyAction === 'receipt')
+                                                            ? 'bg-white/10 text-white/60'
+                                                            : 'bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white hover:brightness-110'
+                                                        }`}
                                                     title="Descargar recibo (PDF)"
                                                 >
-                                                    {dlId === s.id ? 'PDF…' : 'Recibo'}
+                                                    {(rowBusyId === s.id && rowBusyAction === 'receipt') ? 'PDF…' : 'Recibo'}
                                                 </button>
+
+                                                <span className="text-white/20">•</span>
+
+                                                {(!s.is_canceled && s.status === 'paid' && s.delivery_status === 'to_deliver') && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onDeliverAndNote(s)}
+                                                        disabled={rowBusyId === s.id && rowBusyAction === 'deliver'}
+                                                        className={`px-2 py-1 rounded-md border border-emerald-400/20
+                        bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20`}
+                                                        title="Marcar como entregada y descargar nota"
+                                                    >
+                                                        {(rowBusyId === s.id && rowBusyAction === 'deliver')
+                                                            ? 'Entregando…'
+                                                            : 'Entregar'}
+                                                    </button>
+                                                )}
+
+                                                {(s.delivery_status === 'delivered' && !s.is_canceled) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onDownloadNote(s)}
+                                                        disabled={rowBusyId === s.id && rowBusyAction === 'note'}
+                                                        className={`px-2 py-1 rounded-md border border-cyan-400/20
+                                                        bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20`}
+                                                        title="Descargar nota de entrega (PDF)"
+                                                    >
+                                                        {(rowBusyId === s.id && rowBusyAction === 'note')
+                                                            ? 'Descargando…'
+                                                            : 'Nota Entrega'}
+                                                    </button>
+                                                )}
+
+                                                {(!s.is_canceled) && (
+                                                    <span className="text-white/20">•</span>
+                                                )}
+
+                                                {(!s.is_canceled) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onVoidSale(s)}
+                                                        disabled={rowBusyId === s.id && rowBusyAction === 'void'}
+                                                        className={`px-2 py-1 rounded-md border border-rose-400/20
+                                                        bg-rose-500/10 text-rose-300 hover:bg-rose-500/20`}
+                                                        title="Anular venta (devuelve stock)"
+                                                    >
+                                                        {(rowBusyId === s.id && rowBusyAction === 'void')
+                                                            ? 'Anulando…'
+                                                            : 'Anular'}
+                                                    </button>
+                                                )}
+
                                             </div>
+
                                         </td>
 
                                     </tr>

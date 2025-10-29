@@ -1,10 +1,17 @@
 import { withCustomerAuth } from './customerApi';
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
-export type CustomerPayload = { name: string; email: string; phone?: string; address?: string };
+export type CustomerPayload = {
+    name: string;
+    ci?: string;
+    email: string;
+    phone?: string;
+    address?: string;
+};
+
 export type CartLine = { product_id: number; qty: number };
 
-export async function createPaymentIntent(payload: { customer: CustomerPayload; items: CartLine[]; currency?: string; amount?: number; }) {
+export async function createPaymentIntent(payload: { customer: CustomerPayload; items: CartLine[]; currency?: string; amount?: number; pickup_doc_b64?: string | null; }) {
     const r = await fetch(`${API}/api/payments/intents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...withCustomerAuth() },

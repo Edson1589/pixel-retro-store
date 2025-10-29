@@ -53,17 +53,41 @@ export default function AdminSaleShow() {
                         <div><span className="text-white/60">Referencia:</span> {s.payment_ref ?? '—'}</div>
                         <div><span className="text-white/60">Total:</span> <span className="font-semibold">{money.format(s.total ?? 0)}</span></div>
                         <div><span className="text-white/60">Ítems:</span> {s.items_qty ?? (s.details?.reduce((a, d) => a + d.quantity, 0) ?? '—')}</div>
+
+                        {s.pickup_doc_url ? (
+                            <div className="pt-2">
+                                <a
+                                    href={s.pickup_doc_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-block px-3 py-1.5 rounded-lg text-xs font-medium
+                           border border-cyan-400/30 bg-cyan-500/10 text-cyan-300
+                           hover:bg-cyan-500/20 hover:text-cyan-200"
+                                >
+                                    Ver documento de recojo
+                                </a>
+                            </div>
+                        ) : (
+                            <div className="pt-2 text-xs text-white/40 italic">
+                                Sin documento de recojo
+                            </div>
+                        )}
                     </div>
+
                 </div>
 
                 <div className="rounded-2xl p-4 text-white bg-white/[0.05] border border-white/10">
                     <div className="text-white/70 text-sm mb-2">Cliente</div>
                     <div className="space-y-1 text-sm">
                         <div><span className="text-white/60">Nombre:</span> {s.customer?.name ?? '—'}</div>
+                        <div><span className="text-white/60">CI:</span> {s.customer?.ci ?? '—'}</div>
                         <div><span className="text-white/60">Email:</span> {s.customer?.email ?? '—'}</div>
+                        <div><span className="text-white/60">Teléfono:</span> {s.customer?.phone ?? '—'}</div>
+                        <div><span className="text-white/60">Dirección:</span> {s.customer?.address ?? '—'}</div>
                         <div><span className="text-white/60">Registrado por:</span> {s.user?.name ?? '—'}</div>
                     </div>
                 </div>
+
             </div>
 
             <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] text-white">

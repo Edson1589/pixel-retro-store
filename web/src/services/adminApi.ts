@@ -10,6 +10,72 @@ type HeaderMap = Record<string, string>;
 
 import type { Product } from '../types';
 
+export type PosProduct = {
+    id: number;
+    name: string;
+    sku?: string | null;
+    price: number;
+    stock: number;
+    is_unique: boolean;
+    image_url?: string | null;
+};
+
+export type PosCustomer = {
+    id: number;
+    name: string;
+    ci?: string | null;
+    email: string;
+    phone?: string | null;
+    address?: string | null;
+};
+
+export type PosLineInput = {
+    product_id: number;
+    quantity: number;
+    unit_price?: number;
+};
+
+export type PosSalePayload = {
+    customer_id?: number | null;
+    customer?: {
+        name: string;
+        ci?: string | null;
+        email: string;
+        phone?: string | null;
+        address?: string | null;
+    };
+    items: PosLineInput[];
+};
+
+export type PosCreatedSale = {
+    data: {
+        id: number;
+        status: 'paid' | 'pending' | 'failed';
+        payment_ref: string | null;
+        total: number;
+        items_qty: number;
+        created_at: string | null;
+        customer?: {
+            id: number;
+            name: string;
+            email: string;
+        };
+        user?: { id: number; name: string };
+        details: Array<{
+            id: number;
+            product?: {
+                id: number;
+                name?: string;
+                sku?: string | null;
+                image_url?: string | null;
+            };
+            quantity: number;
+            unit_price: number;
+            subtotal: number;
+        }>;
+    };
+};
+
 export type Page<T> = {
     data: T[];
     current_page: number;
@@ -357,4 +423,82 @@ export async function adminDownloadReceipt(id: number, filename = `recibo-${id}.
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
+}
+
+export async function adminPosSearchProducts(q: string): Promise<PosProduct[]> {
+    const qs = new URLSearchParams();
+    if (q) qs.set('q', q);
+    const res = await fetch(`${API_URL}/api/admin/pos/products?${qs.toString()}`, {
+        headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json() as Promise<PosProduct[]>;
+}
+
+export async function adminPosSearchCustomers(q: string): Promise<PosCustomer[]> {
+    const qs = new URLSearchParams();
+    if (q) qs.set('q', q);
+    const res = await fetch(`${API_URL}/api/admin/pos/customers?${qs.toString()}`, {
+        headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json() as Promise<PosCustomer[]>;
+}
+
+export async function adminPosCreateSale(payload: PosSalePayload): Promise<PosCreatedSale> {
+    const res = await fetch(`${API_URL}/api/admin/pos/sales`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...authHeaders(),
+        },
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json() as Promise<PosCreatedSale>;
+}
+
+export async function adminDeliverSale(id: number): Promise<Sale> {
+    const res = await fetch(`${API_URL}/api/admin/sales/${id}/deliver`, {
+        method: 'PATCH',
+        headers: jsonHeaders(),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const j = await res.json();
+    return j.data ?? j;
+}
+
+export async function adminDownloadDeliveryNote(
+    id: number,
+    filename = `nota-entrega-${id}.pdf`
+): Promise<void> {
+    const res = await fetch(`${API_URL}/api/admin/sales/${id}/delivery-note`, {
+        headers: authHeaders(),
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+export async function adminVoidSale(
+    id: number,
+    reason?: string
+): Promise<Sale> {
+    const res = await fetch(`${API_URL}/api/admin/sales/${id}/void`, {
+        method: 'POST',
+        headers: jsonHeaders(),
+        body: JSON.stringify({ reason: reason ?? null }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const j = await res.json();
+    return j.data ?? j;
 }

@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class SaleController extends Controller
 {
@@ -22,7 +23,7 @@ class SaleController extends Controller
         $perPage = min(max((int)$r->integer('per_page', 20), 1), 100);
 
         $q = Sale::query()
-            ->with(['customer:id,name,email', 'user:id,name'])
+            ->with(['customer:id,name,ci,email,phone,address', 'user:id,name'])
             ->withSum('details as items_qty', 'quantity');
 
         if ($status = $r->query('status')) {
@@ -35,6 +36,7 @@ class SaleController extends Controller
                     ->orWhere('id', $search)
                     ->orWhereHas('customer', function ($c) use ($search) {
                         $c->where('name', 'like', "%{$search}%")
+                            ->orWhere('ci', 'like', "%{$search}%")
                             ->orWhere('email', 'like', "%{$search}%");
                     });
             });
@@ -89,6 +91,27 @@ class SaleController extends Controller
 
         $countAll   = (clone $base)->count();
         $totalGross = (float) (clone $base)->sum('total');
+
+        $vendidasCount = (clone $base)
+            ->where('status', 'paid')
+            ->where('is_canceled', false)
+            ->count();
+
+        $porEntregarCount = (clone $base)
+            ->where('status', 'paid')
+            ->where('is_canceled', false)
+            ->where('delivery_status', 'to_deliver')
+            ->count();
+
+        $entregadoCount = (clone $base)
+            ->where('status', 'paid')
+            ->where('is_canceled', false)
+            ->where('delivery_status', 'delivered')
+            ->count();
+
+        $anuladasCount = (clone $base)
+            ->where('is_canceled', true)
+            ->count();
 
         $paidCount    = (clone $base)->where('status', 'paid')->count();
         $pendingCount = (clone $base)->where('status', 'pending')->count();
@@ -147,6 +170,10 @@ class SaleController extends Controller
                 'pending'       => ['count' => $pendingCount, 'total' => $pendingTotal],
                 'failed'        => ['count' => $failedCount,  'total' => $failedTotal],
                 'items_sold'    => $itemsSold,
+                'vendidas'      => $vendidasCount,
+                'por_entregar'  => $porEntregarCount,
+                'anuladas'      => $anuladasCount,
+                'entregado'     => $entregadoCount,
             ],
             'products' => [
                 'distinct' => $distinctProducts,
@@ -253,9 +280,104 @@ class SaleController extends Controller
 
     public function receipt(\App\Models\Sale $sale)
     {
-        $sale->loadMissing(['customer', 'details.product']);
+        $sale->loadMissing([
+            'customer',
+            'user:id,name',
+            'details.product'
+        ]);
 
-        $pdf = Pdf::loadView('receipts.receipt', ['sale' => $sale]);
+        $showUser = false;
+        if ($sale->payment_ref && Str::startsWith($sale->payment_ref, 'POS-')) {
+            $showUser = $sale->user && $sale->user->name;
+        }
+
+        $pdf = Pdf::loadView('receipts.receipt', [
+            'sale'      => $sale,
+            'showUser'  => $showUser,
+        ]);
         return $pdf->download("recibo-{$sale->id}.pdf");
+    }
+
+    public function markDelivered(Request $r, Sale $sale)
+    {
+        if ($sale->is_canceled) {
+            return response()->json(['message' => 'Venta anulada; no se puede entregar.'], 409);
+        }
+        if ($sale->status !== 'paid') {
+            return response()->json(['message' => 'Solo ventas pagadas pueden entregarse.'], 409);
+        }
+        if ($sale->delivery_status === 'delivered') {
+            return response()->json(['message' => 'Ya se registró la entrega.'], 409);
+        }
+
+        $sale->update([
+            'delivery_status' => 'delivered',
+            'delivered_at'    => now(),
+            'delivered_by'    => $r->user()?->id,
+        ]);
+
+        $sale->load(['customer:id,name,email', 'user:id,name', 'deliveredBy:id,name'])
+            ->loadSum('details', 'quantity');
+
+        return new SaleResource($sale);
+    }
+
+    public function deliveryNote(\App\Models\Sale $sale)
+    {
+        if ($sale->is_canceled) {
+            abort(409, 'Venta anulada.');
+        }
+
+        $sale->loadMissing(['customer', 'details.product', 'deliveredBy:id,name']);
+
+        $pdf = Pdf::loadView('receipts.delivery_note', [
+            'sale' => $sale,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download("nota-entrega-{$sale->id}.pdf");
+    }
+
+    public function void(Request $r, Sale $sale)
+    {
+        $data = $r->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($sale->is_canceled) {
+            return response()->json(['message' => 'La venta ya está anulada.'], 409);
+        }
+
+        DB::transaction(function () use ($sale, $r, $data) {
+            $sale->loadMissing('details');
+
+            foreach ($sale->details as $d) {
+                $p = Product::lockForUpdate()->find($d->product_id);
+                if ($p) {
+                    $p->increment('stock', (int)$d->quantity);
+                }
+            }
+
+            $sale->update([
+                'is_canceled'   => true,
+                'canceled_at'   => now(),
+                'canceled_by'   => $r->user()?->id,
+                'cancel_reason' => $data['reason'] ?? null,
+                'delivery_status' => 'to_deliver',
+            ]);
+        });
+
+        $sale->load(['customer:id,name,email', 'user:id,name', 'canceledBy:id,name'])
+            ->loadSum('details', 'quantity');
+
+        return new SaleResource($sale);
+    }
+
+    public function pickupDoc(Sale $sale)
+    {
+        if (!$sale->pickup_doc_path || !Storage::exists($sale->pickup_doc_path)) {
+            abort(404, 'Sin documento');
+        }
+
+        return response()->file(Storage::path($sale->pickup_doc_path));
     }
 }

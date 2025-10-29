@@ -59,10 +59,21 @@
     <div class="wrap">
         <div class="header">
             <div class="title">Pixel Retro Store — Recibo</div>
-            <div class="muted">Recibo N°: #{{ $sale->id }} &nbsp;|&nbsp; Fecha:
-                {{ $sale->created_at->format('d/m/Y H:i') }}</div>
-            <div class="muted">Ref. de pago: {{ $sale->payment_ref ?? '—' }}</div>
+            <div class="muted">
+                Recibo N°: #{{ $sale->id }}
+                &nbsp;|&nbsp;
+                Fecha: {{ $sale->created_at->format('d/m/Y H:i') }}
+            </div>
+            <div class="muted">
+                Ref. de pago: {{ $sale->payment_ref ?? '—' }}
+                @if (!empty($showUser))
+                    &nbsp;|&nbsp;
+                    Atendido por: {{ $sale->user->name }}
+                @endif
+            </div>
+
         </div>
+
 
         <table>
             <tr>

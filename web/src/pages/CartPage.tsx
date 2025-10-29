@@ -7,7 +7,14 @@ import { getCustomerToken } from '../services/customerApi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { Product } from '../types';
 
-type Customer = { name: string; email: string; phone?: string; address?: string };
+type Customer = {
+    name: string;
+    ci?: string;
+    email: string;
+    phone?: string;
+    address?: string;
+};
+
 type Intent = { id: string; client_secret: string; amount: number; currency: string; status: string };
 
 type CartListItem = {
@@ -68,7 +75,16 @@ export default function CartPage() {
 
     const hasStockIssue = stockIssues.length > 0;
 
-    const [form, setForm] = useState<Customer>({ name: '', email: '', phone: '', address: '' });
+    const [form, setForm] = useState<Customer>({
+        name: '',
+        ci: '',
+        email: '',
+        phone: '',
+        address: '',
+    });
+
+    const [pickupDocFile, setPickupDocFile] = useState<File | null>(null);
+
     const [msg, setMsg] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
 
@@ -89,6 +105,22 @@ export default function CartPage() {
             qty: i.quantity ?? i.qty ?? 1,
         }));
 
+    const fileToDataUrl = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const result = e.target?.result;
+                if (typeof result === 'string') {
+                    resolve(result);
+                } else {
+                    reject(new Error('No se pudo leer el archivo'));
+                }
+            };
+            reader.onerror = () => reject(new Error('Error leyendo archivo'));
+            reader.readAsDataURL(file);
+        });
+    };
+
     const start = async (): Promise<void> => {
         try {
             setBusy(true);
@@ -102,11 +134,23 @@ export default function CartPage() {
                 return;
             }
 
-            const payload: CreateIntentPayload = {
-                customer: form,
+            let pickupDocB64: string | null = null;
+            if (pickupDocFile) {
+                pickupDocB64 = await fileToDataUrl(pickupDocFile);
+            }
+
+            const payload = {
+                customer: {
+                    name: form.name,
+                    ci: form.ci || undefined,
+                    email: form.email,
+                    phone: form.phone || undefined,
+                    address: form.address || undefined,
+                },
                 items: toLines(),
                 amount: Math.round(total * 100),
                 currency: 'BOB',
+                pickup_doc_b64: pickupDocB64,
             };
 
             const pi: Intent = await createPaymentIntent(payload);
@@ -118,6 +162,7 @@ export default function CartPage() {
             setBusy(false);
         }
     };
+
 
     const confirmCard = async () => {
         if (!intent) return;
@@ -297,37 +342,73 @@ export default function CartPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
                                 <input
                                     className="w-full rounded-xl px-3 py-2
-                             bg-white/[0.05] text-white/90 placeholder:text-white/45
-                             border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+        bg-white/[0.05] text-white/90 placeholder:text-white/45
+        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
                                     placeholder="Nombre"
                                     value={form.name}
                                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                                 />
+
                                 <input
                                     className="w-full rounded-xl px-3 py-2
-                             bg-white/[0.05] text-white/90 placeholder:text-white/45
-                             border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+        bg-white/[0.05] text-white/90 placeholder:text-white/45
+        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                    placeholder="CI / Documento de identidad"
+                                    value={form.ci ?? ''}
+                                    onChange={(e) => setForm({ ...form, ci: e.target.value })}
+                                />
+
+                                <input
+                                    className="w-full rounded-xl px-3 py-2
+        bg-white/[0.05] text-white/90 placeholder:text-white/45
+        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
                                     placeholder="Email"
                                     value={form.email}
                                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                                 />
+
                                 <input
                                     className="w-full rounded-xl px-3 py-2
-                             bg-white/[0.05] text-white/90 placeholder:text-white/45
-                             border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+        bg-white/[0.05] text-white/90 placeholder:text-white/45
+        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
                                     placeholder="Teléfono"
                                     value={form.phone ?? ''}
                                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                                 />
+
                                 <input
                                     className="w-full rounded-xl px-3 py-2
-                             bg-white/[0.05] text-white/90 placeholder:text-white/45
-                             border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+        bg-white/[0.05] text-white/90 placeholder:text-white/45
+        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
                                     placeholder="Dirección"
                                     value={form.address ?? ''}
                                     onChange={(e) => setForm({ ...form, address: e.target.value })}
                                 />
+
+                                <div className="flex flex-col text-white/80 text-sm">
+                                    <label className="text-white/60 text-xs mb-1">
+                                        Documento del recojo (foto CI o autorización, opcional)
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png,.pdf"
+                                        className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90
+            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]
+            file:mr-2 file:px-3 file:py-1 file:rounded-lg file:border-0
+            file:bg-white/20 file:text-white/90 file:text-xs"
+                                        onChange={(e) => {
+                                            const f = e.target.files?.[0] ?? null;
+                                            setPickupDocFile(f);
+                                        }}
+                                    />
+                                    {pickupDocFile && (
+                                        <div className="text-[11px] text-white/50 mt-1 truncate">
+                                            {pickupDocFile.name}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+
 
                             <button
                                 disabled={busy || items.length === 0 || !form.name || !form.email || hasStockIssue}

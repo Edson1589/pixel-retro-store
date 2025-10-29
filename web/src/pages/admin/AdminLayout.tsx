@@ -41,6 +41,7 @@ export default function AdminLayout() {
                     { label: 'Productos', to: '/admin/products' },
                     { label: 'Categorías', to: '/admin/categories' },
                     { label: 'Ventas', to: '/admin/sales' },
+                    { label: 'Realizar Venta', to: '/admin/pos/sale' },
                     ...(getToken()
                         ? [{ label: busy ? '...' : 'Salir', onClick: () => void logout(), disabled: busy }]
                         : []),

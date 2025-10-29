@@ -30,19 +30,39 @@ use App\Http\Controllers\Api\UserSignalsController;
 
 use App\Http\Controllers\Api\Admin\SaleController;
 
+use App\Http\Controllers\Api\Admin\PosController;
+
+use App\Http\Controllers\Api\Admin\PosSaleController;
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuth::class, 'login']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AdminAuth::class, 'logout']);
 
+        Route::get('pos/products', [PosController::class, 'searchProducts']);
+        Route::get('pos/customers', [PosController::class, 'searchCustomers']);
+        Route::post('pos/sales', [PosController::class, 'store']);
+
         Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])
             ->whereNumber('sale')->name('admin.sales.receipt');
+
+        Route::post('pos/sales', [PosSaleController::class, 'store']);
+
         Route::get('sales/summary', [SaleController::class, 'summary']);
         Route::get('sales/export',  [SaleController::class, 'export']);
         Route::get('sales', [SaleController::class, 'index']);
         Route::get('sales/{sale}', [SaleController::class, 'show']);
         Route::patch('sales/{sale}/status', [SaleController::class, 'updateStatus']);
+
+        Route::patch('sales/{sale}/deliver', [SaleController::class, 'markDelivered'])
+            ->whereNumber('sale');
+
+        Route::get('sales/{sale}/delivery-note', [SaleController::class, 'deliveryNote'])
+            ->whereNumber('sale')->name('admin.sales.delivery-note');
+
+        Route::post('sales/{sale}/void', [SaleController::class, 'void'])
+            ->whereNumber('sale');
 
         Route::get('/categories', [AdminCategories::class, 'index']);
         Route::get('/categories/{id}', [AdminCategories::class, 'show']);
@@ -84,6 +104,9 @@ Route::post('/payments/intents/{intentId}/3ds/verify', [PaymentController::class
 
 Route::post('/auth/register', [CustomerAuthController::class, 'register']);
 Route::post('/auth/login',    [CustomerAuthController::class,  'login']);
+
+Route::get('admin/sales/{sale}/pickup-doc', [SaleController::class, 'pickupDoc'])
+    ->name('admin.sales.pickupDoc');
 
 Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     Route::get('/auth/me',     [CustomerAuthController::class, 'me']);
