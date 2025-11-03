@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
-import { fetchEventBySlug, registerToEvent } from '../services/api';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchEventBySlug, fetchMyRegistration } from '../services/api';
+import RegistrationModal from '../features/events/RegistrationModal';
+import SuccessModal from '../features/events/SuccesModal';
 import { getCustomerToken } from '../services/customerApi';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 type EventKind = 'event' | 'tournament';
 
@@ -14,25 +16,13 @@ interface StoreEvent {
     end_at?: string | null;
     description?: string | null;
     banner_url?: string | null;
-}
-
-interface RegistrationForm {
-    name: string;
-    email: string;
-    gamer_tag: string;
-    team: string;
-    notes: string;
-}
-
-interface RegisterResponse {
-    message?: string;
+    registration_open?: boolean;
+    remaining_capacity?: number | null;
 }
 
 const fmtDate = (iso: string) => {
     const d = new Date(iso);
-    const date = d
-        .toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })
-        .replace('.', '');
+    const date = d.toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '');
     const time = d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
     return `${date} — ${time}`;
 };
@@ -41,50 +31,47 @@ export default function EventDetail() {
     const { slug } = useParams<{ slug: string }>();
 
     const [event, setEvent] = useState<StoreEvent | null>(null);
-    const [form, setForm] = useState<RegistrationForm>({
-        name: '',
-        email: '',
-        gamer_tag: '',
-        team: '',
-        notes: '',
-    });
-    const [msg, setMsg] = useState<string | null>(null);
-    const [busy, setBusy] = useState(false);
+    const [regOpen, setRegOpen] = useState(false);
+    const [successOpen, setSuccessOpen] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('Registro recibido. Te contactaremos para confirmar.');
+
+    const [alreadyReg, setAlreadyReg] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         (async () => {
             if (!slug) return;
-            const data = (await fetchEventBySlug(slug)) as StoreEvent;
-            setEvent(data);
+            setLoading(true);
+            try {
+                const data = await fetchEventBySlug(slug) as StoreEvent;
+                setEvent(data);
+
+
+                if (getCustomerToken()) {
+                    try {
+                        const res = await fetchMyRegistration(slug);
+                        setAlreadyReg(!!res?.registered);
+                    } catch {
+                        setAlreadyReg(false);
+                    }
+                } else {
+                    setAlreadyReg(false);
+                }
+            } finally {
+                setLoading(false);
+            }
         })();
     }, [slug]);
 
-    const nav = useNavigate();
-    const loc = useLocation();
+    const canRegister = useMemo(() => {
+        if (!event) return false;
+        if (alreadyReg) return false;
+        if (event.registration_open === false) return false;
+        if (event.remaining_capacity === 0) return false;
+        return true;
+    }, [event, alreadyReg]);
 
-    const submit = async () => {
-        if (!slug) return;
-        try {
-            setBusy(true);
-            setMsg(null);
-
-            if (!getCustomerToken()) {
-                nav('/login', { state: { next: loc.pathname } });
-                return;
-            }
-
-            const res = (await registerToEvent(slug, form)) as RegisterResponse;
-            setMsg(res?.message ?? 'Registro enviado');
-            setForm({ name: '', email: '', gamer_tag: '', team: '', notes: '' });
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : 'Error en registro';
-            setMsg(message);
-        } finally {
-            setBusy(false);
-        }
-    };
-
-    if (!event) {
+    if (!event || loading) {
         return (
             <div className="min-h-screen grid place-items-center bg-[#07101B]">
                 <p className="text-white/70">Cargando…</p>
@@ -98,30 +85,19 @@ export default function EventDetail() {
                 <section className="rounded-[22px] overflow-hidden border border-white/10 bg-white/[0.04] shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)]">
                     <div className="relative aspect-video">
                         {event.banner_url ? (
-                            <img
-                                src={event.banner_url}
-                                alt={event.title}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                            />
+                            <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover" loading="lazy" />
                         ) : (
                             <div className="w-full h-full bg-[linear-gradient(135deg,#2A3342_0%,#202836_100%)]" />
                         )}
-
                         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.0)_0%,rgba(0,0,0,0.55)_85%)]" />
-
                         <div className="absolute inset-x-0 bottom-0 p-5">
                             <div className="mb-2 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/75">
                                 <span className="rounded-md px-2 py-1 bg-white/10 border border-white/15">
                                     {event.type === 'tournament' ? 'TORNEO' : 'EVENTO'}
                                 </span>
-                                {event.location && (
-                                    <span className="hidden sm:inline text-white/60">· {event.location}</span>
-                                )}
+                                {event.location && <span className="hidden sm:inline text-white/60">· {event.location}</span>}
                             </div>
-                            <h1 className="text-white text-2xl md:text-3xl font-extrabold drop-shadow">
-                                {event.title}
-                            </h1>
+                            <h1 className="text-white text-2xl md:text-3xl font-extrabold drop-shadow">{event.title}</h1>
                         </div>
                     </div>
 
@@ -143,6 +119,24 @@ export default function EventDetail() {
                                 </svg>
                                 <span>{event.location || 'Ubicación por confirmar'}</span>
                             </div>
+
+                            <div className="ml-auto flex items-center gap-2">
+                                {alreadyReg && (
+                                    <span className="px-2.5 py-1 rounded-lg text-xs border border-emerald-400/25 bg-emerald-500/15 text-emerald-200">
+                                        Ya estás registrado
+                                    </span>
+                                )}
+                                {event.remaining_capacity === 0 && (
+                                    <span className="px-2.5 py-1 rounded-lg text-xs border border-rose-400/25 bg-rose-500/15 text-rose-200">
+                                        Cupos agotados
+                                    </span>
+                                )}
+                                {event.registration_open === false && (
+                                    <span className="px-2.5 py-1 rounded-lg text-xs border border-amber-400/25 bg-amber-500/15 text-amber-200">
+                                        Registro cerrado
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -154,88 +148,41 @@ export default function EventDetail() {
                     </p>
                 </section>
 
-                <section className="rounded-2xl p-5 text-white bg-white/[0.04] border border-white/10">
-                    <h3 className="text-[15px] font-semibold mb-3 text-white/90">Registro</h3>
-
-                    <div className="grid md:grid-cols-2 gap-3">
-                        <input
-                            className="w-full rounded-xl px-3 py-2
-                         bg-white/[0.05] text-white/90 placeholder:text-white/45
-                         border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                            placeholder="Nombre"
-                            value={form.name}
-                            onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
-                                setForm((s) => ({ ...s, name: ev.target.value }))
-                            }
-                        />
-                        <input
-                            className="w-full rounded-xl px-3 py-2
-                         bg-white/[0.05] text-white/90 placeholder:text-white/45
-                         border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                            placeholder="Email"
-                            value={form.email}
-                            onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
-                                setForm((s) => ({ ...s, email: ev.target.value }))
-                            }
-                        />
-                        <input
-                            className="w-full rounded-xl px-3 py-2
-                         bg-white/[0.05] text-white/90 placeholder:text-white/45
-                         border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                            placeholder="Gamer tag (opcional)"
-                            value={form.gamer_tag}
-                            onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
-                                setForm((s) => ({ ...s, gamer_tag: ev.target.value }))
-                            }
-                        />
-                        <input
-                            className="w-full rounded-xl px-3 py-2
-                         bg-white/[0.05] text-white/90 placeholder:text-white/45
-                         border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                            placeholder="Equipo (opcional)"
-                            value={form.team}
-                            onChange={(ev: React.ChangeEvent<HTMLInputElement>) =>
-                                setForm((s) => ({ ...s, team: ev.target.value }))
-                            }
-                        />
-                        <textarea
-                            className="md:col-span-2 rounded-xl px-3 py-2
-                         bg-white/[0.05] text-white/90 placeholder:text-white/45
-                         border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                            rows={4}
-                            placeholder="Notas (opcional)"
-                            value={form.notes}
-                            onChange={(ev: React.ChangeEvent<HTMLTextAreaElement>) =>
-                                setForm((s) => ({ ...s, notes: ev.target.value }))
-                            }
-                        />
+                {canRegister && (
+                    <div className="flex">
+                        <button
+                            onClick={() => setRegOpen(true)}
+                            className="ml-auto px-5 py-2.5 rounded-2xl bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)]
+                text-white font-semibold shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)] hover:brightness-110"
+                        >
+                            Registrarme
+                        </button>
                     </div>
+                )}
 
-                    <button
-                        disabled={busy || !form.name || !form.email}
-                        onClick={submit}
-                        className="mt-4 px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)] text-white font-medium
-                       shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
-                       hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {busy ? 'Enviando...' : 'Registrarme'}
-                    </button>
-
-                    {msg && (
-                        <p className="mt-3 text-sm text-[#06B6D4]">
-                            {msg}
-                        </p>
-                    )}
-                </section>
-
-                <div className="rounded-[18px] p-5 text-center text-white
-                        bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]/15
-                        border border-white/10">
+                <div className="rounded-[18px] p-5 text-center text-white bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]/15 border border-white/10">
                     <p className="text-white/90">
                         ¿Listo para competir o asistir? <span className="font-semibold text-[#06B6D4]">¡Nos vemos en el evento!</span>
                     </p>
                 </div>
             </div>
+
+            <RegistrationModal
+                slug={slug!}
+                open={regOpen}
+                onClose={() => setRegOpen(false)}
+                onSuccess={(msg) => {
+                    setSuccessMsg(msg || 'Registro recibido. Te contactaremos para confirmar.');
+                    setSuccessOpen(true);
+                    setAlreadyReg(true);
+                }}
+            />
+
+            <SuccessModal
+                open={successOpen}
+                onClose={() => setSuccessOpen(false)}
+                message={successMsg}
+            />
         </div>
     );
 }

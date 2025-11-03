@@ -87,7 +87,13 @@ Route::get('/categories', [PublicCategories::class, 'index']);
 Route::get('/events', [PublicEvents::class, 'index']);
 Route::get('/events/{slug}', [PublicEvents::class, 'show']);
 Route::post('/events/{slug}/register', [PublicEvents::class, 'register']);
+// 🔹 Checkout y registro de eventos
 Route::post('/checkout', [CheckoutController::class, 'checkout']);
+Route::get('/{slug}/my-registration', [PublicEvents::class, 'myRegistration']);
+
+// 🔹 Recuperación y cambio de contraseña
+Route::post('/password/forgot', [CustomerAuthController::class, 'forgotPassword']);
+Route::post('/password/change', [CustomerAuthController::class, 'changePassword']);
 
 //
 // 🔹 PAGOS
