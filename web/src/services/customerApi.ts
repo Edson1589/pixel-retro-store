@@ -1,7 +1,13 @@
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 const KEY = 'pixelretro_customer_token';
 
-export type CustomerUser = { id: number; name: string; email: string; role: 'customer' };
+export type CustomerUser = {
+    id: number;
+    name: string;
+    email: string;
+    role: 'customer';
+};
+
 export type AuthPayload = {
     name?: string;
     email: string;
@@ -10,7 +16,13 @@ export type AuthPayload = {
     phone?: string;
     address?: string;
 };
-export type AuthResponse = { token: string; user: CustomerUser };
+
+// 🔹 Ahora el backend puede devolver también el flag requires_password_change
+export type AuthResponse = {
+    token: string;
+    user?: CustomerUser;
+    requires_password_change?: boolean;
+};
 
 export const getCustomerToken = () => localStorage.getItem(KEY);
 export const setCustomerToken = (t: string) => localStorage.setItem(KEY, t);
@@ -96,7 +108,6 @@ const extractMessage = (status: number, data: unknown, prefer: string[] = []) =>
     return defaultMessageForStatus(status);
 };
 
-
 async function request<T>(
     url: string,
     init: RequestInit,
@@ -130,6 +141,7 @@ async function request<T>(
     }
 }
 
+// 🔹 Registro
 export async function customerRegister(payload: AuthPayload): Promise<AuthResponse> {
     return request<AuthResponse>(`${API}/api/auth/register`, {
         method: 'POST',
@@ -142,6 +154,7 @@ export async function customerRegister(payload: AuthPayload): Promise<AuthRespon
     });
 }
 
+// 🔹 Login con soporte a contraseña temporal
 export async function customerLogin(email: string, password: string): Promise<AuthResponse> {
     return request<AuthResponse>(`${API}/api/auth/login`, {
         method: 'POST',
@@ -154,14 +167,43 @@ export async function customerLogin(email: string, password: string): Promise<Au
     });
 }
 
+// 🔹 Obtener usuario autenticado
 export async function customerMe(): Promise<CustomerUser> {
     const r = await fetch(`${API}/api/auth/me`, { headers: withCustomerAuth() });
     if (!r.ok) throw new Error(await r.text());
     return r.json();
 }
 
+// 🔹 Logout
 export async function customerLogout() {
     const r = await fetch(`${API}/api/auth/logout`, { method: 'POST', headers: withCustomerAuth() });
     if (!r.ok) throw new Error(await r.text());
     clearCustomerToken();
+}
+
+// 🔹 Recuperación de contraseña temporal
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+    return request<{ message: string }>(`${API}/api/password/forgot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+    }, (status, data) => {
+        if (status === 404) return 'No existe un usuario con ese correo.';
+        return firstFieldError(data, ['email']) ?? 'Error enviando correo.';
+    });
+}
+
+// 🔹 Cambio de contraseña definitiva
+export async function changePassword(
+    password: string,
+    password_confirmation: string
+): Promise<{ message: string }> {
+    return request<{ message: string }>(`${API}/api/password/change`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...withCustomerAuth() },
+        body: JSON.stringify({ password, password_confirmation }),
+    }, (status, data) => {
+        if (status === 422) return firstFieldError(data, ['password']) ?? 'Contraseña inválida.';
+        return null;
+    });
 }

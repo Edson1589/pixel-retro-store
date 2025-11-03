@@ -33,6 +33,8 @@ import CheckoutSuccess from './pages/checkout/CheckoutSuccess';
 
 import CustomerLogin from './pages/auth/CustomerLogin';
 import CustomerRegister from './pages/auth/CustomerRegister';
+import ForgotPassword from './pages/auth/ForgotPassword';       // 🔹 NUEVO
+import ChangePassword from './pages/auth/ChangePassword';       // 🔹 NUEVO
 
 import Header from './components/layout/Header';
 
@@ -51,6 +53,7 @@ export default function App() {
       <CartProvider>
         <Header />
         <Routes>
+          {/* 🔹 Rutas públicas */}
           <Route path="/" element={<ProductsPage />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/cart" element={<CartPage />} />
@@ -59,13 +62,26 @@ export default function App() {
           <Route path="/events" element={<EventsList />} />
           <Route path="/events/:slug" element={<EventDetail />} />
 
+          {/* 🔹 Autenticación de cliente */}
           <Route path="/login" element={<CustomerLogin />} />
           <Route path="/register" element={<CustomerRegister />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />   {/* ✅ Nueva ruta */}
+          <Route path="/change-password" element={<ChangePassword />} />   {/* ✅ Nueva ruta */}
+
+          {/* 🔹 Cuenta del cliente */}
           <Route path="/account/orders" element={<OrdersPage />} />
           <Route path="/account/orders/:id" element={<OrderDetailPage />} />
 
+          {/* 🔹 Panel de administración */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <AdminLayout />
+              </RequireAdmin>
+            }
+          >
             <Route index element={<AdminProductsList />} />
             <Route path="products" element={<AdminProductsList />} />
             <Route path="products/new" element={<AdminProductCreate />} />

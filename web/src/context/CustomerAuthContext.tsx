@@ -13,7 +13,11 @@ import {
 type AuthCtx = {
     user: CustomerUser | null;
     loading: boolean;
-    login(email: string, password: string): Promise<void>;
+    login(email: string, password: string): Promise<{
+        token: string;
+        user?: CustomerUser;
+        requires_password_change?: boolean;
+    }>;
     register(p: {
         name: string;
         email: string;
@@ -42,8 +46,25 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
 
     const login = async (email: string, password: string) => {
         const r = await customerLogin(email, password);
+
+        // 🔹 Guardamos token siempre
         setCustomerToken(r.token);
-        setUser(r.user);
+
+        // 🔹 Si el backend indica cambio obligatorio, no seteamos user todavía
+        if (r.requires_password_change) {
+            return {
+                token: r.token,
+                requires_password_change: true
+            };
+        }
+
+        // 🔹 Caso normal: login completo
+        setUser(r.user ?? null);
+        return {
+            token: r.token,
+            user: r.user,
+            requires_password_change: false
+        };
     };
 
     const register = async (p: {
@@ -56,7 +77,8 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
     }) => {
         const r = await customerRegister(p);
         setCustomerToken(r.token);
-        setUser(r.user);
+       setUser(r.user ?? null);
+
     };
 
     const logout = async () => {
@@ -67,7 +89,6 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         try { localStorage.removeItem('pixelretro_cart_guest'); } catch (e) { void e; }
         window.dispatchEvent(new CustomEvent('cart:clear'));
     };
-
 
     return (
         <Ctx.Provider value={{ user, loading, login, register, logout }}>

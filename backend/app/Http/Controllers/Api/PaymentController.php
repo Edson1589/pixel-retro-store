@@ -173,127 +173,133 @@ class PaymentController extends Controller
         return $this->finalizeSale($payment);
     }
 
-    private function finalizeSale(Payment $payment)
-    {
-        try {
-            [$sale, $responsePayload] = DB::transaction(function () use ($payment) {
+   private function finalizeSale(Payment $payment)
+{
+    try {
+        [$sale, $responsePayload] = DB::transaction(function () use ($payment) {
 
-                $meta  = $payment->metadata ?? [];
-                $cust  = $meta['customer'] ?? null;
-                $items = $meta['items'] ?? [];
+            $meta  = $payment->metadata ?? [];
+            $cust  = $meta['customer'] ?? null;
+            $items = $meta['items'] ?? [];
 
-                $pickupDocPath = $meta['pickup_doc_path'] ?? null;
+            $pickupDocPath = $meta['pickup_doc_path'] ?? null;
 
-                $customerId = null;
-                if ($cust && isset($cust['email'])) {
-                    $c = Customer::create([
-                        'name'    => $cust['name']    ?? 'Invitado',
-                        'email'   => $cust['email'],
-                        'ci'      => $cust['ci']      ?? null,
-                        'phone'   => $cust['phone']   ?? null,
+            $customerId = null;
+            if ($cust && isset($cust['email'])) {
+                // ✅ Evita duplicados usando firstOrCreate
+                $c = Customer::firstOrCreate(
+                    ['email' => $cust['email']],
+                    [
+                        'name'    => $cust['name'] ?? 'Invitado',
+                        'ci'      => $cust['ci'] ?? null,
+                        'phone'   => $cust['phone'] ?? null,
                         'address' => $cust['address'] ?? null,
-                    ]);
+                    ]
+                );
 
-                    $customerId = $c->id;
-                }
-
-
-                $total   = 0;
-                $details = [];
-                foreach ($items as $it) {
-                    $p   = Product::lockForUpdate()->findOrFail((int)$it['product_id']);
-                    $qty = (int) $it['qty'];
-
-                    if ($qty < 1) abort(422, 'Cantidad inválida');
-                    if ($p->is_unique && $qty > 1) abort(409, 'Pieza única, solo 1 unidad');
-                    if ($p->stock < $qty) abort(409, 'Stock insuficiente para ' . $p->name);
-
-                    $total     += $p->price * $qty;
-                    $details[] = [$p, $qty];
-                }
-
-                foreach ($details as [$p, $qty]) {
-                    $p->decrement('stock', $qty);
-                }
-
-                $sale = Sale::create([
-                    'user_id'     => auth()->id(),
-                    'customer_id' => $customerId,
-                    'total'       => $total,
-                    'status'      => 'paid',
-                    'payment_ref' => $payment->intent_id,
-                    'delivery_status' => 'to_deliver',
-                    'pickup_doc_path' => $pickupDocPath,
-                ]);
-
-                foreach ($details as [$p, $qty]) {
-                    SaleDetail::create([
-                        'sale_id'    => $sale->id,
-                        'product_id' => $p->id,
-                        'quantity'   => $qty,
-                        'unit_price' => $p->price,
-                        'subtotal'   => $p->price * $qty,
-                    ]);
-                }
-
-                $payment->update([
-                    'status'          => 'succeeded',
-                    'requires_action' => false,
-                    'next_action'     => null,
-                    'sale_id'         => $sale->id,
-                ]);
-
-                $this->logEvent($payment, 'payment.succeeded', ['sale_id' => $sale->id]);
-
-                if ($uid = auth()->id()) {
-                    $cart = Cart::where('user_id', $uid)->first();
-                    if ($cart) {
-                        $cart->items()->delete();
-                    }
-                }
-
-                $payload = [
-                    'status'      => 'succeeded',
-                    'payment_ref' => $payment->intent_id,
-                    'sale_id'     => $sale->id,
-                    'total'       => $sale->total,
-                    'receipt_url' => url("/api/account/orders/{$sale->id}/receipt"),
-                ];
-
-                return [$sale, $payload];
-            });
-
-            $sale->load(['customer', 'details.product']);
-
-            if ($sale->customer && $sale->customer->email) {
-                Mail::to($sale->customer->email)
-                    ->send(new SaleReceiptCustomer($sale));
+                $customerId = $c->id;
             }
 
-            Mail::to(config('mail.from.admin_address'))
-                ->send(new SaleReceiptAdmin($sale));
+            $total   = 0;
+            $details = [];
+            foreach ($items as $it) {
+                $p   = Product::lockForUpdate()->findOrFail((int)$it['product_id']);
+                $qty = (int) $it['qty'];
 
-            return response()->json($responsePayload);
-        } catch (\Throwable $e) {
-            logger()->error('finalizeSale error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+                if ($qty < 1) abort(422, 'Cantidad inválida');
+                if ($p->is_unique && $qty > 1) abort(409, 'Pieza única, solo 1 unidad');
+                if ($p->stock < $qty) abort(409, 'Stock insuficiente para ' . $p->name);
+
+                $total     += $p->price * $qty;
+                $details[] = [$p, $qty];
+            }
+
+            foreach ($details as [$p, $qty]) {
+                $p->decrement('stock', $qty);
+            }
+
+            $sale = Sale::create([
+                'user_id'          => auth()->id(),
+                'customer_id'      => $customerId,
+                'total'            => $total,
+                'status'           => 'paid',
+                'payment_ref'      => $payment->intent_id,
+                'delivery_status'  => 'to_deliver',
+                'pickup_doc_path'  => $pickupDocPath,
             ]);
+
+            foreach ($details as [$p, $qty]) {
+                SaleDetail::create([
+                    'sale_id'    => $sale->id,
+                    'product_id' => $p->id,
+                    'quantity'   => $qty,
+                    'unit_price' => $p->price,
+                    'subtotal'   => $p->price * $qty,
+                ]);
+            }
 
             $payment->update([
-                'status'          => 'failed',
-                'failure_reason'  => 'stock_or_transaction'
+                'status'          => 'succeeded',
+                'requires_action' => false,
+                'next_action'     => null,
+                'sale_id'         => $sale->id,
             ]);
 
-            $this->logEvent($payment, 'payment.failed', [
-                'reason' => 'stock_or_transaction'
-            ]);
+            $this->logEvent($payment, 'payment.succeeded', ['sale_id' => $sale->id]);
 
-            return response()->json([
-                'Error'  => 'Error de stock o transaccion',
-                'status' => 'failed'
-            ], 409);
+            // ✅ Limpieza del carrito si hay usuario autenticado
+            if ($uid = auth()->id()) {
+                $cart = Cart::where('user_id', $uid)->first();
+                if ($cart) {
+                    $cart->items()->delete();
+                }
+            }
+
+            $payload = [
+                'status'      => 'succeeded',
+                'payment_ref' => $payment->intent_id,
+                'sale_id'     => $sale->id,
+                'total'       => $sale->total,
+                'receipt_url' => url("/api/account/orders/{$sale->id}/receipt"),
+            ];
+
+            return [$sale, $payload];
+        });
+
+        $sale->load(['customer', 'details.product']);
+
+        if ($sale->customer && $sale->customer->email) {
+            Mail::to($sale->customer->email)
+                ->send(new SaleReceiptCustomer($sale));
         }
+
+        Mail::to(config('mail.from.admin_address'))
+            ->send(new SaleReceiptAdmin($sale));
+
+        return response()->json($responsePayload);
+    } catch (\Throwable $e) {
+        logger()->error('finalizeSale error: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        $payment->update([
+            'status'         => 'failed',
+            'failure_reason' => 'stock_or_transaction'
+        ]);
+
+        $this->logEvent($payment, 'payment.failed', [
+            'reason' => 'stock_or_transaction'
+        ]);
+
+        return response()->json([
+            'Error'  => $e->getMessage(),
+            'status' => 'failed'
+        ], 409);
     }
+}
+
+
+    
 
     private function storeBase64Doc(?string $dataUrl): ?string
     {
