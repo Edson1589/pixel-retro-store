@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Services\EventSearch;
 use App\Services\EventTrending;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EventRegistrationCustomer;
+use App\Mail\EventRegistrationAdmin;
 
 class EventController extends Controller
 {
@@ -65,19 +68,58 @@ class EventController extends Controller
         if ($event->registration_close_at && $now->gt($event->registration_close_at)) {
             abort(422, 'El registro ya cerró.');
         }
-
         if ($event->capacity) {
             $count = $event->registrations()->where('status', '!=', 'cancelled')->count();
             if ($count >= $event->capacity) abort(422, 'Cupo completo.');
         }
 
-        $exists = $event->registrations()->where('email', $request->input('email'))->exists();
-        if ($exists) abort(422, 'Este email ya está registrado para este evento.');
+        $userId = $request->user()?->id;
+        if ($userId) {
+            $existsUser = $event->registrations()->where('user_id', $userId)->exists();
+            if ($existsUser) abort(422, 'Ya te registraste a este evento.');
+        }
+        $existsEmail = $event->registrations()->where('email', $request->input('email'))->exists();
+        if ($existsEmail) abort(422, 'Este email ya está registrado para este evento.');
 
-        $reg = $event->registrations()->create($request->validated());
+        $payload = $request->validated();
+        if ($userId) {
+            $payload['user_id'] = $userId;
+            $payload['name']  = $payload['name']  ?? $request->user()->name;
+            $payload['email'] = $payload['email'] ?? $request->user()->email;
+        }
+
+        $reg = $event->registrations()->create($payload);
+
+        Mail::to($reg->email)->send(new EventRegistrationCustomer($reg));
+
+        $admin = config('mail.from.admin_address');
+        if ($admin) {
+            Mail::to($admin)->send(new EventRegistrationAdmin($reg));
+        }
+
         return response()->json([
             'message' => 'Registro recibido. Te contactaremos para confirmar.',
             'registration_id' => $reg->id,
         ], 201);
+    }
+
+    public function myRegistration(Request $request, string $slug)
+    {
+        $event = Event::where('slug', $slug)->firstOrFail();
+        $email = $request->user()?->email ?? $request->query('email');
+        if (!$email) abort(400, 'Falta email');
+
+        $q = $event->registrations()->where('email', $email);
+        if ($request->user()) {
+            $q->orWhere('user_id', $request->user()->id);
+        }
+
+        $reg = $q->latest('id')->first();
+
+        return response()->json([
+            'registered'   => (bool) $reg,
+            'status'       => $reg?->status,
+            'registration' => $reg,
+        ]);
     }
 }

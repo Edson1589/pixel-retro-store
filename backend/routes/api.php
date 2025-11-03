@@ -95,6 +95,7 @@ Route::post('/checkout', [CheckoutController::class, 'checkout']);
 Route::get('/events', [PublicEvents::class, 'index']);
 Route::get('/events/{slug}', [PublicEvents::class, 'show']);
 Route::post('/events/{slug}/register', [PublicEvents::class, 'register']);
+Route::get('/{slug}/my-registration', [PublicEvents::class, 'myRegistration']);
 
 Route::get('/categories', [PublicCategories::class, 'index']);
 

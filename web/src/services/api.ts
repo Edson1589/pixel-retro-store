@@ -117,6 +117,19 @@ export async function registerToEvent(slug: string, payload: { name: string; ema
     return res.json();
 }
 
+export async function fetchMyRegistration(
+    slug: string,
+    email?: string
+): Promise<{ registered: boolean; status?: 'pending' | 'confirmed' | 'cancelled'; registration?: unknown }> {
+    const qs = new URLSearchParams();
+    if (email) qs.set('email', email);
+
+    const url = `${API_URL}/api/events/${slug}/my-registration${qs.toString() ? `?${qs}` : ''}`;
+    const res = await fetch(url, { headers: { ...withCustomerAuth() } });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
 export async function fetchCategories(): Promise<Category[]> {
     const res = await fetch(`${API_URL}/api/categories?onlyNonEmpty=1`);
     if (!res.ok) throw new Error(await res.text());
