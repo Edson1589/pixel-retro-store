@@ -46,6 +46,17 @@ import AdminSaleShow from './pages/admin/sales/AdminSaleShow';
 import AdminPosSaleCreate from './pages/admin/sales/AdminPosSaleCreate';
 import AdminEventWalkIn from './pages/admin/events/AdminEventWalkIn';
 
+import AdminUsersList from './pages/admin/users/AdminUsersList';
+import AdminUserCreate from './pages/admin/users/AdminUserCreate';
+import AdminUserShow from './pages/admin/users/AdminUserShow';
+import AdminUserEdit from './pages/admin/users/AdminUserEdit';
+import AdminUserDelete from './pages/admin/users/AdminUserDelete';
+import AdminChangePassword from './pages/admin/AdminChangePassword';
+import AdminForgotPassword from './pages/admin/AdminForgotPassword';
+import CustomerForgotPassword from './pages/auth/CustomerForgotPassword';
+import CustomerChangePassword from './pages/account/CustomerChangePassword';
+import RequireCustomer from './components/auth/RequireCustomer';
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -65,7 +76,18 @@ export default function App() {
           <Route path="/account/orders" element={<OrdersPage />} />
           <Route path="/account/orders/:id" element={<OrderDetailPage />} />
 
+          <Route path="/account/orders" element={<RequireCustomer><OrdersPage /></RequireCustomer>} />
+          <Route path="/account/orders/:id" element={<RequireCustomer><OrderDetailPage /></RequireCustomer>} />
+          <Route path="/account/change-password" element={<RequireCustomer><CustomerChangePassword /></RequireCustomer>} />
+
+          <Route path="/admin/change-password" element={<RequireAdmin><AdminChangePassword /></RequireAdmin>} />
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
+
+          <Route path="/login" element={<CustomerLogin />} />
+          <Route path="/register" element={<CustomerRegister />} />
+          <Route path="/forgot-password" element={<CustomerForgotPassword />} />
+
           <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
             <Route index element={<AdminProductsList />} />
             <Route path="products" element={<AdminProductsList />} />
@@ -91,6 +113,12 @@ export default function App() {
             <Route path="sales/:id" element={<AdminSaleShow />} />
             <Route path="pos/sale" element={<AdminPosSaleCreate />} />
             <Route path="events/onsite" element={<AdminEventWalkIn />} />
+
+            <Route path="users" element={<AdminUsersList />} />
+            <Route path="users/new" element={<AdminUserCreate />} />
+            <Route path="users/:id" element={<AdminUserShow />} />
+            <Route path="users/:id/edit" element={<AdminUserEdit />} />
+            <Route path="users/:id/delete" element={<AdminUserDelete />} />
           </Route>
         </Routes>
       </CartProvider>

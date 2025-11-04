@@ -6,14 +6,31 @@ import type {
     AdminEvent,
     AdminRegistration,
     WalkInCreatePayload,
-    ConflictDuplicatePayload
+    ConflictDuplicatePayload,
+    AdminUser,
+    AdminLoginResponse,
+    AdminUserCreatePayload,
+    AdminUserUpdatePayload,
+    PasswordChangePayload
 } from '../types';
+
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 const KEY = 'pixelretro_admin_token';
+const USER_KEY = 'pixelretro_admin_user';
 
 export const getToken = () => localStorage.getItem(KEY);
 export const setToken = (t: string) => localStorage.setItem(KEY, t);
 export const clearToken = () => localStorage.removeItem(KEY);
+export type ApiMsg = { message: string };
+
+export const getAdminUser = (): AdminUser | null => {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return null;
+    try { return JSON.parse(raw) as AdminUser; } catch { return null; }
+};
+
+export const setAdminUser = (u: AdminUser): void => localStorage.setItem(USER_KEY, JSON.stringify(u));
+export const clearAdminUser = (): void => localStorage.removeItem(USER_KEY);
 
 type HeaderMap = Record<string, string>;
 
@@ -96,7 +113,7 @@ export type Page<T> = {
 const authHeaders = (): HeaderMap => {
     const t = getToken();
     return {
-        Accept: 'application/json',           // <--- importante
+        Accept: 'application/json',
         ...(t ? { Authorization: `Bearer ${t}` } : {}),
     };
 };
@@ -106,24 +123,100 @@ const jsonHeaders = (): HeaderMap => ({
     ...authHeaders(),
 });
 
-export async function adminLogin(email: string, password: string) {
+class PreconditionRequiredError extends Error {
+    code: number;
+    constructor(message: string) { super(message); this.code = 428; }
+}
+
+async function handleJson<T>(res: Response): Promise<T> {
+    if (res.status === 428) {
+        const msg = await res.text();
+        throw new PreconditionRequiredError(msg || 'Debes cambiar tu contraseña.');
+    }
+    if (!res.ok) throw new Error(await res.text());
+    return res.json() as Promise<T>;
+}
+
+
+export async function adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
     const res = await fetch(`${API_URL}/api/admin/login`, {
         method: 'POST',
         headers: jsonHeaders(),
         body: JSON.stringify({ email, password }),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    const data = await handleJson<AdminLoginResponse>(res);
+    return data;
 }
 
-export async function adminLogout() {
-    const res = await fetch(`${API_URL}/api/admin/logout`, {
-        method: 'POST',
-        headers: authHeaders(),
-    });
-    if (!res.ok) throw new Error(await res.text());
+export async function adminLogout(): Promise<{ message: string }> {
+    const res = await fetch(`${API_URL}/api/admin/logout`, { method: 'POST', headers: authHeaders() });
+    const out = await handleJson<{ message: string }>(res);
     clearToken();
+    clearAdminUser();
+    return out;
 }
+
+export async function adminListUsers<T = AdminUser>(params?: {
+    page?: number; perPage?: number; search?: string;
+}): Promise<Page<T>> {
+    const qs = new URLSearchParams();
+    if (params?.page != null) qs.set('page', String(params.page));
+    if (params?.perPage != null) qs.set('per_page', String(params.perPage));
+    if (params?.search) qs.set('search', params.search);
+
+    const url = `${API_URL}/api/admin/users${qs.toString() ? `?${qs.toString()}` : ''}`;
+    const res = await fetch(url, { headers: authHeaders() });
+    return handleJson<Page<T>>(res);
+}
+
+export async function adminGetUser(id: number): Promise<AdminUser> {
+    const res = await fetch(`${API_URL}/api/admin/users/${id}`, { headers: authHeaders() });
+    return handleJson<AdminUser>(res);
+}
+
+export async function adminCreateUser(payload: AdminUserCreatePayload): Promise<AdminUser> {
+    const res = await fetch(`${API_URL}/api/admin/users`, {
+        method: 'POST',
+        headers: jsonHeaders(),
+        body: JSON.stringify(payload),
+    });
+    return handleJson<AdminUser>(res);
+}
+
+export async function adminUpdateUser(id: number, payload: AdminUserUpdatePayload): Promise<AdminUser> {
+    const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
+        method: 'PUT',
+        headers: jsonHeaders(),
+        body: JSON.stringify(payload),
+    });
+    return handleJson<AdminUser>(res);
+}
+
+export async function adminDeleteUser(id: number): Promise<{ message: string }> {
+    const res = await fetch(`${API_URL}/api/admin/users/${id}`, { method: 'DELETE', headers: authHeaders() });
+    return handleJson<{ message: string }>(res);
+}
+
+export async function adminChangePassword(payload: PasswordChangePayload): Promise<{ message: string }> {
+    const res = await fetch(`${API_URL}/api/admin/password/change`, {
+        method: 'POST',
+        headers: jsonHeaders(),
+        body: JSON.stringify(payload),
+    });
+    return handleJson<{ message: string }>(res);
+}
+
+export async function adminForgotPassword(email: string): Promise<ApiMsg> {
+    const res = await fetch(`${API_URL}/api/admin/password/forgot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email }),
+    });
+    const txt = await res.text();
+    try { return JSON.parse(txt) as ApiMsg; } catch { return { message: txt || 'OK' }; }
+}
+
+export { PreconditionRequiredError };
 
 export async function adminListCategories<T = unknown>(params?: {
     page?: number;

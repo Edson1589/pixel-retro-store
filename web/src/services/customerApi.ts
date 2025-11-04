@@ -1,7 +1,14 @@
 const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 const KEY = 'pixelretro_customer_token';
 
-export type CustomerUser = { id: number; name: string; email: string; role: 'customer' };
+export type CustomerUser = {
+    id: number;
+    name: string;
+    email: string;
+    role: 'customer';
+    must_change_password?: boolean;
+};
+
 export type AuthPayload = {
     name?: string;
     email: string;
@@ -11,6 +18,12 @@ export type AuthPayload = {
     address?: string;
 };
 export type AuthResponse = { token: string; user: CustomerUser };
+
+export type PasswordChangePayload = {
+    current_password: string;
+    new_password: string;
+    new_password_confirmation: string;
+};
 
 export const getCustomerToken = () => localStorage.getItem(KEY);
 export const setCustomerToken = (t: string) => localStorage.setItem(KEY, t);
@@ -164,4 +177,23 @@ export async function customerLogout() {
     const r = await fetch(`${API}/api/auth/logout`, { method: 'POST', headers: withCustomerAuth() });
     if (!r.ok) throw new Error(await r.text());
     clearCustomerToken();
+}
+
+export async function customerForgotPassword(email: string): Promise<{ message: string }> {
+    return request<{ message: string }>(`${API}/api/auth/password/forgot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email }),
+    });
+}
+
+export async function customerChangePassword(payload: PasswordChangePayload): Promise<{ message: string }> {
+    return request<{ message: string }>(`${API}/api/auth/password/change`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...withCustomerAuth() },
+        body: JSON.stringify(payload),
+    }, (status) => {
+        if (status === 422) return 'Verifica la contraseña actual y los requisitos.';
+        return null;
+    });
 }

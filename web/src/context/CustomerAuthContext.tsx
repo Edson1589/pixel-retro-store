@@ -10,18 +10,20 @@ import {
     getCustomerToken,
 } from '../services/customerApi';
 
+type RegisterIn = {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    phone?: string;
+    address?: string;
+};
+
 type AuthCtx = {
     user: CustomerUser | null;
     loading: boolean;
-    login(email: string, password: string): Promise<void>;
-    register(p: {
-        name: string;
-        email: string;
-        password: string;
-        password_confirmation: string;
-        phone?: string;
-        address?: string;
-    }): Promise<void>;
+    login(email: string, password: string): Promise<CustomerUser>;
+    register(p: RegisterIn): Promise<CustomerUser>;
     logout(): Promise<void>;
 };
 
@@ -44,36 +46,25 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         const r = await customerLogin(email, password);
         setCustomerToken(r.token);
         setUser(r.user);
+        return r.user;
     };
 
-    const register = async (p: {
-        name: string;
-        email: string;
-        password: string;
-        password_confirmation: string;
-        phone?: string;
-        address?: string;
-    }) => {
+    const register = async (p: RegisterIn) => {
         const r = await customerRegister(p);
         setCustomerToken(r.token);
         setUser(r.user);
+        return r.user;
     };
 
     const logout = async () => {
-        try { await customerLogout(); } catch (e) { void e; }
+        try { await customerLogout(); } catch { /* noop */ }
         clearCustomerToken();
         setUser(null);
-
-        try { localStorage.removeItem('pixelretro_cart_guest'); } catch (e) { void e; }
+        try { localStorage.removeItem('pixelretro_cart_guest'); } catch { /* noop */ }
         window.dispatchEvent(new CustomEvent('cart:clear'));
     };
 
-
-    return (
-        <Ctx.Provider value={{ user, loading, login, register, logout }}>
-            {children}
-        </Ctx.Provider>
-    );
+    return <Ctx.Provider value={{ user, loading, login, register, logout }}>{children}</Ctx.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

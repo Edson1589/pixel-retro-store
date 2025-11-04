@@ -37,12 +37,14 @@ export default function AdminLayout() {
                     </div>
                 }
                 items={[
+                    { label: 'Usuarios', to: '/admin/users' },
                     { label: 'Eventos', to: '/admin/events' },
                     { label: 'Registro de participantes', to: '/admin/events/onsite' },
                     { label: 'Productos', to: '/admin/products' },
                     { label: 'Categorías', to: '/admin/categories' },
                     { label: 'Ventas', to: '/admin/sales' },
                     { label: 'Realizar Venta', to: '/admin/pos/sale' },
+                    { label: 'Cambiar contraseña', to: '/admin/change-password' },
                     ...(getToken()
                         ? [{ label: busy ? '...' : 'Salir', onClick: () => void logout(), disabled: busy }]
                         : []),

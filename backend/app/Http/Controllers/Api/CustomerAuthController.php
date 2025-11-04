@@ -63,7 +63,14 @@ class CustomerAuthController extends Controller
             return response()->json(['message' => 'Rol no permitido en este endpoint'], 403);
         }
 
+        if ($user->must_change_password && $user->temp_password_expires_at && now()->gt($user->temp_password_expires_at)) {
+            return response()->json(['message' => 'La contraseña temporal expiró. Solicita otra.'], 403);
+        }
+
         $token = $user->createToken('customer')->plainTextToken;
+
+        $user->last_login_at = now();
+        $user->save();
 
         return response()->json([
             'token' => $token,
@@ -72,9 +79,11 @@ class CustomerAuthController extends Controller
                 'name'  => $user->name,
                 'email' => $user->email,
                 'role'  => $user->role,
+                'must_change_password' => (bool) $user->must_change_password,
             ]
         ]);
     }
+
 
     public function me(Request $request)
     {

@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(HandleCors::class);
         $middleware->alias([
+            'must.change.password' => \App\Http\Middleware\EnsurePasswordChanged::class,
             'role' => \App\Http\Middleware\EnsureRole::class,
             'optional.sanctum' => \App\Http\Middleware\OptionalSanctum::class,
         ]);

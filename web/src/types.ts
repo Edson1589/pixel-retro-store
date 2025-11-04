@@ -112,8 +112,6 @@ export type SlimCustomer = {
     address?: string | null;
 };
 
-
-
 export type SaleDetail = {
     id: number;
     product?: { id: number; name: string; sku?: string | null; image_url?: string | null };
@@ -161,3 +159,70 @@ export type SalesSummary = {
         top: { product: { id: number; name: string; sku?: string | null; image_url?: string | null }, qty: number, revenue: number }[];
     };
 };
+
+export type Role = 'admin' | 'seller' | 'technician' | 'customer';
+
+export type AdminUser = {
+    id: number;
+    name: string;
+    email: string;
+    role: Role;
+    must_change_password?: boolean;
+    temp_password_expires_at?: string | null;
+    created_by_admin_id?: number | null;
+    last_login_at?: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+    deleted_at?: string | null;
+};
+
+export type AdminLoginResponse = {
+    token: string;
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        role: Role;
+        must_change_password?: boolean;
+    };
+};
+
+export type AdminUserCreatePayload = {
+    name: string;
+    email: string;
+    role: Exclude<Role, 'customer'>;
+    temp_expires_in_hours?: number;
+};
+
+export type AdminUserUpdatePayload = {
+    name?: string;
+    email?: string;
+    role?: Exclude<Role, 'customer'>;
+    must_change_password?: boolean;
+};
+
+export type PasswordChangePayload = {
+    current_password: string;
+    new_password: string;
+    new_password_confirmation: string;
+};
+
+export type CustomerUser = {
+    id: number;
+    name: string;
+    email: string;
+    role: 'customer';
+    must_change_password?: boolean;
+};
+
+export type AuthPayload = {
+    name?: string;
+    email: string;
+    password: string;
+    password_confirmation?: string;
+    phone?: string;
+    address?: string;
+};
+
+export type AuthResponse = { token: string; user: CustomerUser };
+

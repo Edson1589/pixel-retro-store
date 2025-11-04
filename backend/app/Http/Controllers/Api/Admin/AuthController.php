@@ -17,16 +17,28 @@ class AuthController extends Controller
         ]);
 
         $u = User::where('email', $data['email'])->first();
-        if (!$u || !Hash::check($data['password'], $u->password) || $u->role !== 'admin') {
+
+        if (!$u || !Hash::check($data['password'], $u->password)) {
             return response()->json(['message' => 'Credenciales inválidas'], 401);
         }
 
+        if (!in_array($u->role, ['admin', 'seller', 'technician'], true)) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
 
         $token = $u->createToken('admin')->plainTextToken;
+        $u->last_login_at = now();
+        $u->save();
 
         return response()->json([
             'token' => $token,
-            'user' => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'role' => $u->role]
+            'user' => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'role' => $u->role,
+                'must_change_password' => (bool)$u->must_change_password,
+            ]
         ]);
     }
 

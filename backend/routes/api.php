@@ -34,11 +34,30 @@ use App\Http\Controllers\Api\Admin\PosController;
 
 use App\Http\Controllers\Api\Admin\PosSaleController;
 
+use App\Http\Controllers\Api\Admin\UserController as AdminUsers;
+use App\Http\Controllers\Api\Admin\PasswordController as AdminPassword;
+
+use App\Http\Controllers\Api\CustomerPasswordController as CustomerPassword;
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuth::class, 'login']);
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/logout', [AdminAuth::class, 'logout']);
+    Route::post('/password/forgot', [AdminPassword::class, 'forgot'])
+        ->middleware('throttle:5,1')
+        ->name('admin.password.forgot');
+
+    Route::middleware(['auth:sanctum', 'must.change.password'])->group(function () {
+        Route::post('/logout', [AdminAuth::class, 'logout'])->name('admin.logout');
+
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/users', [AdminUsers::class, 'index']);
+            Route::get('/users/{id}', [AdminUsers::class, 'show'])->whereNumber('id');
+            Route::post('/users', [AdminUsers::class, 'store']);
+            Route::put('/users/{id}', [AdminUsers::class, 'update'])->whereNumber('id');
+            Route::delete('/users/{id}', [AdminUsers::class, 'destroy'])->whereNumber('id');
+        });
+
+        Route::post('/password/change', [AdminPassword::class, 'change'])->name('admin.password.change');
 
         Route::get('pos/products', [PosController::class, 'searchProducts']);
         Route::get('pos/customers', [PosController::class, 'searchCustomers']);
@@ -107,6 +126,10 @@ Route::get('/events/{slug}', [PublicEvents::class, 'show']);
 Route::post('/events/{slug}/register', [PublicEvents::class, 'register']);
 Route::get('/{slug}/my-registration', [PublicEvents::class, 'myRegistration']);
 
+Route::post('/auth/password/forgot', [CustomerPassword::class, 'forgot'])
+    ->middleware('throttle:5,1')
+    ->name('customer.password.forgot');
+
 Route::get('/categories', [PublicCategories::class, 'index']);
 
 Route::post('/payments/intents', [PaymentController::class, 'createIntent']);
@@ -119,9 +142,14 @@ Route::post('/auth/login',    [CustomerAuthController::class,  'login']);
 Route::get('admin/sales/{sale}/pickup-doc', [SaleController::class, 'pickupDoc'])
     ->name('admin.sales.pickupDoc');
 
-Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:customer', 'must.change.password'])->group(function () {
+    Route::post('/auth/password/change', [CustomerPassword::class, 'change'])
+        ->middleware('auth:sanctum')
+        ->name('customer.password.change');
+
     Route::get('/auth/me',     [CustomerAuthController::class, 'me']);
     Route::post('/auth/logout', [CustomerAuthController::class, 'logout']);
+
 
     Route::post('/payments/intents', [PaymentController::class, 'createIntent']);
     Route::post('/payments/intents/{intentId}/confirm', [PaymentController::class, 'confirmIntent']);

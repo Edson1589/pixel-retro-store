@@ -33,21 +33,27 @@ export default function Header() {
             items={[
                 { label: 'Productos', to: '/' },
                 { label: 'Eventos', to: '/events' },
-                ...(user ? [{ label: 'Mis compras', to: '/account/orders' }] : []),
+
+                ...(user ? [
+                    { label: 'Mis compras', to: '/account/orders' },
+                    { label: 'Cambiar contraseña', to: '/account/change-password' },
+                ] : []),
+
                 { label: 'Carrito', to: '/cart', badge: qty },
+
                 ...(!loading
                     ? (user
                         ? [
-                            { label: `Hola, ${user.name}`, onClick: doLogout },
+                            { label: `Hola, ${user.name}` },
                             { label: 'Salir', onClick: doLogout },
                         ]
-
                         : [
                             { label: 'Ingresar', to: '/login' },
                             { label: 'Crear cuenta', to: '/register' },
                         ])
                     : []),
             ]}
+
         />
     );
 }

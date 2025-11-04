@@ -10,13 +10,13 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@pixelretro.dev'],
+        User::firstOrCreate(
+            ['email' => 'admin@example.com'],
             [
-                'name' => 'Admin PixelRetro',
-                'password' => Hash::make('Admin123!'),
+                'name' => 'Admin',
                 'role' => 'admin',
-                'is_admin' => true,
+                'password' => Hash::make('1234'),
+                'must_change_password' => true,
             ]
         );
     }

@@ -1,17 +1,13 @@
 import { useState } from 'react';
-import { adminLogin, setToken } from '../../services/adminApi';
+import { adminLogin, setToken, setAdminUser } from '../../services/adminApi';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-type LoginResponse = {
-    token: string;
-    user: { id: number; name: string; email: string; role?: string };
-};
+import type { AdminLoginResponse } from '../../types';
 
 type LocationState = { from?: string };
 
 export default function AdminLogin() {
-    const [email, setEmail] = useState('admin@pixelretro.dev');
-    const [password, setPassword] = useState('Admin123!');
+    const [email, setEmail] = useState('admin@example.com');
+    const [password, setPassword] = useState('1234');
     const [msg, setMsg] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
 
@@ -24,9 +20,20 @@ export default function AdminLogin() {
         try {
             setBusy(true);
             setMsg(null);
-            const res = (await adminLogin(email, password)) as LoginResponse;
+            const res = await adminLogin(email, password) as AdminLoginResponse;
             setToken(res.token);
-            nav(from);
+            setAdminUser({
+                id: res.user.id,
+                name: res.user.name,
+                email: res.user.email,
+                role: res.user.role,
+                must_change_password: !!res.user.must_change_password,
+            });
+            if (res.user.must_change_password) {
+                nav('/admin/change-password', { replace: true });
+            } else {
+                nav(from, { replace: true });
+            }
         } catch (err: unknown) {
             setMsg(err instanceof Error ? err.message : 'Error de login');
         } finally {
@@ -88,6 +95,12 @@ export default function AdminLogin() {
                     >
                         {busy ? 'Ingresando...' : 'Ingresar'}
                     </button>
+                    <div className="mt-3 text-center">
+                        <a href="/admin/forgot-password" className="text-cyan-300 hover:underline text-sm">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+
                 </form>
 
                 {msg && <p className="mt-3 text-sm text-red-400">{msg}</p>}
