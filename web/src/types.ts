@@ -41,13 +41,65 @@ export type EventRegistration = {
     status: 'pending' | 'confirmed' | 'cancelled';
 };
 
-
 export type Page<T> = {
     data: T[];
     current_page: number;
     last_page: number;
     per_page: number;
     total: number;
+};
+
+export type EventLookupItem = {
+    id: number;
+    title: string;
+    type: 'event' | 'tournament';
+    start_at: string;
+    end_at?: string | null;
+    location?: string | null;
+    capacity?: number | null;
+    status: 'draft' | 'published' | 'archived';
+};
+
+export type AdminEvent = {
+    id: number;
+    title: string;
+    type: 'event' | 'tournament';
+    start_at: string;
+    end_at?: string | null;
+    location?: string | null;
+    status: 'draft' | 'published' | 'archived';
+    capacity?: number | null;
+    registrations_count?: number;
+    description?: string | null;
+    banner_url?: string | null;
+    registration_open?: boolean;
+    remaining_capacity?: number | null;
+};
+
+export type AdminRegistration = EventRegistration & {
+    ticket_code?: string | null;
+    ticket_issued_at?: string | null;
+    source?: 'web' | 'admin' | 'import' | 'onsite' | null;
+    created_by_admin_id?: number | null;
+    checked_in_at?: string | null;
+    checked_in_by?: number | null;
+};
+
+export type WalkInCreatePayload = {
+    name: string;
+    email: string;
+    gamer_tag?: string | null;
+    team?: string | null;
+    notes?: string | null;
+    status?: 'pending' | 'confirmed' | 'cancelled';
+    force?: boolean;
+    send_email?: boolean;
+    check_in?: boolean;
+};
+
+export type ConflictDuplicatePayload = {
+    message: string;
+    existing: Pick<AdminRegistration, 'id' | 'status' | 'ticket_code'>;
 };
 
 export type SlimUser = { id: number; name: string };

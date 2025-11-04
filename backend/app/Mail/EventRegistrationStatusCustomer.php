@@ -15,8 +15,17 @@ class EventRegistrationStatusCustomer extends Mailable
 
     public function build()
     {
-        $ev = $this->registration->event()->first();
-        $status = strtoupper($this->registration->status);
+        $this->registration->loadMissing('event');
+        $ev = $this->registration->event;
+
+        $front = rtrim(config('app.frontend_url', env('FRONTEND_URL', env('APP_URL'))), '/');
+
+        $loginUrl = $front . '/admin/login';
+        $eventUrl = $ev?->slug
+            ? $front . '/events/' . $ev->slug
+            : $front . '/events';
+
+        $status  = strtoupper($this->registration->status);
         $subject = "Actualización de registro ({$status}): " . ($ev->title ?? 'Evento');
 
         return $this
@@ -24,8 +33,10 @@ class EventRegistrationStatusCustomer extends Mailable
             ->subject($subject)
             ->view('emails.events.customer_status_changed')
             ->with([
-                'reg' => $this->registration,
-                'ev'  => $ev,
+                'reg'       => $this->registration,
+                'ev'        => $ev,
+                'loginUrl'  => $loginUrl,
+                'eventUrl'  => $eventUrl,
             ]);
     }
 }

@@ -76,6 +76,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/products/{id}', [AdminProducts::class, 'update']);
         Route::delete('/products/{id}', [AdminProducts::class, 'destroy']);
 
+        Route::get('/events/lookup', [AdminEvents::class, 'lookup']);
         Route::get('/events', [AdminEvents::class, 'index']);
         Route::post('/events', [AdminEvents::class, 'store']);
         Route::get('/events/{id}', [AdminEvents::class, 'show']);
@@ -84,6 +85,15 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/events/{id}/registrations', [AdminEventRegs::class, 'index']);
         Route::post('/events/{id}/registrations/{regId}/status', [AdminEventRegs::class, 'updateStatus']);
+
+        Route::post('/events/{id}/registrations', [AdminEventRegs::class, 'store'])
+            ->whereNumber('id');
+
+        Route::patch('/events/{id}/registrations/{regId}', [AdminEventRegs::class, 'update'])
+            ->whereNumber('id')->whereNumber('regId');
+
+        Route::post('/events/{id}/registrations/{regId}/checkin', [AdminEventRegs::class, 'checkin'])
+            ->whereNumber('id')->whereNumber('regId');
     });
 });
 

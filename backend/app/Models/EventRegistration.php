@@ -15,7 +15,18 @@ class EventRegistration extends Model
         'gamer_tag',
         'team',
         'notes',
-        'status'
+        'status',
+        'ticket_code',
+        'ticket_issued_at',
+        'source',
+        'created_by_admin_id',
+        'checked_in_at',
+        'checked_in_by',
+    ];
+
+    protected $casts = [
+        'ticket_issued_at' => 'datetime',
+        'checked_in_at'    => 'datetime',
     ];
 
     public function event(): BelongsTo
@@ -26,5 +37,15 @@ class EventRegistration extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function createdByAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_admin_id');
+    }
+
+    public function checkedInBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_in_by');
     }
 }

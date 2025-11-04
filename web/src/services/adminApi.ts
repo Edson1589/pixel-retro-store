@@ -1,4 +1,13 @@
-import type { SalesSummary, Sale } from '../types';
+import type {
+    SalesSummary, Sale,
+    EventItem,
+    EventRegistration,
+    EventLookupItem,
+    AdminEvent,
+    AdminRegistration,
+    WalkInCreatePayload,
+    ConflictDuplicatePayload
+} from '../types';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 const KEY = 'pixelretro_admin_token';
 
@@ -86,7 +95,10 @@ export type Page<T> = {
 
 const authHeaders = (): HeaderMap => {
     const t = getToken();
-    return t ? { Authorization: `Bearer ${t}` } : {};
+    return {
+        Accept: 'application/json',           // <--- importante
+        ...(t ? { Authorization: `Bearer ${t}` } : {}),
+    };
 };
 
 const jsonHeaders = (): HeaderMap => ({
@@ -230,7 +242,7 @@ export async function deleteProduct(id: number) {
     return res.json();
 }
 
-export async function adminListEvents<T = Event>(params?: {
+export async function adminListEvents<T = EventItem>(params?: {
     page?: number; perPage?: number; search?: string; type?: 'event' | 'tournament' | 'all';
 }): Promise<Page<T>> {
     const qs = new URLSearchParams();
@@ -240,30 +252,36 @@ export async function adminListEvents<T = Event>(params?: {
     if (params?.type && params.type !== 'all') qs.set('type', params.type);
 
     const base = `${API_URL}/api/admin/events`;
-    const query = qs.toString();
-    const url = query ? `${base}?${query}` : base;
+    const url = qs.toString() ? `${base}?${qs.toString()}` : base;
 
     const r = await fetch(url, { headers: { ...authHeaders() } });
     if (!r.ok) throw new Error(await r.text());
     return r.json() as Promise<Page<T>>;
 }
-export async function adminGetEvent(id: number) {
+
+export async function adminGetEvent(id: number): Promise<AdminEvent> {
     const r = await fetch(`${API_URL}/api/admin/events/${id}`, { headers: { ...authHeaders() } });
-    if (!r.ok) throw new Error(await r.text()); return r.json();
+    if (!r.ok) throw new Error(await r.text());
+    return r.json() as Promise<AdminEvent>;
 }
-export async function adminCreateEvent(fd: FormData) {
-    const r = await fetch(`${API_URL}/api/admin/events`, { method: 'POST', headers: { ...authHeaders() }, body: fd });
-    if (!r.ok) throw new Error(await r.text()); return r.json();
+
+export async function adminLookupEvents(params?: {
+    search?: string;
+    type?: 'event' | 'tournament';
+}): Promise<EventLookupItem[]> {
+    const qs = new URLSearchParams();
+    if (params?.search) qs.set('search', params.search);
+    if (params?.type) qs.set('type', params.type);
+
+    const base = `${API_URL}/api/admin/events/lookup`;
+    const url = qs.toString() ? `${base}?${qs.toString()}` : base;
+
+    const r = await fetch(url, { headers: { ...authHeaders() } });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json() as Promise<EventLookupItem[]>;
 }
-export async function adminUpdateEvent(id: number, fd: FormData) {
-    const r = await fetch(`${API_URL}/api/admin/events/${id}`, { method: 'POST', headers: { ...authHeaders() }, body: fd });
-    if (!r.ok) throw new Error(await r.text()); return r.json();
-}
-export async function adminDeleteEvent(id: number) {
-    const r = await fetch(`${API_URL}/api/admin/events/${id}`, { method: 'DELETE', headers: { ...authHeaders() } });
-    if (!r.ok) throw new Error(await r.text()); return r.json();
-}
-export async function adminListEventRegs<T = unknown>(
+
+export async function adminListEventRegs<T = EventRegistration>(
     eventId: number,
     params?: {
         page?: number;
@@ -276,21 +294,95 @@ export async function adminListEventRegs<T = unknown>(
     if (params?.page != null) qs.set('page', String(params.page));
     if (params?.perPage != null) qs.set('per_page', String(params.perPage));
     if (params?.status) qs.set('status', params.status);
-    if (params?.search) qs.set('search', params.search);
+    if (params?.search) qs.set('q', params.search);
 
     const base = `${API_URL}/api/admin/events/${eventId}/registrations`;
-    const query = qs.toString();
-    const url = query ? `${base}?${query}` : base;
+    const url = qs.toString() ? `${base}?${qs.toString()}` : base;
 
     const r = await fetch(url, { headers: { ...authHeaders() } });
     if (!r.ok) throw new Error(await r.text());
     return r.json() as Promise<Page<T>>;
 }
 
-export async function adminUpdateRegStatus(eventId: number, regId: number, status: 'pending' | 'confirmed' | 'cancelled') {
+export async function adminUpdateRegStatus(
+    eventId: number,
+    regId: number,
+    status: 'pending' | 'confirmed' | 'cancelled'
+): Promise<AdminRegistration> {
     const r = await fetch(`${API_URL}/api/admin/events/${eventId}/registrations/${regId}/status`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ status })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ status })
     });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json() as Promise<AdminRegistration>;
+}
+
+export class ConflictDuplicateError extends Error {
+    public readonly payload: ConflictDuplicatePayload;
+    public readonly status: number;
+    constructor(payload: ConflictDuplicatePayload, status: number) {
+        super(payload.message);
+        this.payload = payload;
+        this.status = status;
+    }
+}
+
+export async function adminCreateEventRegistration(
+    eventId: number,
+    payload: WalkInCreatePayload
+): Promise<AdminRegistration> {
+    const r = await fetch(`${API_URL}/api/admin/events/${eventId}/registrations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(payload)
+    });
+
+    if (r.status === 409) {
+        const data = (await r.json()) as ConflictDuplicatePayload;
+        throw new ConflictDuplicateError(data, 409);
+    }
+
+    if (!r.ok) throw new Error(await r.text());
+    return r.json() as Promise<AdminRegistration>;
+}
+
+export async function adminUpdateEventRegistration(
+    eventId: number,
+    regId: number,
+    patch: Partial<Pick<WalkInCreatePayload, 'name' | 'email' | 'gamer_tag' | 'team' | 'notes' | 'status'>>
+): Promise<AdminRegistration> {
+    const r = await fetch(`${API_URL}/api/admin/events/${eventId}/registrations/${regId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(patch)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json() as Promise<AdminRegistration>;
+}
+
+export async function adminCheckinRegistration(
+    eventId: number,
+    regId: number
+): Promise<AdminRegistration> {
+    const r = await fetch(`${API_URL}/api/admin/events/${eventId}/registrations/${regId}/checkin`, {
+        method: 'POST',
+        headers: { ...authHeaders() }
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json() as Promise<AdminRegistration>;
+}
+
+export async function adminCreateEvent(fd: FormData) {
+    const r = await fetch(`${API_URL}/api/admin/events`, { method: 'POST', headers: { ...authHeaders() }, body: fd });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
+export async function adminUpdateEvent(id: number, fd: FormData) {
+    const r = await fetch(`${API_URL}/api/admin/events/${id}`, { method: 'POST', headers: { ...authHeaders() }, body: fd });
+    if (!r.ok) throw new Error(await r.text()); return r.json();
+}
+export async function adminDeleteEvent(id: number) {
+    const r = await fetch(`${API_URL}/api/admin/events/${id}`, { method: 'DELETE', headers: { ...authHeaders() } });
     if (!r.ok) throw new Error(await r.text()); return r.json();
 }
 
@@ -502,3 +594,4 @@ export async function adminVoidSale(
     const j = await res.json();
     return j.data ?? j;
 }
+

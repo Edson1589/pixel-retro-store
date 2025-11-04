@@ -57,4 +57,26 @@ class EventController extends Controller
         Event::findOrFail($id)->delete();
         return response()->json(['message' => 'deleted']);
     }
+
+    public function lookup(Request $request)
+    {
+        $q = Event::query();
+
+        if ($s = $request->string('search')->toString()) {
+            $q->where(function ($qq) use ($s) {
+                $qq->where('title', 'like', "%$s%")
+                    ->orWhere('location', 'like', "%$s%");
+            });
+        }
+
+        if ($t = $request->string('type')->toString()) {
+            $q->where('type', $t);
+        }
+
+        $events = $q->orderByDesc('start_at')
+            ->limit(20)
+            ->get(['id', 'title', 'type', 'start_at', 'end_at', 'location', 'capacity', 'status']);
+
+        return response()->json($events);
+    }
 }
