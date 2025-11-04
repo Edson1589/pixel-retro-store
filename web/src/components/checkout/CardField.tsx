@@ -33,7 +33,8 @@ export default function CardField({ value, onChange }: Props) {
     const valid = raw.length >= 13 && raw.length <= 19 && luhn(raw);
 
     return (
-        <div className="grid md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+            {/* Número de tarjeta */}
             <div className="relative">
                 <input
                     className="border rounded-xl px-3 py-2 w-full"
@@ -52,8 +53,9 @@ export default function CardField({ value, onChange }: Props) {
                 )}
             </div>
 
+            {/* CVC */}
             <input
-                className="border rounded-xl px-3 py-2"
+                className="border rounded-xl px-3 py-2 w-full"
                 placeholder="CVC"
                 value={value.cvc}
                 onChange={(e) => onChange({ ...value, cvc: digits(e.target.value).slice(0, 4) })}
@@ -62,8 +64,9 @@ export default function CardField({ value, onChange }: Props) {
                 maxLength={4}
             />
 
+            {/* Mes de expiración */}
             <input
-                className="border rounded-xl px-3 py-2"
+                className="border rounded-xl px-3 py-2 w-full"
                 placeholder="Mes (MM)"
                 value={value.exp_month}
                 onChange={(e) => onChange({ ...value, exp_month: digits(e.target.value).slice(0, 2) })}
@@ -72,8 +75,9 @@ export default function CardField({ value, onChange }: Props) {
                 maxLength={2}
             />
 
+            {/* Año de expiración */}
             <input
-                className="border rounded-xl px-3 py-2"
+                className="border rounded-xl px-3 py-2 w-full"
                 placeholder="Año (YYYY)"
                 value={value.exp_year}
                 onChange={(e) => onChange({ ...value, exp_year: digits(e.target.value).slice(0, 4) })}

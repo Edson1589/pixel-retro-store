@@ -10,9 +10,9 @@ type ModalProps = {
 };
 
 const sizeMap = {
-    sm: 'max-w-md',
-    md: 'max-w-xl',
-    lg: 'max-w-2xl',
+    sm: 'max-w-[90vw] md:max-w-md',
+    md: 'max-w-[90vw] md:max-w-xl',
+    lg: 'max-w-[90vw] md:max-w-2xl',
 };
 
 export default function Modal({ open, onClose, title, children, footer, size = 'md' }: ModalProps) {
@@ -28,19 +28,22 @@ export default function Modal({ open, onClose, title, children, footer, size = '
 
     return (
         <div className="fixed inset-0 z-[100]">
+            {/* Fondo */}
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
                 onClick={onClose}
                 aria-hidden="true"
             />
+            {/* Contenedor centrado */}
             <div className="absolute inset-0 flex items-center justify-center p-4">
                 <div
                     role="dialog"
                     aria-modal="true"
-                    className={`w-full ${sizeMap[size]} rounded-2xl overflow-hidden
-            border border-white/10 bg-[#0B1220] text-white
-            shadow-[0_30px_80px_-25px_rgba(2,6,23,0.65)]`}
+                    className={`w-full ${sizeMap[size]} rounded-2xl overflow-y-auto
+                        border border-white/10 bg-[#0B1220] text-white
+                        shadow-[0_30px_80px_-25px_rgba(2,6,23,0.65)]`}
                 >
+                    {/* Header */}
                     <div className="px-4 py-3 border-b border-white/10 flex items-center">
                         <h3 className="text-[15px] font-semibold text-white/90">{title}</h3>
                         <button
@@ -51,9 +54,9 @@ export default function Modal({ open, onClose, title, children, footer, size = '
                             ✕
                         </button>
                     </div>
-                    <div className="p-4">
-                        {children}
-                    </div>
+                    {/* Contenido */}
+                    <div className="p-4">{children}</div>
+                    {/* Footer */}
                     {footer && (
                         <div className="px-4 py-3 border-t border-white/10 bg-white/[0.02]">
                             {footer}

@@ -14,7 +14,7 @@ export default function Modal({
     onClose,
     title,
     children,
-    maxWidthClass = 'max-w-lg',
+    maxWidthClass = 'max-w-[90vw] md:max-w-lg',
 }: Props) {
     useEffect(() => {
         if (!open) return;
@@ -32,33 +32,37 @@ export default function Modal({
 
     return createPortal(
         <div className="fixed inset-0 z-50">
+            {/* Fondo oscuro */}
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={onClose}
             />
 
+            {/* Contenedor centrado */}
             <div className="absolute inset-0 flex items-center justify-center p-4">
                 <div
                     role="dialog"
                     aria-modal="true"
                     className={`w-full ${maxWidthClass}
-            rounded-2xl overflow-hidden
-            bg-white/[0.06] border border-white/10 text-white
-            shadow-[0_40px_120px_-30px_rgba(2,6,23,0.9)]`}
+                        rounded-2xl overflow-y-auto
+                        bg-white/[0.06] border border-white/10 text-white
+                        shadow-[0_40px_120px_-30px_rgba(2,6,23,0.9)]`}
                 >
+                    {/* Header */}
                     <div className="flex items-center gap-2 p-4 border-b border-white/10
-                          bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)]">
+                        bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)]">
                         <h3 className="text-[15px] font-semibold text-white/90">{title}</h3>
                         <button
                             onClick={onClose}
                             className="ml-auto text-sm px-3 py-1.5 rounded-lg
-                         bg-white/10 hover:bg-white/15 border border-white/10
-                         focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                bg-white/10 hover:bg-white/15 border border-white/10
+                                focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
                         >
                             Cerrar
                         </button>
                     </div>
 
+                    {/* Contenido */}
                     <div className="p-4">{children}</div>
                 </div>
             </div>
