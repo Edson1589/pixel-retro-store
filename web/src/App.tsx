@@ -6,6 +6,7 @@ import CartProvider from './context/CartProvider';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout';
 import RequireAdmin from './pages/admin/RequireAdmin';
+import RequireStaff from './pages/admin/RequireStaff';
 
 import AdminProductsList from './pages/admin/products/AdminProductList';
 import AdminProductCreate from './pages/admin/products/AdminProductCreate';
@@ -57,6 +58,11 @@ import CustomerForgotPassword from './pages/auth/CustomerForgotPassword';
 import CustomerChangePassword from './pages/account/CustomerChangePassword';
 import RequireCustomer from './components/auth/RequireCustomer';
 
+import AccountAppointments from './pages/account/AccountAppointments';
+import AppointmentNew from './pages/account/AppointmentNew';
+import AppointmentDetail from './pages/account/AppointmentDetail';
+import AdminAppointmentsList from './pages/admin/appointments/AdminAppointmentsList';
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -87,6 +93,18 @@ export default function App() {
           <Route path="/login" element={<CustomerLogin />} />
           <Route path="/register" element={<CustomerRegister />} />
           <Route path="/forgot-password" element={<CustomerForgotPassword />} />
+
+          <Route path="/account/orders" element={<RequireCustomer><OrdersPage /></RequireCustomer>} />
+          <Route path="/account/orders/:id" element={<RequireCustomer><OrderDetailPage /></RequireCustomer>} />
+          <Route path="/account/change-password" element={<RequireCustomer><CustomerChangePassword /></RequireCustomer>} />
+
+          <Route path="/account/appointments" element={<RequireCustomer><AccountAppointments /></RequireCustomer>} />
+          <Route path="/account/appointments/new" element={<RequireCustomer><AppointmentNew /></RequireCustomer>} />
+          <Route path="/account/appointments/:id" element={<RequireCustomer><AppointmentDetail /></RequireCustomer>} />
+
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
+          <Route path="/admin/change-password" element={<RequireAdmin><AdminChangePassword /></RequireAdmin>} />
 
           <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
             <Route index element={<AdminProductsList />} />
@@ -119,6 +137,7 @@ export default function App() {
             <Route path="users/:id" element={<AdminUserShow />} />
             <Route path="users/:id/edit" element={<AdminUserEdit />} />
             <Route path="users/:id/delete" element={<AdminUserDelete />} />
+            <Route path="appointments" element={<RequireStaff><AdminAppointmentsList /></RequireStaff>} />
           </Route>
         </Routes>
       </CartProvider>

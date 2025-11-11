@@ -39,6 +39,9 @@ use App\Http\Controllers\Api\Admin\PasswordController as AdminPassword;
 
 use App\Http\Controllers\Api\CustomerPasswordController as CustomerPassword;
 
+use App\Http\Controllers\Api\AppointmentController as CustomerAppointments;
+use App\Http\Controllers\Api\Admin\AppointmentController as AdminAppointments;
+
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuth::class, 'login']);
 
@@ -55,6 +58,14 @@ Route::prefix('admin')->group(function () {
             Route::post('/users', [AdminUsers::class, 'store']);
             Route::put('/users/{id}', [AdminUsers::class, 'update'])->whereNumber('id');
             Route::delete('/users/{id}', [AdminUsers::class, 'destroy'])->whereNumber('id');
+        });
+
+        Route::middleware('role:technician,admin')->group(function () {
+            Route::get('/appointments', [AdminAppointments::class, 'index'])->name('admin.appts.index');
+            Route::patch('/appointments/{appointment}/accept', [AdminAppointments::class, 'accept'])->name('admin.appts.accept');
+            Route::patch('/appointments/{appointment}/reject', [AdminAppointments::class, 'reject'])->name('admin.appts.reject');
+            Route::patch('/appointments/{appointment}/reschedule', [AdminAppointments::class, 'reschedule'])->name('admin.appts.reschedule');
+            Route::patch('/appointments/{appointment}/complete', [AdminAppointments::class, 'complete'])->name('admin.appts.complete');
         });
 
         Route::post('/password/change', [AdminPassword::class, 'change'])->name('admin.password.change');
@@ -150,6 +161,11 @@ Route::middleware(['auth:sanctum', 'role:customer', 'must.change.password'])->gr
     Route::get('/auth/me',     [CustomerAuthController::class, 'me']);
     Route::post('/auth/logout', [CustomerAuthController::class, 'logout']);
 
+    Route::get('/appointments', [CustomerAppointments::class, 'index'])->name('customer.appts.index');
+    Route::post('/appointments', [CustomerAppointments::class, 'store'])->name('customer.appts.store');
+    Route::get('/appointments/{appointment}', [CustomerAppointments::class, 'show'])->name('customer.appts.show');
+    Route::post('/appointments/{appointment}/confirm-reschedule', [CustomerAppointments::class, 'confirmReschedule'])->name('customer.appts.confirmReschedule');
+    Route::post('/appointments/{appointment}/cancel', [CustomerAppointments::class, 'cancel'])->name('customer.appts.cancel');
 
     Route::post('/payments/intents', [PaymentController::class, 'createIntent']);
     Route::post('/payments/intents/{intentId}/confirm', [PaymentController::class, 'confirmIntent']);

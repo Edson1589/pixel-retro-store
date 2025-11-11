@@ -67,4 +67,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Sale::class);
     }
+
+    public function customerAppointments()
+    {
+        return $this->hasMany(\App\Models\Appointment::class, 'customer_id');
+    }
+
+    public function techAppointments()
+    {
+        return $this->hasMany(\App\Models\Appointment::class, 'technician_id');
+    }
 }

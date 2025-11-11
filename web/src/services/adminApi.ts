@@ -13,7 +13,7 @@ import type {
     AdminUserUpdatePayload,
     PasswordChangePayload
 } from '../types';
-
+import type { Appointment, Page as Paginator } from '../types';
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 const KEY = 'pixelretro_admin_token';
 const USER_KEY = 'pixelretro_admin_user';
@@ -22,6 +22,7 @@ export const getToken = () => localStorage.getItem(KEY);
 export const setToken = (t: string) => localStorage.setItem(KEY, t);
 export const clearToken = () => localStorage.removeItem(KEY);
 export type ApiMsg = { message: string };
+type ListParams = { status?: string; from?: string; to?: string; page?: number; per_page?: number; };
 
 export const getAdminUser = (): AdminUser | null => {
     const raw = localStorage.getItem(USER_KEY);
@@ -688,3 +689,49 @@ export async function adminVoidSale(
     return j.data ?? j;
 }
 
+export async function adminListAppointments(params?: ListParams) {
+    const qs = new URLSearchParams();
+    if (params?.status) qs.set('status', params.status);
+    if (params?.from) qs.set('from', params.from);
+    if (params?.to) qs.set('to', params.to);
+    if (params?.page) qs.set('page', String(params.page));
+    if (params?.per_page) qs.set('per_page', String(params.per_page));
+
+    const res = await fetch(`${API_URL}/api/admin/appointments${qs.size ? `?${qs}` : ''}`, { headers: authHeaders() });
+    return handleJson<Paginator<Appointment>>(res);
+}
+
+export async function adminAcceptAppointment(id: number, payload: { scheduled_at: string; duration_minutes?: number }) {
+    const res = await fetch(`${API_URL}/api/admin/appointments/${id}/accept`, {
+        method: 'PATCH',
+        headers: jsonHeaders(),
+        body: JSON.stringify(payload),
+    });
+    return handleJson<{ message: string; data: Appointment }>(res);
+}
+
+export async function adminRejectAppointment(id: number, reason: string) {
+    const res = await fetch(`${API_URL}/api/admin/appointments/${id}/reject`, {
+        method: 'PATCH',
+        headers: jsonHeaders(),
+        body: JSON.stringify({ reason }),
+    });
+    return handleJson<{ message: string; data: Appointment }>(res);
+}
+
+export async function adminRescheduleAppointment(id: number, payload: { proposed_at: string; note?: string; duration_minutes?: number }) {
+    const res = await fetch(`${API_URL}/api/admin/appointments/${id}/reschedule`, {
+        method: 'PATCH',
+        headers: jsonHeaders(),
+        body: JSON.stringify(payload),
+    });
+    return handleJson<{ message: string; data: Appointment }>(res);
+}
+
+export async function adminCompleteAppointment(id: number) {
+    const res = await fetch(`${API_URL}/api/admin/appointments/${id}/complete`, {
+        method: 'PATCH',
+        headers: jsonHeaders(),
+    });
+    return handleJson<{ message: string; data: Appointment }>(res);
+}

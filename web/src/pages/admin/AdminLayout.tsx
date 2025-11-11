@@ -39,6 +39,7 @@ export default function AdminLayout() {
                 items={[
                     { label: 'Usuarios', to: '/admin/users' },
                     { label: 'Eventos', to: '/admin/events' },
+                    { label: 'Citas', to: '/admin/appointments' },
                     { label: 'Registro de participantes', to: '/admin/events/onsite' },
                     { label: 'Productos', to: '/admin/products' },
                     { label: 'Categorías', to: '/admin/categories' },

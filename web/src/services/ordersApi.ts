@@ -1,5 +1,5 @@
 import { withCustomerAuth } from './customerApi';
-const API = import.meta.env.VITE_API_URL ?? 'https://pixelbackend.infinityfreeapp.com';
+const API = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
 export type OrderItem = {
     id: number;

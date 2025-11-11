@@ -36,6 +36,7 @@ export default function Header() {
 
                 ...(user ? [
                     { label: 'Mis compras', to: '/account/orders' },
+                    { label: 'Citas', to: '/account/appointments' },
                     { label: 'Cambiar contraseña', to: '/account/change-password' },
                 ] : []),
 

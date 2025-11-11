@@ -226,3 +226,37 @@ export type AuthPayload = {
 
 export type AuthResponse = { token: string; user: CustomerUser };
 
+export type AppointmentStatus =
+    | 'pending'
+    | 'confirmed'
+    | 'rejected'
+    | 'rescheduled'
+    | 'completed'
+    | 'cancelled';
+
+export type ServiceType = 'repair' | 'maintenance' | 'diagnostic';
+export type AppointmentLocation = 'shop' | 'home';
+
+export type Appointment = {
+    id: number;
+    customer_id: number;
+    technician_id?: number | null;
+    service_type: ServiceType;
+    console: string;
+    problem_description: string;
+    location: AppointmentLocation;
+    address?: string | null;
+    contact_phone: string;
+    preferred_at: string;
+    scheduled_at?: string | null;
+    duration_minutes: number;
+    status: AppointmentStatus;
+    reschedule_proposed_at?: string | null;
+    reschedule_note?: string | null;
+    reject_reason?: string | null;
+    customer_notes?: string | null;
+    created_at: string;
+    updated_at: string;
+    customer?: { id: number; name: string; email: string };
+    technician?: { id: number; name: string; email: string } | null;
+};
