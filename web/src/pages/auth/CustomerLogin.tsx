@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import { User, KeyRound } from 'lucide-react';
 
 type LocationState = { next?: string };
 
@@ -37,7 +38,7 @@ export default function CustomerLogin() {
     const onPassword = (e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value);
 
     return (
-        <div className="min-h-screen grid place-items-center bg-[#07101B] p-4">
+        <div className="min-h-screen place-items-center bg-[#07101B] p-4">
             <div className="w-[420px] max-w-full rounded-[22px] p-6 bg-white/[0.04] border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)]">
                 <h1 className="text-center text-2xl font-extrabold bg-clip-text text-transparent bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]">
                     Iniciar sesión
@@ -45,27 +46,47 @@ export default function CustomerLogin() {
                 <p className="mt-1 text-center text-white/70 text-sm">Accede a tu cuenta para continuar</p>
 
                 <form onSubmit={submit} className="mt-6 grid gap-3">
-                    <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Email</span>
-                    <input
-                        id="email"
-                        className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={onEmail}
-                        autoComplete="email"
-                    />
+                    <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">
+                        Email
+                    </span>
+                    <div className="flex items-center rounded-xl bg-white/[0.04] border border-white/15 overflow-hidden
+    focus-within:ring-2 focus-within:ring-[#7C3AED66]
+">
+                        <div className="h-10 w-10 grid place-items-center bg-white/5 border-r border-white/10">
+                            <User className="h-4 w-4 text-white/70" />
+                        </div>
+                        <input
+                            id="email"
+                            className="flex-1 px-3 py-2 bg-transparent text-white/90 placeholder:text-white/45 outline-none"
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={onEmail}
+                            autoComplete="email"
+                        />
+                    </div>
 
-                    <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">Contraseña</span>
-                    <input
-                        id="password"
-                        className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                        type="password"
-                        placeholder="Contraseña"
-                        value={password}
-                        onChange={onPassword}
-                        autoComplete="current-password"
-                    />
+
+                    <span className="text-sm font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">
+                        Contraseña
+                    </span>
+                    <div className="flex items-center rounded-xl bg-white/[0.04] border border-white/15 overflow-hidden
+    focus-within:ring-2 focus-within:ring-[#7C3AED66]
+">
+                        <div className="h-10 w-10 grid place-items-center bg-white/5 border-r border-white/10">
+                            <KeyRound className="h-4 w-4 text-white/70" />
+                        </div>
+                        <input
+                            id="password"
+                            className="flex-1 px-3 py-2 bg-transparent text-white/90 placeholder:text-white/45 outline-none"
+                            type="password"
+                            placeholder="Contraseña"
+                            value={password}
+                            onChange={onPassword}
+                            autoComplete="current-password"
+                        />
+                    </div>
+
 
                     <div className="flex items-center justify-between text-sm">
                         <span />

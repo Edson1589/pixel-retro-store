@@ -2,74 +2,41 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchCategories } from "../services/api";
 import type { Category } from "../types";
+import {
+    Gamepad2,
+    Monitor,
+    Headphones,
+    Tag,
+    Sparkles,
+    Boxes,
+    ListTree,
+    ChevronDown,
+    ChevronRight,
+} from "lucide-react";
 
 function CatIcon({ name }: { name?: string }) {
     const key = (name ?? "").toLowerCase();
     const common = "h-4 w-4";
+
     if (key.includes("consol")) {
-        return (
-            <svg viewBox="0 0 24 24" className={common} aria-hidden>
-                <path
-                    d="M6 10h12a3 3 0 0 1 0 6h-1.2a2 2 0 0 1-1.6-.8l-.8-1.2H9.6l-.8 1.2a2 2 0 0 1-1.6.8H6a3 3 0 0 1 0-6Zm2 0V8h8v2"
-                    fill="currentColor"
-                    opacity=".15"
-                />
-                <path
-                    d="M6 10h12a3 3 0 0 1 0 6h-1.2a2 2 0 0 1-1.6-.8l-.8-1.2H9.6l-.8 1.2a2 2 0 0 1-1.6.8H6a3 3 0 0 1 0-6Zm4.5 1.5h-3m1.5-1.5v3m5 0h.01m2 0h.01"
-                    stroke="currentColor"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                />
-            </svg>
-        );
+        return <Monitor className={common} aria-hidden />;
     }
     if (key.includes("juego")) {
-        return (
-            <svg viewBox="0 0 24 24" className={common} aria-hidden>
-                <path d="M4 8h16v8H4z" fill="currentColor" opacity=".15" />
-                <path
-                    d="M6 8h12a2 2 0 0 1 2 2v4H4v-4a2 2 0 0 1 2-2Zm4 2H8m1 1v2m6-2h.01m2 0h.01"
-                    stroke="currentColor"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                    fill="none"
-                />
-            </svg>
-        );
+        return <Gamepad2 className={common} aria-hidden />;
     }
     if (key.includes("acces")) {
-        return (
-            <svg viewBox="0 0 24 24" className={common} aria-hidden>
-                <path d="M7 7h10v10H7z" fill="currentColor" opacity=".15" />
-                <path
-                    d="M8 8h8v8H8zM12 4v4m0 8v4"
-                    stroke="currentColor"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                    fill="none"
-                />
-            </svg>
-        );
+        return <Headphones className={common} aria-hidden />;
     }
     if (key.includes("oferta") || key.includes("promo")) {
-        return (
-            <svg viewBox="0 0 24 24" className={common} aria-hidden>
-                <path d="M5 12 12 5l7 7-7 7-7-7Z" fill="currentColor" />
-            </svg>
-        );
+        return <Tag className={common} aria-hidden />;
     }
-    return (
-        <svg viewBox="0 0 24 24" className={common} aria-hidden>
-            <circle cx="12" cy="12" r="4" fill="currentColor" />
-        </svg>
-    );
+    return <Sparkles className={common} aria-hidden />;
 }
 
 export default function CategorySidebar() {
     const [cats, setCats] = useState<Category[]>([]);
-    const [open, setOpen] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(false);     // toggle general (mobile)
+    const [expanded, setExpanded] = useState(true);          // toggle de la lista de categorías
     const [loading, setLoading] = useState(true);
     const [sp, setSp] = useSearchParams();
     const getCount = (c: Category) => c.products_count ?? 0;
@@ -93,76 +60,122 @@ export default function CategorySidebar() {
         else next.set("category", slug);
         next.delete("page");
         setSp(next, { replace: true });
-        setOpen(false);
+        // Cierra el drawer en mobile
+        setDrawerOpen(false);
     };
 
     return (
         <>
+            {/* Botón toggle para mobile */}
             <div className="md:hidden mb-3">
                 <button
                     className="w-full text-left px-3 py-2 rounded-xl
-                     border border-white/10 bg-white/5 text-white/90"
-                    onClick={() => setOpen((o) => !o)}
+                     border border-white/10 bg-white/5 text-white/90 flex items-center justify-between"
+                    onClick={() => setDrawerOpen((o) => !o)}
                 >
-                    ☰ Categorías {open ? "▲" : "▼"}
+                    <span className="flex items-center gap-2">
+                        <ListTree className="h-4 w-4" />
+                        <span>Categorías</span>
+                    </span>
+                    <span>{drawerOpen ? "▲" : "▼"}</span>
                 </button>
             </div>
 
-            <aside className={`md:block md:w-64 md:shrink-0 ${open ? "block" : "hidden"}`}>
+            {/* Sidebar pegado a la izquierda, vertical */}
+            <aside
+                className={`
+                    z-20
+                    md:sticky md:top-24 md:self-start md:w-64 md:shrink-0
+                    ${drawerOpen ? "block" : "hidden md:block"}
+                `}
+            >
                 <div
                     className="overflow-hidden rounded-[18px]
                      bg-[linear-gradient(180deg,#121A2A_0%,#0B1423_100%)]
-                     border border-white/10 text-white/90"
+                     border border-white/10 text-white/90
+                     max-h-[calc(100vh-7rem)] flex flex-col"
                 >
-                    <div className="px-4 py-3 text-xs font-semibold tracking-widest uppercase text-white/70">
-                        Categorías
-                    </div>
-
-                    <nav className="p-2">
-                        <button
-                            onClick={() => select(undefined)}
-                            className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
-                         ${active === "" ? "bg-white/8 text-white" : "text-white/80 hover:bg-white/5"}`}
-                        >
-                            <span className="text-white/80">
-                                <CatIcon />
-                            </span>
-                            <span className="truncate">Todas</span>
-                            {active === "" && (
-                                <span className="pointer-events-none absolute left-0 my-auto h-5 w-1.5 rounded-r-full
-                                 bg-[linear-gradient(180deg,#7C3AED_0%,#06B6D4_100%)]" />
-                            )}
-                        </button>
-
-                        {loading ? (
-                            <div className="px-3 py-2 text-sm text-white/50">Cargando…</div>
+                    {/* Header + toggle del menú de categorías */}
+                    <button
+                        type="button"
+                        onClick={() => setExpanded((e) => !e)}
+                        className="flex items-center justify-between gap-2 px-4 py-3
+                         text-xs font-semibold tracking-widest uppercase text-white/70
+                         hover:bg-white/5"
+                    >
+                        <span className="flex items-center gap-2">
+                            <ListTree className="h-4 w-4" />
+                            <span>Todas las categorías</span>
+                        </span>
+                        {expanded ? (
+                            <ChevronDown className="h-4 w-4" />
                         ) : (
-                            cats
-                                .filter(c => getCount(c) > 0)
-                                .map((c) => (
-                                    <button
-                                        key={c.id}
-                                        onClick={() => select(c.slug)}
-                                        className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
-                                        ${active === c.slug ? "bg-white/8 text-white" : "text-white/80 hover:bg-white/5"}`}
-                                    >
-                                        <span className="text-white/80">
-                                            <CatIcon name={c.name} />
-                                        </span>
-                                        <span className="truncate">{c.name}</span>
-
-                                        <span className="ml-auto text-xs tabular-nums text-white/70">
-                                            {getCount(c)}
-                                        </span>
-
-                                        {active === c.slug && (
-                                            <span className="pointer-events-none absolute left-0 my-auto h-5 w-1.5 rounded-r-full
-                                            bg-[linear-gradient(180deg,#7C3AED_0%,#06B6D4_100%)]" />
-                                        )}
-                                    </button>
-                                ))
+                            <ChevronRight className="h-4 w-4" />
                         )}
-                    </nav>
+                    </button>
+
+                    {expanded && (
+                        <nav className="p-2 border-t border-white/5 overflow-y-auto">
+                            {/* Filtro "Todas" */}
+                            <button
+                                onClick={() => select(undefined)}
+                                className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
+                                    ${active === ""
+                                        ? "bg-white/8 text-white"
+                                        : "text-white/80 hover:bg-white/5"
+                                    }`}
+                            >
+                                <span className="text-white/80">
+                                    <Boxes className="h-4 w-4" />
+                                </span>
+                                <span className="truncate">Todas</span>
+
+                                {active === "" && (
+                                    <span
+                                        className="pointer-events-none absolute left-0 my-auto h-5 w-1.5 rounded-r-full
+                                            bg-[linear-gradient(180deg,#7C3AED_0%,#06B6D4_100%)]"
+                                    />
+                                )}
+                            </button>
+
+                            {/* Lista de categorías */}
+                            {loading ? (
+                                <div className="px-3 py-2 text-sm text-white/50">
+                                    Cargando…
+                                </div>
+                            ) : (
+                                cats
+                                    .filter((c) => getCount(c) > 0)
+                                    .map((c) => (
+                                        <button
+                                            key={c.id}
+                                            onClick={() => select(c.slug)}
+                                            className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
+                                                ${active === c.slug
+                                                    ? "bg-white/8 text-white"
+                                                    : "text-white/80 hover:bg-white/5"
+                                                }`}
+                                        >
+                                            <span className="text-white/80">
+                                                <CatIcon name={c.name} />
+                                            </span>
+                                            <span className="truncate">{c.name}</span>
+
+                                            <span className="ml-auto text-xs tabular-nums text-white/70">
+                                                {getCount(c)}
+                                            </span>
+
+                                            {active === c.slug && (
+                                                <span
+                                                    className="pointer-events-none absolute left-0 my-auto h-5 w-1.5 rounded-r-full
+                                                    bg-[linear-gradient(180deg,#7C3AED_0%,#06B6D4_100%)]"
+                                                />
+                                            )}
+                                        </button>
+                                    ))
+                            )}
+                        </nav>
+                    )}
                 </div>
             </aside>
         </>

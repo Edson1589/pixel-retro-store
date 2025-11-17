@@ -14,7 +14,7 @@ export type CartLine = { product_id: number; qty: number };
 export async function createPaymentIntent(payload: { customer: CustomerPayload; items: CartLine[]; currency?: string; amount?: number; pickup_doc_b64?: string | null; }) {
     const r = await fetch(`${API}/api/payments/intents`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...withCustomerAuth() },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...withCustomerAuth() },
         body: JSON.stringify({ currency: 'BOB', ...payload }),
     });
     if (!r.ok) throw new Error(await r.text());
@@ -24,7 +24,7 @@ export async function createPaymentIntent(payload: { customer: CustomerPayload; 
 export async function confirmPaymentIntent(intentId: string, payload: { client_secret: string; card_number: string; exp_month: number; exp_year: number; cvc: string; }) {
     const r = await fetch(`${API}/api/payments/intents/${intentId}/confirm`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...withCustomerAuth() },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...withCustomerAuth() },
         body: JSON.stringify(payload),
     });
     if (!r.ok) throw new Error(await r.text());

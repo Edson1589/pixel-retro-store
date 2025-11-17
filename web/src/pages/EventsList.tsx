@@ -3,6 +3,14 @@ import { fetchEvents } from '../services/api';
 import { Link } from 'react-router-dom';
 import { trackEventClick } from '../services/telemetry';
 import FancySelect, { type Option } from '../components/FancySelect';
+import {
+    CalendarClock,
+    Sparkles,
+    Search,
+    Trophy,
+    Ticket,
+} from 'lucide-react';
+
 const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000').replace(/\/$/, '') + '/api';
 
 function preferEvent(id: number | string) {
@@ -132,55 +140,72 @@ export default function EventsList() {
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-6xl mx-auto p-4">
                 <main className="space-y-6">
-                    <section className="rounded-[20px] px-8 py-6 text-white
-                       bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
-                       shadow-[0_20px_60px_-20px_rgba(6,182,212,0.35)]
-                       border border-white/10">
-                        <h2 className="text-center text-2xl font-extrabold tracking-wider">
-                            Eventos & Torneos
-                        </h2>
-                        <p className="mt-2 text-center text-white/90 text-sm">
-                            Descubre lanzamientos, ferias retro y torneos competitivos. ¡Nos vemos allí!
-                        </p>
-                        <div className="mt-4 text-center">
-                            <button
-                                onClick={() => window.scrollTo({ top: 9999, behavior: 'smooth' })}
-                                className="px-4 py-2 rounded-full bg-white text-[#07101B] font-semibold text-sm
-                           shadow-[0_8px_24px_-8px_rgba(2,6,23,0.35)] hover:brightness-105"
-                            >
-                                Explorar ahora
-                            </button>
+                    <section
+                        className="rounded-[20px] px-8 py-6 text-white
+    bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
+    shadow-[0_20px_60px_-20px_rgba(6,182,212,0.35)]
+    border border-white/10 relative overflow-hidden"
+                    >
+                        {/* brillo suave de fondo */}
+                        <div className="pointer-events-none absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/15 blur-3 opacity-70" />
+
+                        <div className="relative flex flex-col items-center text-center gap-3">
+                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[11px] tracking-[0.18em] uppercase text-white/80">
+                                <CalendarClock className="h-3 w-3" />
+                                <span>Agenda retro · Eventos & torneos</span>
+                            </span>
+
+                            <h2 className="text-2xl md:text-3xl font-extrabold tracking-wider flex items-center gap-2">
+                                <Sparkles className="h-6 w-6 hidden sm:inline" />
+                                <span>Eventos & Torneos</span>
+                            </h2>
+
+                            <p className="mt-1 text-white/90 text-sm max-w-xl">
+                                Descubre lanzamientos, ferias retro y torneos competitivos. Reserva tu lugar y súmate a la comunidad Pixel Retro.
+                            </p>
                         </div>
                     </section>
 
+
                     <section className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {[
-                            { label: 'Próximos', val: totals.total },
-                            { label: 'Eventos', val: totals.eventos },
-                            { label: 'Torneos', val: totals.torneos },
-                        ].map(s => (
-                            <div
-                                key={s.label}
-                                className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-white
-                           shadow-[0_20px_40px_-24px_rgba(124,58,237,0.35)]"
-                            >
-                                <div className="text-white/70 text-sm">{s.label}</div>
-                                <div className="text-2xl font-bold mt-1 text-[#06B6D4]">{s.val}</div>
-                            </div>
-                        ))}
+                            { label: 'Próximos', val: totals.total, icon: CalendarClock },
+                            { label: 'Eventos', val: totals.eventos, icon: Ticket },
+                            { label: 'Torneos', val: totals.torneos, icon: Trophy },
+                        ].map((s) => {
+                            const Icon = s.icon;
+                            return (
+                                <div
+                                    key={s.label}
+                                    className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-white
+          shadow-[0_20px_40px_-24px_rgba(124,58,237,0.35)] flex flex-col gap-1"
+                                >
+                                    <div className="flex items-center justify-between text-sm text-white/70">
+                                        <span>{s.label}</span>
+                                        <Icon className="h-4 w-4 text-[#06B6D4]" />
+                                    </div>
+                                    <div className="text-2xl font-bold mt-1 text-[#06B6D4]">{s.val}</div>
+                                </div>
+                            );
+                        })}
                     </section>
 
+
                     <section className="relative z-10 flex flex-wrap items-center gap-2">
+                        {/* buscador con lupa */}
                         <div className="flex-1 min-w-[220px]">
-                            <input
-                                className="w-full rounded-xl px-3 py-2
-                           bg-white/[0.05] text-white/90 placeholder:text-white/45
-                           border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                                placeholder="Buscar eventos o torneos..."
-                                value={q}
-                                onChange={e => setQ(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && applySearch()}
-                            />
+                            <div className="relative">
+                                <Search className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
+                                <input
+                                    className="w-full rounded-xl pl-9 pr-3 py-2
+          bg-white/[0.05] text-white/90 placeholder:text-white/45
+          border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                    placeholder="Buscar eventos o torneos..."
+                                    value={q}
+                                    onChange={e => setQ(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && applySearch()}
+                                />
+                            </div>
                         </div>
 
                         <FancySelect
@@ -200,11 +225,13 @@ export default function EventsList() {
                         <button
                             onClick={applySearch}
                             className="px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)] text-white font-medium
-                         shadow-[0_12px_30px_-12px_rgba(124,58,237,0.8)] hover:brightness-110"
+      shadow-[0_12px_30px_-12px_rgba(124,58,237,0.8)] hover:brightness-110 inline-flex items-center gap-2"
                         >
-                            Buscar
+                            <Search className="h-4 w-4" />
+                            <span>Buscar</span>
                         </button>
                     </section>
+
 
                     {error && <p className="text-red-400">{error}</p>}
                     {loading && <p className="text-white/70">Cargando…</p>}
@@ -249,12 +276,35 @@ export default function EventsList() {
                                             </div>
 
                                             <div className="p-4 border-t border-white/10 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02),transparent)]">
-                                                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                                                    {item.type === 'tournament' ? 'TORNEO' : 'EVENTO'}
+                                                <div className="flex items-center justify-between">
+                                                    <div className="text-[11px] uppercase tracking-[0.18em] text-slate-400 flex items-center gap-1.5">
+                                                        {item.type === 'tournament' ? (
+                                                            <>
+                                                                <Trophy className="h-3 w-3 text-amber-300" />
+                                                                <span>TORNEO</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Ticket className="h-3 w-3 text-emerald-300" />
+                                                                <span>EVENTO</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    {/* tag fecha corta si quieres */}
+                                                    <span className="text-[11px] text-slate-400 hidden sm:inline">{date}</span>
                                                 </div>
-                                                <div className="mt-0.5 font-semibold text-slate-100">{item.title}</div>
-                                                <div className="mt-1 text-xs text-slate-400">{date} — {time}</div>
+
+                                                <div className="mt-0.5 font-semibold text-slate-100 line-clamp-2">
+                                                    {item.title}
+                                                </div>
+
+                                                <div className="mt-1 text-xs text-slate-400 flex items-center gap-1">
+                                                    <CalendarClock className="h-3 w-3" />
+                                                    <span>{date} — {time}</span>
+                                                </div>
                                             </div>
+
+
                                         </Link>
                                     );
                                 })}

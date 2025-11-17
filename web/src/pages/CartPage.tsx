@@ -6,6 +6,19 @@ import { createPaymentIntent, confirmPaymentIntent, verify3ds } from '../service
 import { getCustomerToken } from '../services/customerApi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { Product } from '../types';
+import {
+    ShoppingCart,
+    Trash2,
+    User,
+    IdCard,
+    Mail,
+    Phone,
+    MapPin,
+    FileUp,
+    CreditCard,
+    ShieldCheck,
+    LockKeyhole,
+} from 'lucide-react';
 
 type Customer = {
     name: string;
@@ -123,54 +136,74 @@ export default function CartPage() {
 
     const start = async (): Promise<void> => {
         try {
-            setBusy(true);
             setMsg(null);
 
             if (items.length === 0) throw new Error('Tu carrito está vacío.');
-            if (!form.name || !form.email) throw new Error('Completa nombre y email.');
 
+            // Si no está logueado, lo mando a login
             if (!getCustomerToken()) {
                 nav('/login', { state: { next: loc.pathname } });
                 return;
             }
 
-            let pickupDocB64: string | null = null;
-            if (pickupDocFile) {
-                pickupDocB64 = await fileToDataUrl(pickupDocFile);
-            }
-
-            const payload = {
-                customer: {
-                    name: form.name,
-                    ci: form.ci || undefined,
-                    email: form.email,
-                    phone: form.phone || undefined,
-                    address: form.address || undefined,
-                },
-                items: toLines(),
-                amount: Math.round(total * 100),
-                currency: 'BOB',
-                pickup_doc_b64: pickupDocB64,
-            };
-
-            const pi: Intent = await createPaymentIntent(payload);
-            setIntent(pi);
+            // 👇 Solo abrimos el modal, el intent se creará en confirmCard
             setShowCard(true);
         } catch (e) {
             setMsg(err(e));
-        } finally {
-            setBusy(false);
         }
     };
 
 
+
+
     const confirmCard = async () => {
-        if (!intent) return;
+        // Validar que haya ítems
+        if (!items.length) {
+            setMsg('Tu carrito está vacío.');
+            return;
+        }
+
+        // ✅ Validar datos del comprador AHORA (ya llenó el formulario del modal)
+        if (!form.name || !form.email || !form.ci) {
+            setMsg('Completa nombre, email y CI antes de confirmar el pago.');
+            return;
+        }
+
         try {
             setBusy(true);
             setMsg(null);
-            const r = (await confirmPaymentIntent(intent.id, {
-                client_secret: intent.client_secret,
+
+            let currentIntent = intent;
+
+            // Si aún no existe un intent, lo creamos AHORA con los datos correctos
+            if (!currentIntent) {
+                let pickupDocB64: string | null = null;
+                if (pickupDocFile) {
+                    pickupDocB64 = await fileToDataUrl(pickupDocFile);
+                }
+
+                const payload = {
+                    customer: {
+                        name: form.name,
+                        ci: form.ci || undefined,
+                        email: form.email,
+                        phone: form.phone || undefined,
+                        address: form.address || undefined,
+                    },
+                    items: toLines(),
+                    amount: Math.round(total * 100),
+                    currency: 'BOB',
+                    pickup_doc_b64: pickupDocB64,
+                };
+
+                const pi: Intent = await createPaymentIntent(payload);
+                setIntent(pi);
+                currentIntent = pi;
+            }
+
+            // Ahora confirmamos el intent ya creado
+            const r = (await confirmPaymentIntent(currentIntent.id, {
+                client_secret: currentIntent.client_secret,
                 card_number: card.number,
                 exp_month: Number(card.exp_month),
                 exp_year: Number(card.exp_year),
@@ -182,11 +215,14 @@ export default function CartPage() {
                 setShowOtp(true);
                 return;
             }
+
             if (r.status === 'succeeded' && r.payment_ref && r.sale_id != null && r.total != null) {
                 clear();
                 setShowCard(false);
                 setIntent(null);
-                nav('/checkout/success', { state: { payment_ref: r.payment_ref, sale_id: r.sale_id, total: r.total } });
+                nav('/checkout/success', {
+                    state: { payment_ref: r.payment_ref, sale_id: r.sale_id, total: r.total },
+                });
             } else {
                 setMsg(r.message ?? 'Pago no completado');
             }
@@ -196,6 +232,8 @@ export default function CartPage() {
             setBusy(false);
         }
     };
+
+
 
     const confirmOtp = async () => {
         if (!intent) return;
@@ -211,7 +249,9 @@ export default function CartPage() {
                 clear();
                 setShowOtp(false);
                 setIntent(null);
-                nav('/checkout/success', { state: { payment_ref: r.payment_ref, sale_id: r.sale_id, total: r.total } });
+                nav('/checkout/success', {
+                    state: { payment_ref: r.payment_ref, sale_id: r.sale_id, total: r.total },
+                });
             } else {
                 setMsg(r.message ?? 'Pago no completado');
             }
@@ -222,26 +262,37 @@ export default function CartPage() {
         }
     };
 
+
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-4xl mx-auto p-4">
                 <section
                     className="rounded-[20px] px-6 py-5 text-white
-                     bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
-                     shadow-[0_20px_60px_-20px_rgba(6,182,212,0.35)]
-                     border border-white/10 mb-6"
+    bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
+    shadow-[0_20px_60px_-20px_rgba(6,182,212,0.35)]
+    border border-white/10 mb-6"
                 >
-                    <h2 className="text-center text-2xl font-extrabold tracking-wider">Carrito</h2>
+                    <h2 className="text-center text-2xl font-extrabold tracking-wider flex items-center justify-center gap-2">
+                        <ShoppingCart className="h-6 w-6" />
+                        <span>Carrito</span>
+                    </h2>
                     <p className="mt-1 text-center text-white/90 text-sm">
                         Revisa tus productos y completa el pago de forma segura.
                     </p>
                 </section>
 
+
                 {items.length === 0 ? (
-                    <div className="rounded-2xl p-6 text-white bg-white/[0.04] border border-white/10 text-center">
-                        Tu carrito está vacío.
+                    <div className="rounded-2xl p-6 text-white bg-white/[0.04] border border-white/10 text-center flex flex-col items-center gap-3">
+                        <ShoppingCart className="h-10 w-10 text-white/40" />
+                        <p className="text-sm text-white/80">Tu carrito está vacío.</p>
+                        <p className="text-xs text-white/60">
+                            Agrega algunos juegos o consolas desde la tienda para comenzar tu pedido.
+                        </p>
                     </div>
                 ) : (
+
+
                     <>
                         <section className="rounded-2xl overflow-hidden bg-white/[0.04] border border-white/10 text-white mb-6">
                             <ul className="divide-y divide-white/10">
@@ -324,100 +375,39 @@ export default function CartPage() {
                             </ul>
 
                             <div className="p-4 flex flex-wrap gap-3 items-center justify-between">
-                                <div className="text-lg font-bold">
-                                    <span className="text-white/70">Total:</span>{' '}
+                                <div className="text-lg font-bold flex items-center gap-2">
+                                    <span className="text-white/70">Total:</span>
                                     <span className="text-[#06B6D4]">Bs. {total.toFixed(2)}</span>
                                 </div>
                                 <button
                                     onClick={clear}
-                                    className="text-sm px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10"
+                                    className="text-sm px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10
+                                    inline-flex items-center gap-2 text-white/80"
                                 >
-                                    Vaciar
+                                    <Trash2 className="h-4 w-4" />
+                                    <span>Vaciar</span>
                                 </button>
                             </div>
+
                         </section>
 
                         <section className="rounded-2xl p-5 text-white bg-white/[0.04] border border-white/10 mb-4">
-                            <h3 className="text-[15px] font-semibold mb-3 text-white/90">Datos del comprador</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
-                                <input
-                                    className="w-full rounded-xl px-3 py-2
-        bg-white/[0.05] text-white/90 placeholder:text-white/45
-        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                                    placeholder="Nombre"
-                                    value={form.name}
-                                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                />
-
-                                <input
-                                    className="w-full rounded-xl px-3 py-2
-        bg-white/[0.05] text-white/90 placeholder:text-white/45
-        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                                    placeholder="CI / Documento de identidad"
-                                    value={form.ci ?? ''}
-                                    onChange={(e) => setForm({ ...form, ci: e.target.value })}
-                                />
-
-                                <input
-                                    className="w-full rounded-xl px-3 py-2
-        bg-white/[0.05] text-white/90 placeholder:text-white/45
-        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                                    placeholder="Email"
-                                    value={form.email}
-                                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                />
-
-                                <input
-                                    className="w-full rounded-xl px-3 py-2
-        bg-white/[0.05] text-white/90 placeholder:text-white/45
-        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                                    placeholder="Teléfono"
-                                    value={form.phone ?? ''}
-                                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                                />
-
-                                <input
-                                    className="w-full rounded-xl px-3 py-2
-        bg-white/[0.05] text-white/90 placeholder:text-white/45
-        border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                                    placeholder="Dirección"
-                                    value={form.address ?? ''}
-                                    onChange={(e) => setForm({ ...form, address: e.target.value })}
-                                />
-
-                                <div className="flex flex-col text-white/80 text-sm">
-                                    <label className="text-white/60 text-xs mb-1">
-                                        Documento del recojo (foto CI o autorización, opcional)
-                                    </label>
-                                    <input
-                                        type="file"
-                                        accept=".jpg,.jpeg,.png,.pdf"
-                                        className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90
-            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]
-            file:mr-2 file:px-3 file:py-1 file:rounded-lg file:border-0
-            file:bg-white/20 file:text-white/90 file:text-xs"
-                                        onChange={(e) => {
-                                            const f = e.target.files?.[0] ?? null;
-                                            setPickupDocFile(f);
-                                        }}
-                                    />
-                                    {pickupDocFile && (
-                                        <div className="text-[11px] text-white/50 mt-1 truncate">
-                                            {pickupDocFile.name}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
+                            <h3 className="text-[15px] font-semibold mb-2 text-white/90">
+                                Finalizar compra
+                            </h3>
+                            <p className="text-xs text-white/65 mb-3">
+                                En el siguiente paso te pediremos tus datos y procesaremos el pago con tarjeta de forma segura.
+                            </p>
 
                             <button
-                                disabled={busy || items.length === 0 || !form.name || !form.email || hasStockIssue}
+                                disabled={busy || items.length === 0 || hasStockIssue}
                                 onClick={start}
                                 className="mt-1 px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white font-medium
-                                shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
-                                hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+      shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
+      hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
                             >
-                                {busy ? 'Creando pago...' : 'Ir a pagar'}
+                                <CreditCard className="h-4 w-4" />
+                                <span>{busy ? 'Creando pago...' : 'Ir a pagar'}</span>
                             </button>
 
                             {hasStockIssue && (
@@ -433,69 +423,232 @@ export default function CartPage() {
                                 </div>
                             )}
                         </section>
+
                     </>
                 )}
 
-                <Modal open={showCard} onClose={() => { setShowCard(false); setIntent(null); }} title="Pago con tarjeta">
-                    {intent && (
-                        <div className="text-white">
-                            <div className="text-sm text-white/70 mb-3">
-                                Intent: <code className="text-white/90">{intent.id}</code>{' '}
-                                · Total:{' '}
-                                <b className="text-[#06B6D4]">
-                                    {(intent.amount / 100).toFixed(2)} {intent.currency}
-                                </b>
+                <Modal
+                    open={showCard}
+                    onClose={() => {
+                        setShowCard(false);
+                        // Si quieres conservar el intent en caso de cerrar, puedes NO resetearlo aquí.
+                        // setIntent(null);
+                    }}
+                    title="Pago con tarjeta"
+                    maxWidthClass="max-w-lg sm:max-w-xl md:max-w-6xl"
+                >
+                    <div className="text-white space-y-4">
+                        {/* Resumen arriba */}
+                        <div className="text-sm text-white/70 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <span className="opacity-70">Intent:</span>{' '}
+                                <code className="text-white/90">
+                                    {intent ? intent.id : 'Se generará al confirmar'}
+                                </code>
                             </div>
-
-                            <div className="rounded-xl p-3 bg-white/[0.04] border border-white/10">
-                                <CardField value={card} onChange={setCard} />
+                            <div className="flex items-center gap-2">
+                                <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                                <span className="text-xs uppercase tracking-[0.16em] text-white/60">
+                                    Total:{' '}
+                                    <b className="text-[#06B6D4]">
+                                        {(
+                                            intent
+                                                ? intent.amount / 100 // si ya hay intent, usamos lo que viene del backend
+                                                : total               // si no hay intent aún, usamos el total del carrito
+                                        ).toFixed(2)}{' '}
+                                        BOB
+                                    </b>
+                                </span>
                             </div>
-
-                            <div className="text-xs text-white/60 mt-2">
-                                Pruebas: <b>4242 4242 4242 4242</b> = éxito · <b>4000 0000 0000 3220</b> = requiere 3DS ·
-                                <b> 0002</b> = rechazada · <b>9995</b> = fondos insuf. · <b>0069</b> = vencida
-                            </div>
-
-                            <button
-                                onClick={confirmCard}
-                                disabled={busy}
-                                className="mt-3 px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white font-medium
-                           shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
-                           hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {busy ? 'Procesando...' : 'Confirmar pago'}
-                            </button>
-                            {msg && <p className="mt-3 text-sm text-[#06B6D4]">{msg}</p>}
                         </div>
-                    )}
+
+                        {/* Grid: datos del comprador + tarjeta */}
+                        <div className="grid gap-4 md:grid-cols-2">
+                            {/* Datos del comprador */}
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                                    <User className="h-4 w-4 text-[#06B6D4]" />
+                                    <span>Datos del comprador</span>
+                                </h4>
+
+                                {/* Nombre */}
+                                <div className="relative">
+                                    <User className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
+                                    <input
+                                        className="w-full rounded-xl pl-9 pr-3 py-2
+                            bg-white/[0.05] text-white/90 placeholder:text-white/45
+                            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                        placeholder="Nombre completo"
+                                        value={form.name}
+                                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* CI */}
+                                <div className="relative">
+                                    <IdCard className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
+                                    <input
+                                        className="w-full rounded-xl pl-9 pr-3 py-2
+                            bg-white/[0.05] text-white/90 placeholder:text-white/45
+                            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                        placeholder="CI / Documento de identidad"
+                                        value={form.ci ?? ''}
+                                        onChange={(e) => setForm({ ...form, ci: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div className="relative">
+                                    <Mail className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
+                                    <input
+                                        className="w-full rounded-xl pl-9 pr-3 py-2
+                            bg-white/[0.05] text-white/90 placeholder:text-white/45
+                            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                        placeholder="Email"
+                                        value={form.email}
+                                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Teléfono */}
+                                <div className="relative">
+                                    <Phone className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
+                                    <input
+                                        className="w-full rounded-xl pl-9 pr-3 py-2
+                            bg-white/[0.05] text-white/90 placeholder:text-white/45
+                            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                        placeholder="Teléfono"
+                                        value={form.phone ?? ''}
+                                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Dirección */}
+                                <div className="relative">
+                                    <MapPin className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
+                                    <input
+                                        className="w-full rounded-xl pl-9 pr-3 py-2
+                            bg-white/[0.05] text-white/90 placeholder:text-white/45
+                            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                        placeholder="Dirección"
+                                        value={form.address ?? ''}
+                                        onChange={(e) => setForm({ ...form, address: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Documento de recojo */}
+                                <div className="flex flex-col text-white/80 text-sm">
+                                    <label className="text-white/60 text-xs mb-1 flex items-center gap-1">
+                                        <FileUp className="h-3 w-3" />
+                                        <span>Documento del recojo (foto CI o autorización, opcional)</span>
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png,.pdf"
+                                        className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90
+                            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]
+                            file:mr-2 file:px-3 file:py-1 file:rounded-lg file:border-0
+                            file:bg-white/20 file:text-white/90 file:text-xs"
+                                        onChange={(e) => {
+                                            const f = e.target.files?.[0] ?? null;
+                                            setPickupDocFile(f);
+                                        }}
+                                    />
+                                    {pickupDocFile && (
+                                        <div className="text-[11px] text-white/50 mt-1 truncate">
+                                            {pickupDocFile.name}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Datos de la tarjeta */}
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-semibold text-white/90 flex items-center gap-2">
+                                    <CreditCard className="h-4 w-4 text-[#06B6D4]" />
+                                    <span>Datos de la tarjeta</span>
+                                </h4>
+
+                                <div className="rounded-xl p-3 bg-white/[0.04] border border-white/10">
+                                    <CardField value={card} onChange={setCard} />
+                                </div>
+
+                                <div className="text-xs text-white/60">
+                                    Pruebas:{' '}
+                                    <b>4242 4242 4242 4242</b> = éxito ·{' '}
+                                    <b>4000 0000 0000 3220</b> = requiere 3DS ·
+                                    <b> 0002</b> = rechazada · <b>9995</b> = fondos insuf. ·{' '}
+                                    <b>0069</b> = vencida
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={confirmCard}
+                            disabled={busy}
+                            className="mt-1 px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white font-medium
+                shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
+                hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                        >
+                            <CreditCard className="h-4 w-4" />
+                            <span>{busy ? 'Procesando...' : 'Confirmar pago'}</span>
+                        </button>
+
+                        {msg && <p className="mt-3 text-sm text-[#06B6D4]">{msg}</p>}
+                    </div>
                 </Modal>
 
-                <Modal open={showOtp} onClose={() => { setShowOtp(false); setIntent(null); }} title="Verificación 3-D Secure">
-                    <div className="text-white">
-                        <p className="text-sm text-white/70 mb-2">
-                            Ingresa el código OTP (usa <b className="text-white">123456</b> para aprobar).
-                        </p>
-                        <input
-                            className="border border-white/10 rounded-xl px-3 py-2 w-full
-                         bg-white/[0.05] text-white/90 placeholder:text-white/45
-                         focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value.replace(/\D+/g, ''))}
-                            inputMode="numeric"
-                            maxLength={6}
-                            autoComplete="one-time-code"
-                            placeholder="Código OTP"
-                        />
+
+                <Modal
+                    open={showOtp}
+                    onClose={() => {
+                        setShowOtp(false);
+                        setIntent(null);
+                    }}
+                    title="Verificación 3-D Secure"
+                >
+                    <div className="text-white space-y-3">
+                        <div className="flex flex-col items-center text-center gap-2">
+                            <div className="h-10 w-10 rounded-full bg-amber-500/10 border border-amber-400/50 flex items-center justify-center">
+                                <LockKeyhole className="h-5 w-5 text-amber-300" />
+                            </div>
+                            <p className="text-sm text-white/70 max-w-sm">
+                                Hemos enviado un código de verificación temporal (OTP).
+                                Usa <b className="text-white">123456</b> para aprobar la simulación del pago.
+                            </p>
+                        </div>
+
+                        <div className="relative">
+                            <div className="absolute left-1.5 top-1.5 bottom-1.5 w-8 rounded-lg bg-white/5 flex items-center justify-center">
+                                <LockKeyhole className="h-4 w-4 text-white/60" />
+                            </div>
+                            <input
+                                className="border border-white/10 rounded-xl pl-11 pr-3 py-2 w-full
+          bg-white/[0.05] text-white/90 placeholder:text-white/45
+          focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]
+          tracking-[0.3em] text-center"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value.replace(/\D+/g, ''))}
+                                inputMode="numeric"
+                                maxLength={6}
+                                autoComplete="one-time-code"
+                                placeholder="Código OTP"
+                            />
+                        </div>
+
                         <button
                             onClick={confirmOtp}
                             disabled={busy}
-                            className="mt-3 px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] text-white font-medium
-                         shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
-                         hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="mt-1 px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
+        text-white font-medium shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
+        hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed
+        inline-flex items-center gap-2 mx-auto"
                         >
-                            {busy ? 'Verificando...' : 'Aprobar pago'}
+                            <ShieldCheck className="h-4 w-4" />
+                            <span>{busy ? 'Verificando...' : 'Aprobar pago'}</span>
                         </button>
-                        {msg && <p className="mt-3 text-sm text-[#06B6D4]">{msg}</p>}
+
+                        {msg && <p className="mt-2 text-sm text-[#06B6D4]" aria-live="polite">{msg}</p>}
                     </div>
                 </Modal>
             </div>

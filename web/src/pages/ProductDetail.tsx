@@ -4,16 +4,39 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchProduct } from '../services/api';
 import type { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import {
+    Home,
+    ChevronRight,
+    Package2,
+    Tag,
+    Hash,
+    Boxes,
+    Sparkles,
+    ShoppingCart,
+    ArrowLeft,
+    Info,
+} from 'lucide-react';
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000').replace(/\/$/, '') + '/api';
-const money = new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB' });
+const API_BASE =
+    (import.meta.env.VITE_API_URL ?? 'http://localhost:8000').replace(/\/$/, '') + '/api';
+const money = new Intl.NumberFormat('es-BO', {
+    style: 'currency',
+    currency: 'BOB',
+});
 
 const prefer = (id: number) => {
     const url = `${API_BASE}/products/${id}/prefer`;
     if ('sendBeacon' in navigator) {
-        navigator.sendBeacon(url, new Blob([JSON.stringify({})], { type: 'application/json' }));
+        navigator.sendBeacon(
+            url,
+            new Blob([JSON.stringify({})], { type: 'application/json' }),
+        );
     } else {
-        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => { });
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}',
+        }).catch(() => { });
     }
 };
 
@@ -63,13 +86,15 @@ export default function ProductDetail() {
     if (err || !p) {
         return (
             <div className="min-h-screen bg-[#07101B]">
-                <div className="max-w-5xl mx-auto p-4">
-                    <p className="text-rose-300 mb-4">{err ?? 'Producto no encontrado'}</p>
+                <div className="max-w-5xl mx-auto p-4 space-y-3 text-white">
+                    <p className="text-rose-300 mb-1">{err ?? 'Producto no encontrado'}</p>
                     <button
-                        className="px-4 py-2 rounded-xl border border-white/15 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15
+                                   bg-white/[0.06] text-white hover:bg-white/[0.12]"
                         onClick={() => nav(-1)}
                     >
-                        Volver
+                        <ArrowLeft className="h-4 w-4" />
+                        <span>Volver</span>
                     </button>
                 </div>
             </div>
@@ -80,90 +105,159 @@ export default function ProductDetail() {
     const inStock = (p.stock ?? 0) > 0;
     const outOfStock = !inStock;
 
-    const condPill =
+    // etiqueta de condición
+    const condPillBase =
+        'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border';
+    const condPillClass =
         p.condition === 'new'
-            ? 'inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-cyan-400/20 text-cyan-300 bg-cyan-500/15'
+            ? `${condPillBase} border-emerald-400/30 text-emerald-300 bg-emerald-500/15`
             : p.condition === 'used'
-                ? 'inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-amber-400/20 text-amber-300 bg-amber-500/15'
-                : 'inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-violet-400/20 text-violet-300 bg-violet-500/15';
+                ? `${condPillBase} border-amber-400/30 text-amber-300 bg-amber-500/15`
+                : `${condPillBase} border-violet-400/30 text-violet-300 bg-violet-500/15`;
 
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-5xl mx-auto p-4 space-y-5 text-white">
-                <nav className="text-sm">
-                    <Link to="/" className="text-[#06B6D4] hover:underline">Inicio</Link>
-                    <span className="text-white/40"> / </span>
+                {/* Migas de pan */}
+                <nav className="text-xs sm:text-sm flex flex-wrap items-center gap-1 text-white/70">
+                    <Home className="h-4 w-4 text-white/50" />
+                    <Link
+                        to="/"
+                        className="inline-flex items-center gap-1 text-[#06B6D4] hover:underline"
+                    >
+                        <span>Inicio</span>
+                    </Link>
+                    <ChevronRight className="h-3 w-3 text-white/40" />
                     {p.category?.slug ? (
-                        <Link to={`/?category=${p.category.slug}`} className="text-[#06B6D4] hover:underline">
-                            {p.category?.name ?? 'Categoría'}
+                        <Link
+                            to={`/?category=${p.category.slug}`}
+                            className="inline-flex items-center gap-1 text-[#06B6D4] hover:underline"
+                        >
+                            <Package2 className="h-3 w-3 text-white/50" />
+                            <span>{p.category?.name ?? 'Categoría'}</span>
                         </Link>
                     ) : (
-                        <span className="text-white/70">{p.category?.name ?? 'Sin categoría'}</span>
+                        <span className="inline-flex items-center gap-1 text-white/70">
+                            <Package2 className="h-3 w-3 text-white/50" />
+                            <span>{p.category?.name ?? 'Sin categoría'}</span>
+                        </span>
                     )}
-                    <span className="text-white/40"> / </span>
-                    <span className="font-medium">{p.name}</span>
+                    <ChevronRight className="h-3 w-3 text-white/40" />
+                    <span className="font-medium text-white/90 truncate max-w-[180px] sm:max-w-xs">
+                        {p.name}
+                    </span>
                 </nav>
 
                 <div className="grid md:grid-cols-3 gap-5">
-                    <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] p-3
-                          shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]">
-                        <div className="aspect-square rounded-xl bg-white/[0.03] border border-white/10 grid place-items-center overflow-hidden relative">
-                            <div className="pointer-events-none absolute inset-0 opacity-30 bg-[radial-gradient(closest-side,rgba(124,58,237,0.25),transparent_70%)]" />
+                    {/* Columna imagen / precio */}
+                    <div
+                        className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] p-3
+                                   shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]"
+                    >
+                        <div className="aspect-square rounded-xl bg-[#050814] border border-white/10 grid place-items-center overflow-hidden relative">
+                            <div className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.4),transparent_55%)]" />
                             {p.image_url ? (
-                                <img src={p.image_url} alt={p.name} className="relative z-10 w-full h-full object-contain p-4" />
+                                <img
+                                    src={p.image_url}
+                                    alt={p.name}
+                                    className="relative z-10 w-full h-full object-contain p-4"
+                                />
                             ) : (
-                                <span className="relative z-10 text-sm text-white/50">Sin imagen</span>
+                                <span className="relative z-10 text-sm text-white/50">
+                                    Sin imagen
+                                </span>
                             )}
+
+                            {/* Etiqueta condición sobre la imagen */}
+                            <div className="absolute left-3 top-3">
+                                <span className={condPillClass}>
+                                    <Tag className="h-3 w-3" />
+                                    {p.condition === 'new'
+                                        ? 'Nuevo'
+                                        : p.condition === 'used'
+                                            ? 'Usado'
+                                            : 'Reacondicionado'}
+                                </span>
+                            </div>
                         </div>
 
-                        <div className="mt-4 text-center">
-                            <div className="text-xs uppercase tracking-widest text-white/60">Precio</div>
-                            <div className="text-2xl font-bold text-[#06B6D4]">{money.format(price)}</div>
+                        <div className="mt-4 flex items-center justify-between gap-3">
+                            <div>
+                                <div className="text-[11px] uppercase tracking-[0.2em] text-white/50">
+                                    Precio
+                                </div>
+                                <div className="text-2xl font-bold text-[#06B6D4]">
+                                    {money.format(price)}
+                                </div>
+                            </div>
+
+                            <div className="text-right space-y-1">
+                                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px]
+                                                border border-white/15 bg-white/5 text-white/70">
+                                    <Boxes className="h-3 w-3" />
+                                    <span>Stock: {p.stock}</span>
+                                </div>
+                                {p.is_unique && (
+                                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px]
+                                                    border border-[#06B6D4] text-[#06B6D4]/95 bg-[#06B6D4]/10">
+                                        <Sparkles className="h-3 w-3" />
+                                        <span>Pieza única</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="md:col-span-2 rounded-2xl border border-white/10 bg-white/[0.04] p-5
-                          shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)] space-y-5">
-
-                        <div>
-                            <div className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
-                              bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]">
+                    {/* Columna info / acciones */}
+                    <div
+                        className="md:col-span-2 rounded-2xl border border-white/10 bg-white/[0.04] p-5
+                                   shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]
+                                   space-y-5"
+                    >
+                        {/* Título y meta */}
+                        <div className="space-y-2">
+                            <div
+                                className="text-xl sm:text-2xl font-extrabold tracking-wider bg-clip-text text-transparent
+                                           bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]"
+                            >
                                 {p.name}
                             </div>
-                            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
                                 {p.category?.name && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-white/15 bg-white/10 text-white/80">
-                                        {p.category.name}
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-white/15 bg-white/10 text-white/80">
+                                        <Package2 className="h-3 w-3" />
+                                        <span>{p.category.name}</span>
                                     </span>
                                 )}
                                 {p.sku && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-white/15 bg-white/10 text-white/70">
-                                        SKU: {p.sku}
-                                    </span>
-                                )}
-                                <span className={condPill}>
-                                    {p.condition === 'new' ? 'Nuevo' : p.condition === 'used' ? 'Usado' : 'Reacondicionado'}
-                                </span>
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs border border-white/15 bg-white/10 text-white/80">
-                                    Stock: <b className="ml-1">{p.stock}</b>
-                                </span>
-                                {p.is_unique && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px]
-                                   border border-[#06B6D4] text-[#06B6D4]/95">
-                                        Pieza única
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-white/15 bg-white/10 text-white/70">
+                                        <Hash className="h-3 w-3" />
+                                        <span>SKU: {p.sku}</span>
                                     </span>
                                 )}
                             </div>
                         </div>
 
+                        {/* Descripción */}
                         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                            <div className="text-xs text-white/60 mb-1">Descripción</div>
-                            <p className="text-white/80 whitespace-pre-wrap">{p.description ?? '—'}</p>
+                            <div className="flex items-center gap-2 mb-1">
+                                <Info className="h-4 w-4 text-[#06B6D4]" />
+                                <span className="text-xs font-semibold text-white/70">
+                                    Descripción del producto
+                                </span>
+                            </div>
+                            <p className="text-sm text-white/80 whitespace-pre-wrap">
+                                {p.description ?? 'Sin descripción disponible.'}
+                            </p>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-3">
+                        {/* Acciones */}
+                        <div className="flex flex-wrap items-end gap-3">
                             <label className="block">
-                                <span className="sr-only">Cantidad</span>
+                                <span className="block text-[11px] text-white/60 mb-1">
+                                    Cantidad
+                                </span>
                                 <input
                                     type="number"
                                     min={1}
@@ -171,31 +265,41 @@ export default function ProductDetail() {
                                     value={qty}
                                     onChange={(e) => {
                                         const max = p.is_unique ? 1 : p.stock;
-                                        const v = Math.max(1, Math.min(max, Number(e.target.value) || 1));
+                                        const v = Math.max(
+                                            1,
+                                            Math.min(max, Number(e.target.value) || 1),
+                                        );
                                         setQty(v);
                                     }}
                                     className="w-24 rounded-xl px-3 py-2
-                             bg-white/[0.05] text-white/90 border border-white/10
-                             focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                               bg-white/[0.05] text-white/90 border border-white/10
+                                               focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
                                 />
                             </label>
 
                             <button
                                 disabled={outOfStock}
-                                onClick={() => { add(p, qty); prefer(p.id); void signalInteract(p.id, 'add'); }}
-                                className="px-5 py-2.5 rounded-xl font-medium text-white
-                           bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] hover:brightness-110 active:scale-[0.99] transition
-                           disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => {
+                                    add(p, qty);
+                                    prefer(p.id);
+                                    void signalInteract(p.id, 'add');
+                                }}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-white
+                                           bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
+                                           hover:brightness-110 active:scale-[0.99] transition
+                                           disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {outOfStock ? 'Sin stock' : 'Agregar al carrito'}
+                                <ShoppingCart className="h-4 w-4" />
+                                <span>{outOfStock ? 'Sin stock' : 'Agregar al carrito'}</span>
                             </button>
 
                             <Link
                                 to="/"
-                                className="px-5 py-2.5 rounded-xl font-medium text-white
-                           bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] hover:brightness-110 active:scale-[0.99] transition"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-white
+                                           bg-white/5 border border-white/10 hover:bg-white/10 transition"
                             >
-                                ← Seguir comprando
+                                <ArrowLeft className="h-4 w-4" />
+                                <span>Seguir comprando</span>
                             </Link>
                         </div>
                     </div>

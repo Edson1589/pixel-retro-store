@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '../../components/ui/Modals';
 import { fetchMyRegistration, registerToEvent } from '../../services/api';
+import {
+    User,
+    Mail,
+    Gamepad2,
+    Users,
+    StickyNote,
+    Info,
+} from 'lucide-react';
 
 type Props = {
     slug: string;
@@ -74,7 +82,11 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
     };
 
     return (
-        <Modal open={open} onClose={onClose} title="Registro al evento" size="md"
+        <Modal
+            open={open}
+            onClose={onClose}
+            title="Registro al evento"
+            size="md"
             footer={
                 <div className="flex items-center gap-2 justify-end">
                     <button
@@ -87,67 +99,118 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
                         disabled={disabled}
                         onClick={submit}
                         className="px-4 py-2 rounded-xl bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)]
-              text-white font-medium shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
-              hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+            text-white font-medium shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)]
+            hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {busy ? 'Enviando…' : 'Enviar registro'}
                     </button>
                 </div>
             }
         >
-            <div className="grid md:grid-cols-2 gap-3">
-                <input
-                    className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
-            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                    placeholder="Nombre"
-                    value={form.name}
-                    onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-                />
-                <input
-                    className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
-            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                    placeholder="Email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
-                />
-                <input
-                    className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
-            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                    placeholder="Gamer tag (opcional)"
-                    value={form.gamer_tag}
-                    onChange={(e) => setForm((s) => ({ ...s, gamer_tag: e.target.value }))}
-                />
-                <input
-                    className="w-full rounded-xl px-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
-            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                    placeholder="Equipo (opcional)"
-                    value={form.team}
-                    onChange={(e) => setForm((s) => ({ ...s, team: e.target.value }))}
-                />
-                <textarea
-                    className="md:col-span-2 rounded-xl px-3 py-2 bg-white/[0.05] text-white/90 placeholder:text白/45
-            border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
-                    rows={4}
-                    placeholder="Notas (opcional)"
-                    value={form.notes}
-                    onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))}
-                />
-            </div>
+            <div className="space-y-4 text-white">
+                {/* Cabecera breve dentro del modal */}
+                <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 rounded-full bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center">
+                        <Gamepad2 className="h-4 w-4 text-cyan-300" />
+                    </div>
+                    <div className="text-sm">
+                        <p className="text-white/85 font-medium">
+                            Completa tus datos para reservar tu cupo.
+                        </p>
+                        <p className="text-white/55 text-xs">
+                            Usaremos esta información solo para gestionar el evento y enviarte
+                            confirmaciones.
+                        </p>
+                    </div>
+                </div>
 
-            {already?.registered && (
-                <p className="mt-3 text-sm rounded-xl px-3 py-2 bg-amber-500/10 border border-amber-400/25 text-amber-200">
-                    Ya te registraste a este evento{already.status ? ` (estado: ${already.status})` : ''}. No es necesario volver a enviar.
+                {/* Formulario */}
+                <div className="grid md:grid-cols-2 gap-3">
+                    {/* Nombre */}
+                    <div className="relative">
+                        <User className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                            className="w-full rounded-xl pl-9 pr-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
+              border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                            placeholder="Nombre"
+                            value={form.name}
+                            onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
+                        />
+                    </div>
+
+                    {/* Email */}
+                    <div className="relative">
+                        <Mail className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                            className="w-full rounded-xl pl-9 pr-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
+              border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                            placeholder="Email"
+                            type="email"
+                            value={form.email}
+                            onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))}
+                        />
+                    </div>
+
+                    {/* Gamer tag */}
+                    <div className="relative">
+                        <Gamepad2 className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                            className="w-full rounded-xl pl-9 pr-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
+              border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                            placeholder="Gamer tag (opcional)"
+                            value={form.gamer_tag}
+                            onChange={(e) => setForm((s) => ({ ...s, gamer_tag: e.target.value }))}
+                        />
+                    </div>
+
+                    {/* Equipo */}
+                    <div className="relative">
+                        <Users className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                            className="w-full rounded-xl pl-9 pr-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
+              border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                            placeholder="Equipo (opcional)"
+                            value={form.team}
+                            onChange={(e) => setForm((s) => ({ ...s, team: e.target.value }))}
+                        />
+                    </div>
+
+                    {/* Notas */}
+                    <div className="relative md:col-span-2">
+                        <StickyNote className="h-4 w-4 text-white/50 absolute left-3 top-3 pointer-events-none" />
+                        <textarea
+                            className="w-full rounded-xl pl-9 pr-3 py-2 bg-white/[0.05] text-white/90 placeholder:text-white/45
+              border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                            rows={4}
+                            placeholder="Notas (opcional)"
+                            value={form.notes}
+                            onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))}
+                        />
+                    </div>
+                </div>
+
+                {already?.registered && (
+                    <p className="mt-1 text-sm rounded-xl px-3 py-2 bg-amber-500/10 border border-amber-400/25 text-amber-200">
+                        Ya te registraste a este evento
+                        {already.status ? ` (estado: ${already.status})` : ''}. No es necesario volver a enviar.
+                    </p>
+                )}
+
+                {error && (
+                    <p className="mt-1 text-sm rounded-xl px-3 py-2 bg-rose-500/10 border border-rose-400/25 text-rose-200">
+                        {error}
+                    </p>
+                )}
+
+                <p className="mt-2 text-xs text-white/60 flex items-start gap-2">
+                    <Info className="h-3.5 w-3.5 mt-0.5 text-white/50 flex-shrink-0" />
+                    <span>
+                        Al enviar aceptas nuestros términos y políticas. Si tienes cuenta e inicias sesión,
+                        tu registro se asociará a tu usuario.
+                    </span>
                 </p>
-            )}
-            {error && (
-                <p className="mt-3 text-sm rounded-xl px-3 py-2 bg-rose-500/10 border border-rose-400/25 text-rose-200">
-                    {error}
-                </p>
-            )}
-            <p className="mt-3 text-xs text-white/60">
-                Al enviar aceptas nuestros términos y políticas. Si tienes cuenta e inicias sesión, tu registro se asociará a tu usuario.
-            </p>
+            </div>
         </Modal>
     );
+
 }
