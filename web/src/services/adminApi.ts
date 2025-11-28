@@ -645,10 +645,13 @@ export async function adminPosCreateSale(payload: PosSalePayload): Promise<PosCr
     return res.json() as Promise<PosCreatedSale>;
 }
 
-export async function adminDeliverSale(id: number): Promise<Sale> {
+export async function adminDeliverSale(
+    id: number,
+    payload: { ci: string; notes?: string }): Promise<Sale> {
     const res = await fetch(`${API_URL}/api/admin/sales/${id}/deliver`, {
         method: 'PATCH',
         headers: jsonHeaders(),
+        body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(await res.text());
     const j = await res.json();

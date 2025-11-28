@@ -9,9 +9,6 @@ export default function AdminCategoryCreate() {
         nav(`/admin/categories/${c.id}`);
     };
     return (
-        <div>
-            <h2 className="text-lg font-bold mb-3" > Nueva categoría </h2>
-            < CategoryForm onSubmit={submit} submitLabel="Crear categoría" />
-        </div>
+        < CategoryForm onSubmit={submit} submitLabel="Crear categoría" />
     );
 }

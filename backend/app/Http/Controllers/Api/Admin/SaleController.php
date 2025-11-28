@@ -310,14 +310,42 @@ class SaleController extends Controller
             return response()->json(['message' => 'Ya se registró la entrega.'], 409);
         }
 
-        $sale->update([
-            'delivery_status' => 'delivered',
-            'delivered_at'    => now(),
-            'delivered_by'    => $r->user()?->id,
+        $data = $r->validate([
+            'ci'    => ['required', 'string', 'max:50'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $sale->load(['customer:id,name,email', 'user:id,name', 'deliveredBy:id,name'])
-            ->loadSum('details', 'quantity');
+        $sale->loadMissing('customer');
+
+        if (!$sale->customer || !$sale->customer->ci) {
+            return response()->json([
+                'message' => 'La venta no tiene CI registrado del cliente; no se puede validar la entrega.',
+            ], 422);
+        }
+
+        $ciIngresado = trim($data['ci']);
+        $ciCliente   = trim($sale->customer->ci);
+
+        if (strcasecmp($ciIngresado, $ciCliente) !== 0) {
+            return response()->json([
+                'message' => 'El CI ingresado no coincide con el del cliente.',
+            ], 422);
+        }
+
+        $sale->update([
+            'delivery_status'   => 'delivered',
+            'delivered_at'      => now(),
+            'delivered_by'      => $r->user()?->id,
+            'delivered_to_ci'   => $ciIngresado,
+            'delivered_to_name' => $sale->customer->name,
+            'delivery_notes'    => $data['notes'] ?? null,
+        ]);
+
+        $sale->load([
+            'customer:id,name,ci,email,phone,address',
+            'user:id,name',
+            'deliveredBy:id,name',
+        ])->loadSum('details', 'quantity');
 
         return new SaleResource($sale);
     }

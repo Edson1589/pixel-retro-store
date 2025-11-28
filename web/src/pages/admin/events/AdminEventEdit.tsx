@@ -45,9 +45,6 @@ export default function AdminEventEdit() {
     if (!ev) return <p>Cargando...</p>;
 
     return (
-        <div>
-            <h2 className="text-lg font-bold mb-3">Editar evento · #{ev.id}</h2>
-            <EventForm initial={ev} onSubmit={submit} submitLabel="Guardar cambios" />
-        </div>
+        <EventForm initial={ev} onSubmit={submit} submitLabel="Guardar cambios" />
     );
 }

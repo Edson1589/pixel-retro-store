@@ -257,12 +257,13 @@ export default function AccountAppointments() {
                                     </div>
 
                                     {/* Botones */}
-                                    <div className="flex flex-wrap justify-end gap-2">
+                                    <div className="flex flex-wrap justify-end gap-1.5">
                                         {a.status === 'confirmed' && (
                                             <button
                                                 onClick={() => cancel(a.id)}
-                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-                                            bg-white/10 hover:bg-white/20 border border-white/10 text-xs"
+                                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
+                       text-[11px] border border-white/15 bg-white/[0.05]
+                       text-white/80 hover:bg-white/10 transition-colors"
                                             >
                                                 <XCircle className="h-3 w-3" />
                                                 <span>Cancelar</span>
@@ -273,16 +274,20 @@ export default function AccountAppointments() {
                                             <>
                                                 <button
                                                     onClick={() => acceptResched(a.id, true)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-                                                bg-emerald-600/80 hover:bg-emerald-600 text-xs"
+                                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
+                           text-[11px] border border-emerald-400/35 bg-emerald-500/10
+                           text-emerald-100 hover:bg-emerald-500/15 transition-colors"
                                                 >
                                                     <CheckCircle2 className="h-3 w-3" />
                                                     <span>Aceptar</span>
                                                 </button>
+
                                                 <button
                                                     onClick={() => acceptResched(a.id, false)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-                                                bg-amber-600/80 hover:bg-amber-600 text-xs"
+                                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
+                   text-[11px] border border-rose-400/30 bg-rose-500/10
+                   hover:bg-rose-500/15
+                   disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     <XCircle className="h-3 w-3" />
                                                     <span>Rechazar</span>
@@ -292,13 +297,15 @@ export default function AccountAppointments() {
 
                                         <Link
                                             to={`/account/appointments/${a.id}`}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
-                                        bg-[#7C3AED]/80 hover:bg-[#7C3AED] text-xs"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
+                   text-[11px] border border-cyan-400/35 bg-cyan-500/10
+                   text-cyan-100 hover:bg-cyan-500/15 transition-colors"
                                         >
                                             <CalendarClock className="h-3 w-3" />
                                             <span>Ver</span>
                                         </Link>
                                     </div>
+
                                 </div>
 
                                 {a.status === 'rescheduled' &&

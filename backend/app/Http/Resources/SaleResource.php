@@ -44,6 +44,11 @@ class SaleResource extends JsonResource
                 'id'   => $this->deliveredBy->id,
                 'name' => $this->deliveredBy->name,
             ]),
+
+            'delivered_to_ci'   => $this->delivered_to_ci,
+            'delivered_to_name' => $this->delivered_to_name,
+            'delivery_notes'    => $this->delivery_notes,
+
             'canceled_by' => $this->whenLoaded('canceledBy', fn() => [
                 'id'   => $this->canceledBy->id,
                 'name' => $this->canceledBy->name,

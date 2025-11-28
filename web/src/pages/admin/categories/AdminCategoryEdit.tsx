@@ -39,9 +39,6 @@ export default function AdminCategoryEdit() {
     if (!c) return <p>Cargando...</p>;
 
     return (
-        <div>
-            <h2 className="text-lg font-bold mb-3">Editar categoría · #{c.id}</h2>
-            <CategoryForm initial={c} onSubmit={submit} submitLabel={busy ? 'Guardando...' : 'Guardar cambios'} />
-        </div>
+        <CategoryForm initial={c} onSubmit={submit} submitLabel={busy ? 'Guardando...' : 'Guardar cambios'} />
     );
 }

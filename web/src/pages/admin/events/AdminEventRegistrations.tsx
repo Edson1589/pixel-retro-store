@@ -3,6 +3,21 @@ import { adminGetEvent, adminListEventRegs, adminUpdateRegStatus } from '../../.
 import { useParams } from 'react-router-dom';
 import FancySelect, { type Option } from "../../../components/FancySelect";
 import type { Page } from '../../../services/adminApi';
+import {
+    Users as UsersIcon,
+    Filter,
+    UserCircle2,
+    Mail,
+    Gamepad2,
+    Users,
+    CheckCircle2,
+    Clock3,
+    XCircle,
+    ChevronsLeft,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsRight,
+} from 'lucide-react';
 
 type EventKind = 'event' | 'tournament';
 type EventStatus = 'draft' | 'published' | 'archived';
@@ -109,38 +124,112 @@ export default function AdminEventRegistrations() {
     const canNext = data.current_page < data.last_page;
     const from = data.total === 0 ? 0 : (data.current_page - 1) * data.per_page + 1;
     const to = Math.min(data.current_page * data.per_page, data.total);
+    const confirmedOnPage = data.data.filter((r) => r.status === 'confirmed').length;
+    const pendingOnPage = data.data.filter((r) => r.status === 'pending').length;
+    const cancelledOnPage = data.data.filter((r) => r.status === 'cancelled').length;
+
 
     return (
-        <div className="text-white space-y-4">
-            <div className="flex items-center gap-3">
-                <h2 className="text-xl font-extrabold tracking-wider bg-clip-text text-transparent
-                 bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)]">
-                    Registros · {ev.title}
-                </h2>
+        <div className="text-white space-y-5">
+            {/* HEADER + FILTRO */}
+            <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <div
+                        className="h-10 w-10 rounded-2xl
+                     bg-[linear-gradient(135deg,#06B6D4_0%,#7C3AED_100%)]
+                     shadow-[0_12px_30px_-14px_rgba(6,182,212,0.65)]
+                     flex items-center justify-center"
+                    >
+                        <UsersIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                        <h2
+                            className="text-xl font-extrabold tracking-wide bg-clip-text text-transparent
+                       bg-[linear-gradient(90deg,#06B6D4_0%,#7C3AED_100%)]"
+                        >
+                            Registros · {ev.title}
+                        </h2>
+                        <p className="text-xs text-white/60">
+                            Gestiona los participantes inscritos y su estado dentro del evento.
+                        </p>
+                    </div>
+                </div>
 
-                <div className="ml-auto flex items-center gap-2">
-                    <FancySelect
-                        className="min-w-[180px]"
-                        value={status}
-                        onChange={(v) => setStatus(v as StatusFilter)}
-                        options={statusOptions}
-                        placeholder="Filtrar por estado"
-                    />
+                <div className="ml-auto flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                        <Filter className="h-4 w-4 text-white/55" />
+                        <FancySelect
+                            className="min-w-[180px]"
+                            value={status}
+                            onChange={(v) => setStatus(v as StatusFilter)}
+                            options={statusOptions}
+                            placeholder="Filtrar por estado"
+                        />
+                    </div>
 
-                    {loading && <span className="text-sm text-white/70">Cargando...</span>}
+                    {loading && (
+                        <span className="text-xs sm:text-sm text-white/70">Cargando…</span>
+                    )}
                 </div>
             </div>
 
+
+            {/* RESUMEN RÁPIDO (página actual) */}
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-xl bg-emerald-500/25 flex items-center justify-center">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-200" />
+                    </div>
+                    <div>
+                        <div className="text-[11px] uppercase tracking-[0.16em] text-white/55">
+                            Confirmados (pág.)
+                        </div>
+                        <div className="text-lg font-semibold text-white/90 tabular-nums">
+                            {confirmedOnPage}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-xl bg-amber-500/25 flex items-center justify-center">
+                        <Clock3 className="h-4 w-4 text-amber-200" />
+                    </div>
+                    <div>
+                        <div className="text-[11px] uppercase tracking-[0.16em] text-white/55">
+                            Pendientes (pág.)
+                        </div>
+                        <div className="text-lg font-semibold text-white/90 tabular-nums">
+                            {pendingOnPage}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-xl bg-rose-500/25 flex items-center justify-center">
+                        <XCircle className="h-4 w-4 text-rose-100" />
+                    </div>
+                    <div>
+                        <div className="text-[11px] uppercase tracking-[0.16em] text-white/55">
+                            Cancelados (pág.)
+                        </div>
+                        <div className="text-lg font-semibold text-white/90 tabular-nums">
+                            {cancelledOnPage}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* TABLA */}
             <div
                 className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04]
-                   shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]"
+                 shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]"
             >
                 <table className="w-full text-sm">
                     <thead className="bg-white/[0.03] text-white/70">
                         <tr>
-                            <th className="p-3 text-left font-semibold">Nombre</th>
+                            <th className="p-3 text-left font-semibold">Participante</th>
                             <th className="p-3 text-center font-semibold">Email</th>
-                            <th className="p-3 text-center font-semibold">Gamer Tag</th>
+                            <th className="p-3 text-center font-semibold">Gamer tag</th>
                             <th className="p-3 text-center font-semibold">Equipo</th>
                             <th className="p-3 text-center font-semibold">Estado</th>
                             <th className="p-3 text-center font-semibold">Acciones</th>
@@ -153,48 +242,92 @@ export default function AdminEventRegistrations() {
                                 key={r.id}
                                 className="border-t border-white/5 hover:bg-white/[0.03] transition-colors"
                             >
-                                <td className="p-3">{r.name}</td>
-                                <td className="p-3 text-center">{r.email}</td>
-                                <td className="p-3 text-center">{r.gamer_tag || '—'}</td>
-                                <td className="p-3 text-center">{r.team || '—'}</td>
+                                {/* Participante */}
+                                <td className="p-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white/80">
+                                            <UserCircle2 className="h-4 w-4" />
+                                        </div>
+                                        <span className="font-medium text-white/90">{r.name}</span>
+                                    </div>
+                                </td>
+
+                                {/* Email */}
+                                <td className="p-3 text-center">
+                                    <div className="inline-flex items-center gap-1.5 text-white/85">
+                                        <Mail className="h-4 w-4 text-white/50" />
+                                        <span className="truncate max-w-[220px]">{r.email}</span>
+                                    </div>
+                                </td>
+
+                                {/* Gamer tag */}
+                                <td className="p-3 text-center">
+                                    <div className="inline-flex items-center gap-1.5 text-white/85">
+                                        <Gamepad2 className="h-4 w-4 text-white/50" />
+                                        <span>{r.gamer_tag || '—'}</span>
+                                    </div>
+                                </td>
+
+                                {/* Equipo */}
+                                <td className="p-3 text-center">
+                                    <div className="inline-flex items-center gap-1.5 text-white/85">
+                                        <Users className="h-4 w-4 text-white/50" />
+                                        <span>{r.team || '—'}</span>
+                                    </div>
+                                </td>
+
+                                {/* Estado */}
                                 <td className="p-3 text-center">
                                     <span
-                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-xs ${statusPill(
+                                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs ${statusPill(
                                             r.status
                                         )}`}
                                     >
-                                        {r.status === 'confirmed'
-                                            ? 'Confirmado'
-                                            : r.status === 'pending'
-                                                ? 'Pendiente'
-                                                : 'Cancelado'}
+                                        {r.status === 'confirmed' && (
+                                            <CheckCircle2 className="h-3 w-3" />
+                                        )}
+                                        {r.status === 'pending' && <Clock3 className="h-3 w-3" />}
+                                        {r.status === 'cancelled' && <XCircle className="h-3 w-3" />}
+
+                                        <span className="ml-0.5">
+                                            {r.status === 'confirmed'
+                                                ? 'Confirmado'
+                                                : r.status === 'pending'
+                                                    ? 'Pendiente'
+                                                    : 'Cancelado'}
+                                        </span>
                                     </span>
                                 </td>
+
+                                {/* Acciones */}
                                 <td className="p-3 text-center">
                                     <div className="inline-flex gap-1.5">
                                         <button
                                             onClick={() => void change(r.id, 'confirmed')}
-                                            className="px-2.5 py-1 rounded-lg text-xs
-                                 border border-emerald-400/30 text-emerald-200 bg-emerald-500/10
-                                 hover:bg-emerald-500/15"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px]
+                               border border-emerald-400/30 bg-emerald-500/10
+                               hover:bg-emerald-500/15"
                                         >
-                                            Confirmar
+                                            <CheckCircle2 className="h-3.5 w-3.5" />
+                                            <span>Confirmar</span>
                                         </button>
                                         <button
                                             onClick={() => void change(r.id, 'pending')}
-                                            className="px-2.5 py-1 rounded-lg text-xs
-                                 border border-amber-400/30 text-amber-200 bg-amber-500/10
-                                 hover:bg-amber-500/15"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px]
+                               border border-amber-400/30 bg-amber-500/10
+                               hover:bg-amber-500/15"
                                         >
-                                            Pendiente
+                                            <Clock3 className="h-3.5 w-3.5" />
+                                            <span>Pendiente</span>
                                         </button>
                                         <button
                                             onClick={() => void change(r.id, 'cancelled')}
-                                            className="px-2.5 py-1 rounded-lg text-xs
-                                 border border-rose-400/30 text-rose-200 bg-rose-500/10
-                                 hover:bg-rose-500/15"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px]
+                               border border-rose-400/30 bg-rose-500/10
+                               hover:bg-rose-500/15"
                                         >
-                                            Cancelar
+                                            <XCircle className="h-3.5 w-3.5" />
+                                            <span>Cancelar</span>
                                         </button>
                                     </div>
                                 </td>
@@ -212,12 +345,22 @@ export default function AdminEventRegistrations() {
                 </table>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 justify-between">
-                <div className="text-white/70 text-sm">
-                    {data.total > 0
-                        ? <>Mostrando <span className="text-white">{from}</span>–<span className="text-white">{to}</span> de <span className="text-white">{data.total}</span></>
-                        : 'Sin resultados'}
-                    <span className="ml-3 text-white/50">Página {data.current_page} de {data.last_page}</span>
+            {/* PAGINACIÓN */}
+            <div className="flex flex-wrap items-center gap-3 justify-between text-sm text-white/70">
+                <div>
+                    {data.total > 0 ? (
+                        <>
+                            Mostrando{' '}
+                            <span className="text-white font-medium">{from}</span>–
+                            <span className="text-white font-medium">{to}</span> de{' '}
+                            <span className="text-white font-medium">{data.total}</span>
+                        </>
+                    ) : (
+                        'Sin resultados'
+                    )}
+                    <span className="ml-3 text-white/50">
+                        Página {data.current_page} de {data.last_page}
+                    </span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -225,44 +368,45 @@ export default function AdminEventRegistrations() {
                         type="button"
                         onClick={() => setPage(1)}
                         disabled={!canPrev}
-                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                            ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                        title="Primera página"
+                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.04] inline-flex items-center gap-1
+                      ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
                     >
-                        « Primero
+                        <ChevronsLeft className="h-3 w-3" />
+                        <span>Primero</span>
                     </button>
                     <button
                         type="button"
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={!canPrev}
-                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                            ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                        title="Anterior"
+                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.04] inline-flex items-center gap-1
+                      ${canPrev ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
                     >
-                        ‹ Anterior
+                        <ChevronLeft className="h-3 w-3" />
+                        <span>Anterior</span>
                     </button>
                     <button
                         type="button"
                         onClick={() => setPage((p) => Math.min(data.last_page, p + 1))}
                         disabled={!canNext}
-                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                            ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                        title="Siguiente"
+                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.04] inline-flex items-center gap-1
+                      ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
                     >
-                        Siguiente ›
+                        <span>Siguiente</span>
+                        <ChevronRight className="h-3 w-3" />
                     </button>
                     <button
                         type="button"
                         onClick={() => setPage(data.last_page)}
                         disabled={!canNext}
-                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.06] text-white/80
-                            ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-                        title="Última página"
+                        className={`h-9 px-3 rounded-xl border border-white/10 bg-white/[0.04] inline-flex items-center gap-1
+                      ${canNext ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
                     >
-                        Última »
+                        <span>Última</span>
+                        <ChevronsRight className="h-3 w-3" />
                     </button>
                 </div>
             </div>
         </div>
     );
+
 }

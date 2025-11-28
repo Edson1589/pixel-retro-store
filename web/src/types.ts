@@ -133,6 +133,9 @@ export type Sale = {
     delivery_status: 'to_deliver' | 'delivered';
     delivered_at: string | null;
     delivered_by?: { id: number; name: string } | null;
+    delivered_to_ci?: string | null;
+    delivered_to_name?: string | null;
+    delivery_notes?: string | null;
     is_canceled: boolean;
     canceled_at: string | null;
     cancel_reason?: string | null;
