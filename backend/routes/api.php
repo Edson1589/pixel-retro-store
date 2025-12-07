@@ -1,0 +1,202 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\Admin\AuthController as AdminAuth;
+use App\Http\Controllers\Api\Admin\ProductController as AdminProducts;
+use App\Http\Controllers\Api\Admin\CategoryController as AdminCategories;
+
+use App\Http\Controllers\Api\EventController as PublicEvents;
+
+use App\Http\Controllers\Api\Admin\EventController as AdminEvents;
+use App\Http\Controllers\Api\Admin\EventRegistrationController as AdminEventRegs;
+
+use App\Http\Controllers\Api\PaymentController;
+
+use App\Http\Controllers\Api\CustomerAuthController;
+
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\Customer\OrderController as CustomerOrders;
+use App\Http\Controllers\Api\CategoryController as PublicCategories;
+
+use App\Http\Controllers\Api\ReceiptController;
+
+use App\Http\Controllers\Api\SearchTelemetryController;
+
+use App\Http\Controllers\Api\ProductPreferenceController;
+use App\Http\Controllers\Api\EventPreferenceController;
+use App\Http\Controllers\Api\UserSignalsController;
+
+use App\Http\Controllers\Api\Admin\SaleController;
+
+use App\Http\Controllers\Api\Admin\PosController;
+
+use App\Http\Controllers\Api\Admin\PosSaleController;
+
+use App\Http\Controllers\Api\Admin\UserController as AdminUsers;
+use App\Http\Controllers\Api\Admin\PasswordController as AdminPassword;
+
+use App\Http\Controllers\Api\CustomerPasswordController as CustomerPassword;
+
+use App\Http\Controllers\Api\AppointmentController as CustomerAppointments;
+use App\Http\Controllers\Api\Admin\AppointmentController as AdminAppointments;
+
+Route::prefix('admin')->group(function () {
+    Route::post('/login', [AdminAuth::class, 'login']);
+
+    Route::post('/password/forgot', [AdminPassword::class, 'forgot'])
+        ->middleware('throttle:5,1')
+        ->name('admin.password.forgot');
+
+    Route::middleware(['auth:sanctum', 'must.change.password'])->group(function () {
+        Route::post('/logout', [AdminAuth::class, 'logout'])->name('admin.logout');
+
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/users', [AdminUsers::class, 'index']);
+            Route::get('/users/{id}', [AdminUsers::class, 'show'])->whereNumber('id');
+            Route::post('/users', [AdminUsers::class, 'store']);
+            Route::put('/users/{id}', [AdminUsers::class, 'update'])->whereNumber('id');
+            Route::delete('/users/{id}', [AdminUsers::class, 'destroy'])->whereNumber('id');
+        });
+
+        Route::middleware('role:technician,admin')->group(function () {
+            Route::get('/appointments', [AdminAppointments::class, 'index'])->name('admin.appts.index');
+            Route::patch('/appointments/{appointment}/accept', [AdminAppointments::class, 'accept'])->name('admin.appts.accept');
+            Route::patch('/appointments/{appointment}/reject', [AdminAppointments::class, 'reject'])->name('admin.appts.reject');
+            Route::patch('/appointments/{appointment}/reschedule', [AdminAppointments::class, 'reschedule'])->name('admin.appts.reschedule');
+            Route::patch('/appointments/{appointment}/complete', [AdminAppointments::class, 'complete'])->name('admin.appts.complete');
+        });
+
+        Route::post('/password/change', [AdminPassword::class, 'change'])->name('admin.password.change');
+
+        Route::get('pos/products', [PosController::class, 'searchProducts']);
+        Route::get('pos/customers', [PosController::class, 'searchCustomers']);
+        Route::post('pos/sales', [PosController::class, 'store']);
+
+        Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])
+            ->whereNumber('sale')->name('admin.sales.receipt');
+
+        Route::post('pos/sales', [PosSaleController::class, 'store']);
+
+        Route::get('sales/summary', [SaleController::class, 'summary']);
+        Route::get('sales/export',  [SaleController::class, 'export']);
+        Route::get('sales', [SaleController::class, 'index']);
+        Route::get('sales/{sale}', [SaleController::class, 'show']);
+        Route::patch('sales/{sale}/status', [SaleController::class, 'updateStatus']);
+
+        Route::patch('sales/{sale}/deliver', [SaleController::class, 'markDelivered'])
+            ->whereNumber('sale');
+
+        Route::get('sales/{sale}/delivery-note', [SaleController::class, 'deliveryNote'])
+            ->whereNumber('sale')->name('admin.sales.delivery-note');
+
+        Route::post('sales/{sale}/void', [SaleController::class, 'void'])
+            ->whereNumber('sale');
+
+        Route::get('/categories', [AdminCategories::class, 'index']);
+        Route::get('/categories/{id}', [AdminCategories::class, 'show']);
+        Route::post('/categories', [AdminCategories::class, 'store']);
+        Route::put('/categories/{id}', [AdminCategories::class, 'update']);
+        Route::delete('/categories/{id}', [AdminCategories::class, 'destroy']);
+
+        Route::get('/products', [AdminProducts::class, 'index']);
+        Route::post('/products', [AdminProducts::class, 'store']);
+        Route::get('/products/{id}', [AdminProducts::class, 'show']);
+        Route::post('/products/{id}', [AdminProducts::class, 'update']);
+        Route::delete('/products/{id}', [AdminProducts::class, 'destroy']);
+
+        Route::get('/events/lookup', [AdminEvents::class, 'lookup']);
+        Route::get('/events', [AdminEvents::class, 'index']);
+        Route::post('/events', [AdminEvents::class, 'store']);
+        Route::get('/events/{id}', [AdminEvents::class, 'show']);
+        Route::post('/events/{id}', [AdminEvents::class, 'update']);
+        Route::delete('/events/{id}', [AdminEvents::class, 'destroy']);
+
+        Route::get('/events/{id}/registrations', [AdminEventRegs::class, 'index']);
+        Route::post('/events/{id}/registrations/{regId}/status', [AdminEventRegs::class, 'updateStatus']);
+
+        Route::post('/events/{id}/registrations', [AdminEventRegs::class, 'store'])
+            ->whereNumber('id');
+
+        Route::patch('/events/{id}/registrations/{regId}', [AdminEventRegs::class, 'update'])
+            ->whereNumber('id')->whereNumber('regId');
+
+        Route::post('/events/{id}/registrations/{regId}/checkin', [AdminEventRegs::class, 'checkin'])
+            ->whereNumber('id')->whereNumber('regId');
+    });
+});
+
+Route::middleware('optional.sanctum')->get('/products', [ProductController::class, 'index']);
+Route::get('/products/{slug}', [ProductController::class, 'show']);
+
+Route::post('/checkout', [CheckoutController::class, 'checkout']);
+
+Route::get('/events', [PublicEvents::class, 'index']);
+Route::get('/events/{slug}', [PublicEvents::class, 'show']);
+Route::post('/events/{slug}/register', [PublicEvents::class, 'register']);
+Route::get('/{slug}/my-registration', [PublicEvents::class, 'myRegistration']);
+
+Route::post('/auth/password/forgot', [CustomerPassword::class, 'forgot'])
+    ->middleware('throttle:5,1')
+    ->name('customer.password.forgot');
+
+Route::get('/categories', [PublicCategories::class, 'index']);
+
+Route::post('/payments/intents', [PaymentController::class, 'createIntent']);
+Route::post('/payments/intents/{intentId}/confirm', [PaymentController::class, 'confirmIntent']);
+Route::post('/payments/intents/{intentId}/3ds/verify', [PaymentController::class, 'verify3ds']);
+
+Route::post('/auth/register', [CustomerAuthController::class, 'register']);
+Route::post('/auth/login',    [CustomerAuthController::class,  'login']);
+
+Route::get('admin/sales/{sale}/pickup-doc', [SaleController::class, 'pickupDoc'])
+    ->name('admin.sales.pickupDoc');
+
+Route::middleware(['auth:sanctum', 'role:customer', 'must.change.password'])->group(function () {
+    Route::post('/auth/password/change', [CustomerPassword::class, 'change'])
+        ->middleware('auth:sanctum')
+        ->name('customer.password.change');
+
+    Route::get('/auth/me',     [CustomerAuthController::class, 'me']);
+    Route::post('/auth/logout', [CustomerAuthController::class, 'logout']);
+
+    Route::get('/appointments', [CustomerAppointments::class, 'index'])->name('customer.appts.index');
+    Route::post('/appointments', [CustomerAppointments::class, 'store'])->name('customer.appts.store');
+    Route::get('/appointments/{appointment}', [CustomerAppointments::class, 'show'])->name('customer.appts.show');
+    Route::post('/appointments/{appointment}/confirm-reschedule', [CustomerAppointments::class, 'confirmReschedule'])->name('customer.appts.confirmReschedule');
+    Route::post('/appointments/{appointment}/cancel', [CustomerAppointments::class, 'cancel'])->name('customer.appts.cancel');
+
+    Route::post('/payments/intents', [PaymentController::class, 'createIntent']);
+    Route::post('/payments/intents/{intentId}/confirm', [PaymentController::class, 'confirmIntent']);
+    Route::post('/payments/intents/{intentId}/3ds/verify', [PaymentController::class, 'verify3ds']);
+
+    Route::post('/events/{slug}/register', [PublicEvents::class, 'register']);
+
+    Route::get('/cart', [CartController::class, 'get']);
+    Route::put('/cart', [CartController::class, 'put']);
+    Route::post('/cart/items', [CartController::class, 'addItem']);
+    Route::patch('/cart/items/{productId}', [CartController::class, 'updateItem']);
+    Route::delete('/cart/items/{productId}', [CartController::class, 'removeItem']);
+    Route::post('/cart/clear', [CartController::class, 'clear']);
+
+    Route::get('/me/orders', [CustomerOrders::class, 'index']);
+    Route::get('/me/orders/{id}', [CustomerOrders::class, 'show']);
+    Route::get('/account/orders/{sale}/receipt', [ReceiptController::class, 'download']);
+
+    Route::post('/me/products/interact', [UserSignalsController::class, 'interact']);
+});
+
+Route::post('/products/search/click', [SearchTelemetryController::class, 'productClick'])
+    ->middleware('throttle:60,1');
+
+Route::post('/events/search/click', [SearchTelemetryController::class, 'eventClick'])
+    ->middleware('throttle:60,1');
+
+Route::post('/products/{id}/prefer', [ProductPreferenceController::class, 'prefer'])
+    ->whereNumber('id')
+    ->middleware('throttle:120,1');
+
+Route::post('/events/{id}/prefer', [EventPreferenceController::class, 'prefer'])
+    ->whereNumber('id')
+    ->middleware('throttle:120,1');

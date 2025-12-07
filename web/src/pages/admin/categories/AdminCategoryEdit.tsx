@@ -1,0 +1,44 @@
+import { useEffect, useState } from 'react';
+import { getCategory, updateCategory } from '../../../services/adminApi';
+import { useNavigate, useParams } from 'react-router-dom';
+import CategoryForm from './CategoryForm';
+import type { Category } from '../../../types';
+
+export default function AdminCategoryEdit() {
+    const { id } = useParams<{ id: string }>();
+    const nav = useNavigate();
+    const [c, setC] = useState<Category | null>(null);
+    const [busy, setBusy] = useState(false);
+
+    useEffect(() => {
+        const cid = Number(id);
+        if (!id || Number.isNaN(cid)) return;
+
+        let cancelled = false;
+        (async () => {
+            const cat = await getCategory(cid);
+            if (!cancelled) setC(cat);
+        })();
+
+        return () => { cancelled = true; };
+    }, [id]);
+
+    const submit = async (payload: Pick<Category, 'name' | 'slug'>) => {
+        const cid = Number(id);
+        if (!id || Number.isNaN(cid)) return;
+
+        try {
+            setBusy(true);
+            await updateCategory(cid, payload);
+            nav(`/admin/categories/${cid}`);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    if (!c) return <p>Cargando...</p>;
+
+    return (
+        <CategoryForm initial={c} onSubmit={submit} submitLabel={busy ? 'Guardando...' : 'Guardar cambios'} />
+    );
+}

@@ -1,0 +1,104 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\CustomerLoginRequest;
+use App\Http\Requests\Auth\CustomerRegisterRequest;
+use App\Models\Customer;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
+class CustomerAuthController extends Controller
+{
+    public function register(CustomerRegisterRequest $request)
+    {
+        $data = $request->validated();
+
+        if (User::where('email', $data['email'])->exists()) {
+            return response()->json([
+                'message' => 'El usuario ya está registrado.'
+            ], 422);
+        }
+
+        $user = User::create([
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'password' => $data['password'],
+            'role'     => 'customer',
+        ]);
+
+        Customer::updateOrCreate(
+            ['email' => $data['email']],
+            [
+                'name'    => $data['name'],
+                'phone'   => $data['phone']    ?? null,
+                'address' => $data['address']  ?? null,
+            ]
+        );
+
+        $token = $user->createToken('customer')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user'  => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+                'role'  => $user->role,
+            ]
+        ], 201);
+    }
+
+    public function login(CustomerLoginRequest $request)
+    {
+        $data = $request->validated();
+
+        $user = User::where('email', $data['email'])->first();
+        if (!$user || !Hash::check($data['password'], $user->password)) {
+            return response()->json(['message' => 'Credenciales invalidas'], 401);
+        }
+        if ($user->role !== 'customer') {
+            return response()->json(['message' => 'Rol no permitido en este endpoint'], 403);
+        }
+
+        if ($user->must_change_password && $user->temp_password_expires_at && now()->gt($user->temp_password_expires_at)) {
+            return response()->json(['message' => 'La contraseña temporal expiró. Solicita otra.'], 403);
+        }
+
+        $token = $user->createToken('customer')->plainTextToken;
+
+        $user->last_login_at = now();
+        $user->save();
+
+        return response()->json([
+            'token' => $token,
+            'user'  => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+                'role'  => $user->role,
+                'must_change_password' => (bool) $user->must_change_password,
+            ]
+        ]);
+    }
+
+
+    public function me(Request $request)
+    {
+        $u = $request->user();
+        return response()->json([
+            'id'    => $u->id,
+            'name'  => $u->name,
+            'email' => $u->email,
+            'role'  => $u->role,
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()?->delete();
+        return response()->json(['message' => 'Sesión cerrada']);
+    }
+}
