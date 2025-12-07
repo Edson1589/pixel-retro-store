@@ -20,11 +20,13 @@ class Product extends Model
         'condition',
         'is_unique',
         'image_url',
-        'status'
+        'status',
+        'is_service'
     ];
     protected $casts = [
         'is_unique' => 'boolean',
         'price' => 'float',
+        'is_service' => 'boolean',
     ];
     public function category(): BelongsTo
     {

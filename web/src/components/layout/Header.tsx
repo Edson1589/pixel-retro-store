@@ -1,4 +1,3 @@
-// src/components/layout/Header.tsx
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -16,6 +15,7 @@ import {
     ListTree,
 } from 'lucide-react';
 import CategoryDropdown from '../CategoryDropdown';
+import FancySelect from '../FancySelect';
 
 export default function Header() {
     const { user, loading, logout } = useCustomerAuth();
@@ -31,13 +31,18 @@ export default function Header() {
 
     const isAdminRoute = loc.pathname.startsWith('/admin');
 
-    // Cerrar menús al cambiar de ruta (hook SIEMPRE se ejecuta)
+    const mainSection =
+        loc.pathname.startsWith('/events')
+            ? '/events'
+            : loc.pathname.startsWith('/about')
+                ? '/about'
+                : '/';
+
     useEffect(() => {
         setUserMenuOpen(false);
         setCatsOpen(false);
     }, [loc.pathname]);
 
-    // Cerrar con click fuera + ESC (hook SIEMPRE se ejecuta)
     useEffect(() => {
         const onClick = (e: MouseEvent) => {
             const target = e.target as Node;
@@ -62,7 +67,6 @@ export default function Header() {
         };
     }, []);
 
-    // AHORA recién hacemos el early return
     if (isAdminRoute) return null;
 
     if (loc.pathname.startsWith('/admin')) return null;
@@ -86,10 +90,8 @@ export default function Header() {
     };
     return (
         <header className="sticky top-0 z-40 bg-[#050814]/95 backdrop-blur">
-            {/* Barra superior: logo + carrito + login / menú usuario */}
             <div className="border-b border-white/10">
                 <div className="h-14 px-4 lg:px-8 flex items-center gap-4">
-                    {/* LOGO */}
                     <Link
                         to="/"
                         className="flex items-center gap-2 font-semibold tracking-wide text-white"
@@ -110,9 +112,7 @@ export default function Header() {
                         </span>
                     </Link>
 
-                    {/* Lado derecho */}
                     <div className="ml-auto flex items-center gap-4">
-                        {/* Carrito */}
                         <Link
                             to="/cart"
                             className="relative inline-flex items-center gap-1 text-sm text-white/90 hover:text-white"
@@ -135,7 +135,6 @@ export default function Header() {
                             )}
                         </Link>
 
-                        {/* Login / Menú usuario */}
                         {!loading && (
                             <>
                                 {user ? (
@@ -157,7 +156,6 @@ export default function Header() {
                                             />
                                         </button>
 
-                                        {/* Dropdown de usuario */}
                                         {userMenuOpen && (
                                             <div
                                                 className="
@@ -251,46 +249,59 @@ export default function Header() {
                 </div>
             </div>
 
-            {/* Barra inferior: Todas las categorías / Productos / Eventos */}
             <div className="border-b border-white/10 bg-[#050814]">
                 <div className="h-11 px-4 lg:px-8 flex items-center gap-4">
-                    {/* Todas las categorías + dropdown de categorías */}
                     <div ref={catsRef} className="relative">
                         <button
                             type="button"
                             onClick={() => setCatsOpen((v) => !v)}
                             className="
-        inline-flex items-center gap-1.5
-        px-2.5 py-1
-        rounded-xl
-        bg-white/[0.03] border border-white/10
-        text-xs sm:text-sm font-medium text-white/90
-        hover:bg-white/10 transition
-        max-w-[60vw] sm:max-w-none
-    "
+                                inline-flex items-center gap-1.5
+                                px-2.5 py-1
+                                rounded-xl
+                                bg-white/[0.03] border border-white/10
+                                text-xs sm:text-sm font-medium text-white/90
+                                hover:bg-white/10 transition
+                                max-w-[60vw] sm:max-w-none
+                            "
                         >
-
-
                             <ListTree className="h-4 w-4" />
                             <span>Todas las categorías</span>
                             <ChevronDown
-                                className={`h-4 w-4 transition-transform ${catsOpen ? 'rotate-180' : ''
-                                    }`}
+                                className={`h-4 w-4 transition-transform ${catsOpen ? 'rotate-180' : ''}`}
                             />
                         </button>
 
                         {catsOpen && <CategoryDropdown onClose={() => setCatsOpen(false)} />}
                     </div>
 
-                    {/* Links Productos / Eventos */}
-                    <nav className="flex items-center gap-2">
+                    <nav className="hidden sm:flex items-center gap-2">
                         <Link to="/" className={navLink('/')}>
                             Productos
                         </Link>
                         <Link to="/events" className={navLink('/events')}>
                             Eventos
                         </Link>
+                        <Link to="/about" className={navLink('/about')}>
+                            Quiénes somos?
+                        </Link>
                     </nav>
+
+                    <div className="ml-auto sm:hidden min-w-[170px]">
+                        <FancySelect
+                            value={mainSection}
+                            onChange={(v) => {
+                                nav(v);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            options={[
+                                { value: '/', label: 'Productos' },
+                                { value: '/events', label: 'Eventos' },
+                                { value: '/about', label: 'Quiénes somos' },
+                            ]}
+                            placeholder="Secciones…"
+                        />
+                    </div>
                 </div>
             </div>
         </header>

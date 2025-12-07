@@ -75,7 +75,6 @@ export default function AdminEventDelete() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -106,13 +105,11 @@ export default function AdminEventDelete() {
                     </Link>
                 </div>
 
-                {/* CARD DE CONFIRMACIÓN */}
                 <div
                     className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 md:p-5
                    shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)] space-y-4"
                 >
                     <div className="flex flex-col sm:flex-row items-start gap-4">
-                        {/* Banner */}
                         <div className="w-full sm:w-40 aspect-video rounded-xl border border-white/10 bg-white/[0.06] overflow-hidden grid place-items-center">
                             {ev.banner_url ? (
                                 <img
@@ -125,7 +122,6 @@ export default function AdminEventDelete() {
                             )}
                         </div>
 
-                        {/* Info evento */}
                         <div className="flex-1 space-y-2">
                             <div className="text-lg font-semibold text-white/90">
                                 {ev.title}
@@ -158,7 +154,6 @@ export default function AdminEventDelete() {
                                 )}
                             </div>
 
-                            {/* Meta: inicio / fin / cupo */}
                             <div className="grid sm:grid-cols-3 gap-3 pt-2 text-sm">
                                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 flex flex-col gap-1">
                                     <div className="flex items-center gap-1 text-xs text-white/60">
@@ -191,7 +186,6 @@ export default function AdminEventDelete() {
                         </div>
                     </div>
 
-                    {/* Aviso fuerte */}
                     <div className="rounded-xl border border-rose-400/40 bg-rose-500/15 p-4 flex items-start gap-3">
                         <AlertTriangle className="h-5 w-5 text-rose-200 mt-0.5" />
                         <div className="text-sm">
@@ -203,7 +197,6 @@ export default function AdminEventDelete() {
                         </div>
                     </div>
 
-                    {/* Botones */}
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={doDelete}

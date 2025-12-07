@@ -136,7 +136,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -168,13 +167,11 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                     </button>
                 </div>
 
-                {/* FORMULARIO */}
                 <form
                     onSubmit={handleSubmit}
                     className="mt-1 rounded-2xl border border-white/10 p-4 bg-white/[0.04]
                    w-full space-y-6"
                 >
-                    {/* DATOS GENERALES */}
                     <section className="space-y-3">
                         <div className="flex items-center gap-2">
                             <Tag className="h-4 w-4 text-cyan-300" />
@@ -189,7 +186,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {/* Categoría */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Tag className="h-3 w-3" />
@@ -206,7 +202,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                                 />
                             </div>
 
-                            {/* Nombre */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <PackagePlus className="h-3 w-3" />
@@ -230,7 +225,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                                 </div>
                             </div>
 
-                            {/* Slug */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Hash className="h-3 w-3" />
@@ -254,7 +248,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                                 </div>
                             </div>
 
-                            {/* SKU */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Barcode className="h-3 w-3" />
@@ -277,7 +270,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                             </div>
                         </div>
 
-                        {/* Descripción */}
                         <div>
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <FileText className="h-3 w-3" />
@@ -310,7 +302,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                         </div>
                     </section>
 
-                    {/* INVENTARIO */}
                     <section className="space-y-3">
                         <div className="flex items-center gap-2">
                             <Boxes className="h-4 w-4 text-emerald-300" />
@@ -325,7 +316,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {/* Precio */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <DollarSign className="h-3 w-3" />
@@ -353,7 +343,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                                 </div>
                             </div>
 
-                            {/* Stock */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Boxes className="h-3 w-3" />
@@ -381,7 +370,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                                 </div>
                             </div>
 
-                            {/* Condición */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <BadgeCheck className="h-3 w-3" />
@@ -400,7 +388,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                                 />
                             </div>
 
-                            {/* Estado */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Activity className="h-3 w-3" />
@@ -422,7 +409,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
 
                     </section>
 
-                    {/* IMAGEN */}
                     <section className="space-y-3">
                         <div className="flex items-center gap-2">
                             <ImageUp className="h-4 w-4 text-cyan-300" />
@@ -501,7 +487,6 @@ export default function ProductForm({ initial, onSubmit, submitLabel = 'Guardar'
                         </div>
                     </section>
 
-                    {/* BOTONES */}
                     <div className="pt-1 flex flex-wrap gap-2">
                         <button
                             type="submit"

@@ -262,4 +262,11 @@ export type Appointment = {
     updated_at: string;
     customer?: { id: number; name: string; email: string };
     technician?: { id: number; name: string; email: string } | null;
+    sale_id?: number | null;
+    service_amount?: number;
+    parts_total?: number;
+    discount?: number;
+    grand_total?: number;
+    completed_at?: string | null;
+    completed_by?: number | null;
 };

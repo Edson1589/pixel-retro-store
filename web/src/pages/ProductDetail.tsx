@@ -105,7 +105,6 @@ export default function ProductDetail() {
     const inStock = (p.stock ?? 0) > 0;
     const outOfStock = !inStock;
 
-    // etiqueta de condición
     const condPillBase =
         'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border';
     const condPillClass =
@@ -118,7 +117,6 @@ export default function ProductDetail() {
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-5xl mx-auto p-4 space-y-5 text-white">
-                {/* Migas de pan */}
                 <nav className="text-xs sm:text-sm flex flex-wrap items-center gap-1 text-white/70">
                     <Home className="h-4 w-4 text-white/50" />
                     <Link
@@ -149,7 +147,6 @@ export default function ProductDetail() {
                 </nav>
 
                 <div className="grid md:grid-cols-3 gap-5">
-                    {/* Columna imagen / precio */}
                     <div
                         className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] p-3
                                    shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]"
@@ -168,7 +165,6 @@ export default function ProductDetail() {
                                 </span>
                             )}
 
-                            {/* Etiqueta condición sobre la imagen */}
                             <div className="absolute left-3 top-3">
                                 <span className={condPillClass}>
                                     <Tag className="h-3 w-3" />
@@ -208,13 +204,11 @@ export default function ProductDetail() {
                         </div>
                     </div>
 
-                    {/* Columna info / acciones */}
                     <div
                         className="md:col-span-2 rounded-2xl border border-white/10 bg-white/[0.04] p-5
                                    shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]
                                    space-y-5"
                     >
-                        {/* Título y meta */}
                         <div className="space-y-2">
                             <div
                                 className="text-xl sm:text-2xl font-extrabold tracking-wider bg-clip-text text-transparent
@@ -239,7 +233,6 @@ export default function ProductDetail() {
                             </div>
                         </div>
 
-                        {/* Descripción */}
                         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                             <div className="flex items-center gap-2 mb-1">
                                 <Info className="h-4 w-4 text-[#06B6D4]" />
@@ -252,7 +245,6 @@ export default function ProductDetail() {
                             </p>
                         </div>
 
-                        {/* Acciones */}
                         <div className="flex flex-wrap items-end gap-3">
                             <label className="block">
                                 <span className="block text-[11px] text-white/60 mb-1">

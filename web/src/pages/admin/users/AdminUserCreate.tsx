@@ -40,7 +40,6 @@ export default function AdminUserCreate() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -72,13 +71,11 @@ export default function AdminUserCreate() {
                     </button>
                 </div>
 
-                {/* FORMULARIO */}
                 <form
                     onSubmit={submit}
                     className="mt-1 rounded-2xl border border-white/10 p-4 bg-white/[0.04]
                            w-full grid gap-3"
                 >
-                    {/* Nombre */}
                     <div>
                         <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                             <UserCircle2 className="h-3 w-3" />
@@ -100,7 +97,6 @@ export default function AdminUserCreate() {
                         </div>
                     </div>
 
-                    {/* Email */}
                     <div>
                         <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                             <Mail className="h-3 w-3" />
@@ -123,8 +119,6 @@ export default function AdminUserCreate() {
                         </div>
                     </div>
 
-                    {/* Rol */}
-                    {/* Rol */}
                     <div>
                         <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                             <Shield className="h-3 w-3" />
@@ -146,8 +140,6 @@ export default function AdminUserCreate() {
                         />
                     </div>
 
-
-                    {/* Validez contraseña temporal */}
                     <div>
                         <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                             <Clock3 className="h-3 w-3" />
@@ -178,7 +170,6 @@ export default function AdminUserCreate() {
                         </div>
                     </div>
 
-                    {/* Botón + msg */}
                     <div className="pt-1 flex flex-col gap-2">
                         <button
                             disabled={!can}

@@ -104,15 +104,6 @@ export default function EventsList() {
         return list;
     }, [data, sort]);
 
-    const totals = useMemo(() => {
-        const items = data.data;
-        return {
-            total: items.length,
-            eventos: items.filter(i => i.type === 'event').length,
-            torneos: items.filter(i => i.type === 'tournament').length,
-        };
-    }, [data]);
-
     const typeOptions: Option[] = [
         { label: 'Todos', value: 'all' },
         { label: 'Eventos', value: 'event' },
@@ -146,7 +137,6 @@ export default function EventsList() {
     shadow-[0_20px_60px_-20px_rgba(6,182,212,0.35)]
     border border-white/10 relative overflow-hidden"
                     >
-                        {/* brillo suave de fondo */}
                         <div className="pointer-events-none absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/15 blur-3 opacity-70" />
 
                         <div className="relative flex flex-col items-center text-center gap-3">
@@ -166,33 +156,7 @@ export default function EventsList() {
                         </div>
                     </section>
 
-
-                    <section className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {[
-                            { label: 'Próximos', val: totals.total, icon: CalendarClock },
-                            { label: 'Eventos', val: totals.eventos, icon: Ticket },
-                            { label: 'Torneos', val: totals.torneos, icon: Trophy },
-                        ].map((s) => {
-                            const Icon = s.icon;
-                            return (
-                                <div
-                                    key={s.label}
-                                    className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-white
-          shadow-[0_20px_40px_-24px_rgba(124,58,237,0.35)] flex flex-col gap-1"
-                                >
-                                    <div className="flex items-center justify-between text-sm text-white/70">
-                                        <span>{s.label}</span>
-                                        <Icon className="h-4 w-4 text-[#06B6D4]" />
-                                    </div>
-                                    <div className="text-2xl font-bold mt-1 text-[#06B6D4]">{s.val}</div>
-                                </div>
-                            );
-                        })}
-                    </section>
-
-
                     <section className="relative z-10 flex flex-wrap items-center gap-2">
-                        {/* buscador con lupa */}
                         <div className="flex-1 min-w-[220px]">
                             <div className="relative">
                                 <Search className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -290,7 +254,6 @@ export default function EventsList() {
                                                             </>
                                                         )}
                                                     </div>
-                                                    {/* tag fecha corta si quieres */}
                                                     <span className="text-[11px] text-slate-400 hidden sm:inline">{date}</span>
                                                 </div>
 
@@ -309,8 +272,10 @@ export default function EventsList() {
                                     );
                                 })}
 
-                                {sorted.length === 0 && (
-                                    <p className="col-span-full text-white/70">Sin resultados.</p>
+                                {sorted.length === 0 && !error && (
+                                    <p className="col-span-full text-white/70">
+                                        No hay eventos ni torneos disponibles por el momento.
+                                    </p>
                                 )}
                             </section>
 

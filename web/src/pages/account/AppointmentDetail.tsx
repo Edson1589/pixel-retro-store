@@ -94,7 +94,6 @@ export default function AppointmentDetail() {
     return (
         <div className="min-h-screen bg-[#07101B] text-white">
             <div className="max-w-4xl mx-auto p-4 space-y-6">
-                {/* Banner superior */}
                 <section
                     className="rounded-[20px] px-6 py-5
                      bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -130,9 +129,7 @@ export default function AppointmentDetail() {
                     </div>
                 </section>
 
-                {/* Detalles principales */}
                 <div className="grid md:grid-cols-2 gap-4">
-                    {/* Columna izquierda: info de servicio */}
                     <section className="rounded-2xl p-5 bg-white/[0.04] border border-white/10 space-y-3">
                         <h2 className="text-[15px] font-semibold mb-1 text-white/90 flex items-center gap-2">
                             <Gamepad2 className="h-4 w-4 text-[#06B6D4]" />
@@ -204,7 +201,6 @@ export default function AppointmentDetail() {
                         )}
                     </section>
 
-                    {/* Columna derecha: tiempos y estado */}
                     <section className="rounded-2xl p-5 bg-white/[0.04] border border-white/10 space-y-4">
                         <h2 className="text-[15px] font-semibold mb-1 text-white/90 flex items-center gap-2">
                             <Clock className="h-4 w-4 text-[#06B6D4]" />
@@ -274,7 +270,6 @@ export default function AppointmentDetail() {
                     </section>
                 </div>
 
-                {/* Mensaje final */}
                 <div className="rounded-[18px] p-5 text-center text-white
                         bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]/15
                         border border-white/10">

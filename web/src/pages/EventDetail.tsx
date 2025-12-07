@@ -113,7 +113,6 @@ export default function EventDetail() {
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-4xl mx-auto p-4 space-y-6 text-white">
-                {/* Cabecera pequeña */}
                 <div className="flex items-center justify-between text-xs text-white/60">
                     <div className="flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-[#06B6D4]" />
@@ -132,7 +131,6 @@ export default function EventDetail() {
                     </button>
                 </div>
 
-                {/* Hero del evento */}
                 <section className="rounded-[22px] overflow-hidden border border-white/10 bg-white/[0.04] shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)]">
                     <div className="relative aspect-video">
                         {event.banner_url ? (
@@ -146,10 +144,8 @@ export default function EventDetail() {
                             <div className="w-full h-full bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.6),transparent_60%),linear-gradient(135deg,#1f2937_0%,#020617_100%)]" />
                         )}
 
-                        {/* Vignette */}
                         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.1)_0%,rgba(0,0,0,0.7)_80%)]" />
 
-                        {/* Badges arriba */}
                         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
                             <span
                                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px]
@@ -185,7 +181,6 @@ export default function EventDetail() {
                             )}
                         </div>
 
-                        {/* Título y meta principal */}
                         <div className="absolute inset-x-0 bottom-0 p-5">
                             <h1 className="text-white text-2xl md:text-3xl font-extrabold drop-shadow-sm">
                                 {event.title}
@@ -193,10 +188,8 @@ export default function EventDetail() {
                         </div>
                     </div>
 
-                    {/* Meta inferior */}
                     <div className="px-5 pb-4 pt-3 border-t border-white/10 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02),transparent)] text-white">
                         <div className="flex flex-wrap items-center gap-3 text-sm">
-                            {/* Fecha */}
                             <div className="flex items-center gap-2 text-white/80">
                                 <CalendarRange className="h-4 w-4 opacity-80" />
                                 <span>
@@ -207,7 +200,6 @@ export default function EventDetail() {
                                 </span>
                             </div>
 
-                            {/* Ubicación */}
                             <div className="flex items-center gap-2 text-white/60">
                                 <MapPin className="h-4 w-4 opacity-80" />
                                 <span>
@@ -215,7 +207,6 @@ export default function EventDetail() {
                                 </span>
                             </div>
 
-                            {/* Cupos / estado */}
                             <div className="ml-auto flex flex-wrap items-center gap-2">
                                 {typeof event.capacity === 'number' && (
                                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] border border-white/15 bg-white/5 text-white/75">
@@ -247,7 +238,6 @@ export default function EventDetail() {
                     </div>
                 </section>
 
-                {/* Descripción */}
                 <section className="rounded-2xl p-5 text-white bg-white/[0.04] border border-white/10 space-y-2">
                     <div className="flex items-center gap-2 mb-1">
                         <Info className="h-4 w-4 text-[#06B6D4]" />
@@ -261,7 +251,6 @@ export default function EventDetail() {
                     </p>
                 </section>
 
-                {/* Botón de registro */}
                 {canRegister && (
                     <div className="flex">
                         <button
@@ -275,7 +264,6 @@ export default function EventDetail() {
                 )}
 
 
-                {/* Callout final */}
                 <div className="rounded-[18px] p-5 text-center text-white bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]/15 border border-white/10">
                     <p className="text-white/90 flex flex-wrap items-center justify-center gap-2 text-sm">
                         <Sparkles className="h-4 w-4 text-[#06B6D4]" />
@@ -289,7 +277,6 @@ export default function EventDetail() {
                 </div>
             </div>
 
-            {/* Modales */}
             <RegistrationModal
                 slug={slug!}
                 open={regOpen && isLogged}

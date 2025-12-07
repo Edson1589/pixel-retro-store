@@ -51,7 +51,6 @@ export default function AdminLogin() {
     return (
         <div className="min-h-screen grid place-items-center bg-[#07101B] px-3 sm:px-4 py-6 sm:py-10">
             <div className="w-full max-w-[480px] rounded-2xl sm:rounded-[22px] p-4 sm:p-6 bg-white/[0.04] border border-white/10 backdrop-blur-xl shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)] text-white">
-                {/* Header con icono */}
                 <div className="flex flex-col items-center gap-2">
                     <div className="h-11 w-11 rounded-2xl bg-[linear-gradient(135deg,#06B6D4_0%,#7C3AED_100%)] shadow-[0_12px_30px_-14px_rgba(6,182,212,0.65)] grid place-items-center">
                         <Shield className="h-5 w-5 text-white" />
@@ -68,7 +67,6 @@ export default function AdminLogin() {
                     onSubmit={submit}
                     className="mt-5 sm:mt-6 grid gap-2.5 sm:gap-3"
                 >
-                    {/* Email */}
                     <div className="flex items-center rounded-xl bg-white/[0.05] border border-white/10 overflow-hidden focus-within:ring-2 focus-within:ring-[#7C3AED66]">
                         <div className="h-10 w-10 grid place-items-center bg-white/5 border-r border-white/10">
                             <Mail className="h-4 w-4 text-white/70" />
@@ -85,7 +83,6 @@ export default function AdminLogin() {
                         />
                     </div>
 
-                    {/* Contraseña */}
                     <div className="flex items-center rounded-xl bg-white/[0.05] border border-white/10 overflow-hidden focus-within:ring-2 focus-within:ring-[#7C3AED66]">
                         <div className="h-10 w-10 grid place-items-center bg-white/5 border-r border-white/10">
                             <LockKeyhole className="h-4 w-4 text-white/70" />
@@ -101,7 +98,6 @@ export default function AdminLogin() {
                         />
                     </div>
 
-                    {/* Botón login */}
                     <button
                         className="mt-1 w-full px-4 py-2.5 sm:py-2 rounded-xl text-white font-medium bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] hover:brightness-110 transition shadow-[0_12px_30px_-12px_rgba(124,58,237,0.85)] disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
                         disabled={busy || !email || !password}
@@ -110,7 +106,6 @@ export default function AdminLogin() {
                         <span>{busy ? 'Ingresando...' : 'Ingresar'}</span>
                     </button>
 
-                    {/* Link recuperar */}
                     <div className="mt-3 text-center">
                         <Link
                             to="/admin/forgot-password"

@@ -55,7 +55,6 @@ export default function AdminProductShow() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -105,11 +104,8 @@ export default function AdminProductShow() {
                     </button>
                 </div>
 
-                {/* CARD DE DETALLE */}
                 <div className="rounded-2xl border border-white/10 p-4 bg-white/[0.04] space-y-4">
-                    {/* Cabecera producto: imagen + título + pills */}
                     <div className="flex flex-col md:flex-row gap-4">
-                        {/* Imagen */}
                         <div className="w-full md:w-40">
                             <div className="aspect-square rounded-xl bg-white/[0.03] border border-white/10 grid place-items-center overflow-hidden">
                                 {p.image_url ? (
@@ -135,7 +131,6 @@ export default function AdminProductShow() {
                             </div>
                         </div>
 
-                        {/* Info principal */}
                         <div className="flex-1 space-y-2">
                             <div className="flex items-start justify-between gap-2">
                                 <div>
@@ -179,7 +174,6 @@ export default function AdminProductShow() {
                         </div>
                     </div>
 
-                    {/* Info en grid */}
                     <div className="grid sm:grid-cols-2 gap-3 text-sm">
                         <div className="rounded-xl bg-white/[0.03] border border-white/10 px-3 py-2 flex items-center gap-2">
                             <Hash className="h-4 w-4 text-white/50" />
@@ -227,7 +221,6 @@ export default function AdminProductShow() {
                         </div>
                     </div>
 
-                    {/* Descripción */}
                     <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-3">
                         <div className="flex items-center gap-2 mb-1">
                             <FileText className="h-4 w-4 text-white/60" />
@@ -238,9 +231,6 @@ export default function AdminProductShow() {
                         </p>
                     </div>
                 </div>
-
-                {/* ACCIONES */}
-
             </div>
         </div>
     );

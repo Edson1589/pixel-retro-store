@@ -20,12 +20,10 @@ export default function TopBar({
     const [open, setOpen] = useState(false);
     const loc = useLocation();
 
-    // Cerrar menú al cambiar de ruta
     useEffect(() => {
         setOpen(false);
     }, [loc.pathname]);
 
-    // Cerrar con ESC
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === "Escape") setOpen(false);
@@ -47,7 +45,6 @@ export default function TopBar({
                 <div className="max-w-6xl mx-auto h-full px-3 flex items-center gap-3">
                     <div className="flex items-center gap-2">{left}</div>
 
-                    {/* Desktop nav */}
                     <ul className="ml-auto hidden md:flex items-center text-[13px] font-medium">
                         {items.map((it, idx) => (
                             <li key={`${it.label}-${idx}`} className="flex items-center">
@@ -86,7 +83,6 @@ export default function TopBar({
                         ))}
                     </ul>
 
-                    {/* Mobile toggle */}
                     <button
                         type="button"
                         className="ml-auto md:hidden inline-flex items-center justify-center h-8 w-8 rounded-md
@@ -99,7 +95,6 @@ export default function TopBar({
                         onClick={() => setOpen((v) => !v)}
                     >
                         <span className="sr-only">Abrir menú</span>
-                        {/* Icono hamburguesa / X */}
                         <svg
                             className={`h-4 w-4 transition-transform ${open ? "rotate-90" : ""}`}
                             viewBox="0 0 24 24"
@@ -123,7 +118,6 @@ export default function TopBar({
                     </button>
                 </div>
 
-                {/* Mobile panel */}
                 <div
                     id="mobile-menu"
                     className={`
@@ -132,7 +126,6 @@ export default function TopBar({
             transition duration-200
           `}
                 >
-                    {/* Fondo con blur + borde superior */}
                     <div
                         className="
               bg-[#07101B]/92 backdrop-blur

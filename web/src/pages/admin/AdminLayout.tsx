@@ -56,12 +56,10 @@ export default function AdminLayout() {
         }
     };
 
-    // Cerrar sidebar / menú usuario al cambiar de ruta
     useEffect(() => {
         setUserMenuOpen(false);
     }, [loc.pathname]);
 
-    // Cerrar menú usuario con click fuera + ESC
     useEffect(() => {
         const onClick = (e: MouseEvent) => {
             const t = e.target as Node;
@@ -91,7 +89,6 @@ export default function AdminLayout() {
 
     return (
         <div className="relative min-h-screen bg-[#07101B] text-white">
-            {/* Fondo retro */}
             <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.06]
                 bg-[radial-gradient(#ffffff_1px,transparent_1.2px)] [background-size:16px_16px]
                 [mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]"
@@ -105,10 +102,8 @@ export default function AdminLayout() {
                 bg-[radial-gradient(closest-side,rgba(6,182,212,0.18),transparent_70%)]"
             />
 
-            {/* TOP BAR ADMIN */}
             <header className="sticky top-0 z-40 border-b border-white/10 bg-[#050814]/95 backdrop-blur">
                 <div className="h-14 px-4 lg:px-8 flex items-center gap-3">
-                    {/* Toggle sidebar (mobile) */}
                     <button
                         type="button"
                         className="inline-flex items-center justify-center h-8 w-8 rounded-md
@@ -123,7 +118,6 @@ export default function AdminLayout() {
                         )}
                     </button>
 
-                    {/* LOGO / título */}
                     <div className="flex items-center gap-2">
                         <span className="grid place-items-center h-7 w-7 rounded-[4px] bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
                             <svg
@@ -143,7 +137,6 @@ export default function AdminLayout() {
                         </span>
                     </div>
 
-                    {/* Menú usuario (Hola, admin) */}
                     {isLogged && (
                         <div ref={userMenuRef} className="ml-auto relative">
                             <button
@@ -201,7 +194,6 @@ export default function AdminLayout() {
             </header>
 
             <div className="flex">
-                {/* SIDEBAR IZQUIERDA */}
                 <aside
                     className={`
             fixed top-14 bottom-0 left-0 z-30
@@ -251,7 +243,6 @@ export default function AdminLayout() {
                     </div>
                 </aside>
 
-                {/* CONTENIDO PRINCIPAL */}
                 <main
                     className={`
             flex-1 min-h-[calc(100vh-3.5rem)]

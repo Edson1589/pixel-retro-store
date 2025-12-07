@@ -102,7 +102,6 @@ export default function AdminEventsList() {
 
     return (
         <div className="text-white space-y-5">
-            {/* HEADER + BUSCADOR */}
             <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3">
                     <div
@@ -129,7 +128,6 @@ export default function AdminEventsList() {
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
-                        // si ya tienes submitSearch, usa: submitSearch(e);
                     }}
                     className="ml-auto flex flex-wrap items-center gap-2"
                 >
@@ -168,7 +166,6 @@ export default function AdminEventsList() {
                 </form>
             </div>
 
-            {/* RESUMEN RÁPIDO */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
                     <div className="h-8 w-8 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center">
@@ -227,7 +224,6 @@ export default function AdminEventsList() {
                 </div>
             </section>
 
-            {/* TABLA / LISTADO */}
             {loading ? (
                 <p className="text-white/70">Cargando…</p>
             ) : (
@@ -252,7 +248,6 @@ export default function AdminEventsList() {
                                         key={ev.id}
                                         className="border-t border-white/10 hover:bg-white/[0.04] transition-colors"
                                     >
-                                        {/* Título + banner */}
                                         <td className="p-3">
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.06]">
@@ -282,7 +277,6 @@ export default function AdminEventsList() {
                                             </div>
                                         </td>
 
-                                        {/* Tipo */}
                                         <td className="p-3 text-center">
                                             <span className={pillType(ev.type)}>
                                                 {ev.type === 'tournament' ? (
@@ -299,12 +293,10 @@ export default function AdminEventsList() {
                                             </span>
                                         </td>
 
-                                        {/* Inicio */}
                                         <td className="p-3 text-center">
                                             {new Date(ev.start_at).toLocaleString()}
                                         </td>
 
-                                        {/* Estado */}
                                         <td className="p-3 text-center">
                                             <span className={pillStatus(ev.status)}>
                                                 {ev.status === 'published'
@@ -315,7 +307,6 @@ export default function AdminEventsList() {
                                             </span>
                                         </td>
 
-                                        {/* Acciones */}
                                         <td className="p-3 text-center">
                                             <div className="inline-flex gap-1.5">
                                                 <Link
@@ -370,7 +361,6 @@ export default function AdminEventsList() {
                         </table>
                     </div>
 
-                    {/* PAGINACIÓN */}
                     <div className="flex flex-wrap items-center gap-3 justify-between text-sm text-white/70">
                         <div>
                             {data.total > 0 ? (

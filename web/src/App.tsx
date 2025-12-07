@@ -65,7 +65,10 @@ import AdminAppointmentsList from './pages/admin/appointments/AdminAppointmentsL
 
 import Footer from '../src/components/layout/Footer';
 
+import About from '../src/pages/AboutPage';
+
 import ScrollToTop from '../src/components/layout/ScrollToTop';
+import NotFoundPage from '../src/pages/NotFoundPage';
 
 export default function App() {
   return (
@@ -76,6 +79,7 @@ export default function App() {
           <Header />
           <Routes>
             <Route path="/" element={<ProductsPage />} />
+            <Route path="/about" element={<About />} />
             <Route path="/products/:slug" element={<ProductDetail />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout/success" element={<CheckoutSuccess />} />
@@ -144,6 +148,7 @@ export default function App() {
               <Route path="users/:id/delete" element={<AdminUserDelete />} />
               <Route path="appointments" element={<RequireStaff><AdminAppointmentsList /></RequireStaff>} />
             </Route>
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
           <Footer />
         </div>

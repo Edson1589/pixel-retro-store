@@ -53,7 +53,6 @@ export default function AdminCategoryDelete() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -85,10 +84,8 @@ export default function AdminCategoryDelete() {
                     </Link>
                 </div>
 
-                {/* CARD DE CONFIRMACIÓN */}
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 md:p-5
                    shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)] space-y-4">
-                    {/* Resumen categoría */}
                     <div className="flex items-start gap-3">
                         <div className="h-11 w-11 rounded-xl bg-white/10 border border-white/20 grid place-items-center">
                             <FolderTree className="h-5 w-5 text-rose-200" />
@@ -109,7 +106,6 @@ export default function AdminCategoryDelete() {
                         </div>
                     </div>
 
-                    {/* Mensaje de riesgo */}
                     <div className="rounded-xl border border-rose-400/40 bg-rose-500/15 px-3 py-3 text-sm">
                         <div className="flex items-start gap-2">
                             <AlertTriangle className="h-4 w-4 text-rose-100 mt-0.5" />
@@ -123,7 +119,6 @@ export default function AdminCategoryDelete() {
                         </div>
                     </div>
 
-                    {/* ACCIONES */}
                     <div className="flex flex-wrap gap-2">
                         <button
                             disabled={busy}

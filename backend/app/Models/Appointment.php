@@ -29,12 +29,20 @@ class Appointment extends Model
         'reschedule_note',
         'reject_reason',
         'customer_notes',
+        'sale_id',
+        'service_amount',
+        'parts_total',
+        'discount',
+        'grand_total',
+        'completed_at',
+        'completed_by',
     ];
 
     protected $casts = [
         'preferred_at' => 'datetime',
         'scheduled_at' => 'datetime',
         'reschedule_proposed_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function customer()
@@ -64,5 +72,14 @@ class Appointment extends Model
                             ->whereRaw("DATE_ADD(scheduled_at, INTERVAL duration_minutes MINUTE) >= ?", [$end]);
                     });
             });
+    }
+
+    public function sale()
+    {
+        return $this->belongsTo(\App\Models\Sale::class);
+    }
+    public function completedBy()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'completed_by');
     }
 }

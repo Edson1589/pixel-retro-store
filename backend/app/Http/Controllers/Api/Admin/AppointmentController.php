@@ -11,6 +11,11 @@ use App\Models\Appointment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use App\Models\Product;
+use App\Models\Sale;
+use App\Models\SaleDetail;
+use App\Models\Customer;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
@@ -34,7 +39,6 @@ class AppointmentController extends Controller
         return $q->paginate(max(5, min(100, (int)$request->integer('per_page', 20))));
     }
 
-    // Aceptar
     public function accept(AcceptAppointmentRequest $request, Appointment $appointment)
     {
         $u = $request->user();
@@ -117,21 +121,187 @@ class AppointmentController extends Controller
         return response()->json(['message' => 'Propuesta enviada.', 'data' => $appointment->fresh()]);
     }
 
+    private function resolveOrCreateCustomerFromAppointment(Appointment $a): ?int
+    {
+        $email = $a->customer->email ?? null;
+        $name  = $a->customer->name  ?? 'Cliente';
+        $phone = $a->contact_phone ?: null;
+        $addr  = $a->address ?: null;
+
+        if (!$email) {
+            $existing = $phone ? Customer::where('phone', $phone)->first() : null;
+            if ($existing) {
+                $dirty = false;
+                if (!$existing->name && $name) {
+                    $existing->name  = $name;
+                    $dirty = true;
+                }
+                if (!$existing->address && $addr) {
+                    $existing->address = $addr;
+                    $dirty = true;
+                }
+                if ($dirty) $existing->save();
+                return $existing->id;
+            }
+            $c = Customer::create([
+                'name'    => $name ?: 'Invitado',
+                'email'   => null,
+                'phone'   => $phone,
+                'address' => $addr,
+            ]);
+            return $c->id;
+        }
+
+        $c = Customer::firstOrNew(['email' => $email]);
+        if (!$c->exists) {
+            $c->name    = $name ?: 'Invitado';
+            $c->phone   = $phone;
+            $c->address = $addr;
+            $c->save();
+        } else {
+            $dirty = false;
+            if (!$c->name && $name) {
+                $c->name = $name;
+                $dirty = true;
+            }
+            if (!$c->phone && $phone) {
+                $c->phone = $phone;
+                $dirty = true;
+            }
+            if (!$c->address && $addr) {
+                $c->address = $addr;
+                $dirty = true;
+            }
+            if ($dirty) $c->save();
+        }
+
+        return $c->id;
+    }
+
+    private function getOrCreateServiceProduct(): Product
+    {
+        $p = Product::where('is_service', true)->first();
+        if ($p) return $p;
+
+        return Product::create([
+            'name'       => 'Servicios',
+            'slug'       => 'servicios',
+            'sku'        => 'SERV-001',
+            'price'      => 0,
+            'stock'      => 0,
+            'condition'  => 'new',
+            'is_unique'  => false,
+            'image_url'  => null,
+            'status'     => 'active',
+            'is_service' => true,
+        ]);
+    }
+
     public function complete(Request $request, Appointment $appointment)
     {
-        if ($appointment->status !== 'confirmed') {
-            return response()->json(['message' => 'La cita debe estar confirmada para completarla.'], 422);
+        if (!in_array($appointment->status, ['confirmed', 'pending'], true)) {
+            return response()->json(['message' => 'La cita no puede cerrarse en su estado actual.'], 422);
         }
-        $appointment->status = 'completed';
-        $appointment->save();
+        if ($appointment->sale_id) {
+            return response()->json(['message' => 'La cita ya fue cerrada con una venta.'], 409);
+        }
 
-        Mail::to($appointment->customer->email)
-            ->send(new AppointmentStatusChanged(
-                $appointment,
-                'Servicio completado',
-                'Tu cita ha sido marcada como completada. ¡Gracias!'
-            ));
+        $data = $request->validate([
+            'service_amount'       => ['required', 'numeric', 'min:0'],
+            'parts'                => ['sometimes', 'array'],
+            'parts.*.product_id'   => ['required_with:parts', 'integer', 'exists:products,id'],
+            'parts.*.quantity'     => ['required_with:parts', 'numeric', 'min:1'],
+            'parts.*.unit_price'   => ['nullable', 'numeric', 'min:0'],
+            'discount'             => ['nullable', 'numeric', 'min:0'],
+            'payment_status'       => ['nullable', 'in:paid,pending'],
+            'payment_ref'          => ['nullable', 'string', 'max:255'],
+        ]);
 
-        return response()->json(['message' => 'Cita completada.', 'data' => $appointment->fresh()]);
+        $user = $request->user();
+        $customerId = $this->resolveOrCreateCustomerFromAppointment($appointment);
+
+        return DB::transaction(function () use ($appointment, $data, $user, $customerId) {
+
+            $service = $this->getOrCreateServiceProduct();
+
+            $sale = Sale::create([
+                'user_id'     => $user->id,
+                'customer_id' => $customerId,
+                'status'      => $data['payment_status'] ?? 'paid',
+                'payment_ref' => $data['payment_ref'] ?? null,
+                'total'       => 0,
+                'is_canceled' => false,
+            ]);
+
+            $details = [];
+            $total   = 0;
+
+            $serviceAmount = (float) $data['service_amount'];
+            $details[] = new SaleDetail([
+                'sale_id'    => $sale->id,
+                'product_id' => $service->id,
+                'quantity'   => 1,
+                'unit_price' => $serviceAmount,
+                'subtotal'   => $serviceAmount,
+            ]);
+            $total += $serviceAmount;
+
+            $partsTotal = 0;
+            foreach (($data['parts'] ?? []) as $p) {
+                $prod  = Product::lockForUpdate()->find($p['product_id']);
+                $qty   = (float) $p['quantity'];
+                $price = isset($p['unit_price']) ? (float) $p['unit_price'] : (float) $prod->price;
+                $sub   = $price * $qty;
+
+                $details[] = new SaleDetail([
+                    'sale_id'    => $sale->id,
+                    'product_id' => $prod->id,
+                    'quantity'   => $qty,
+                    'unit_price' => $price,
+                    'subtotal'   => $sub,
+                ]);
+
+                if (!$prod->is_service) {
+                    if ($prod->stock < $qty) {
+                        abort(409, 'Stock insuficiente para ' . $prod->name);
+                    }
+                    $prod->decrement('stock', (int) $qty);
+                }
+
+                $partsTotal += $sub;
+                $total      += $sub;
+            }
+
+            $discount = (float) ($data['discount'] ?? 0);
+            if ($discount > 0) $total = max(0, $total - $discount);
+
+            $sale->details()->saveMany($details);
+            $sale->update(['total' => $total]);
+
+            $appointment->update([
+                'status'         => 'completed',
+                'sale_id'        => $sale->id,
+                'service_amount' => $serviceAmount,
+                'parts_total'    => $partsTotal,
+                'discount'       => $discount,
+                'grand_total'    => $total,
+                'completed_at'   => now(),
+                'completed_by'   => $user->id,
+            ]);
+
+            if ($appointment->customer && $appointment->customer->email) {
+                Mail::to($appointment->customer->email)
+                    ->send(new \App\Mail\AppointmentStatusChanged(
+                        $appointment->fresh(),
+                        'Servicio completado',
+                        'Tu cita ha sido marcada como completada. ¡Gracias!'
+                    ));
+            }
+
+            return response()->json([
+                'message' => 'Cita cerrada y venta creada.',
+                'data'    => $appointment->fresh()->load(['sale.details.product'])
+            ]);
+        });
     }
 }

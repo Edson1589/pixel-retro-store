@@ -731,10 +731,20 @@ export async function adminRescheduleAppointment(id: number, payload: { proposed
     return handleJson<{ message: string; data: Appointment }>(res);
 }
 
-export async function adminCompleteAppointment(id: number) {
+export async function adminCompleteAppointment(
+    id: number,
+    payload: {
+        service_amount: number;
+        parts?: Array<{ product_id: number; quantity: number; unit_price?: number }>;
+        discount?: number;
+        payment_status?: 'paid' | 'pending';
+        payment_ref?: string | null;
+    }
+) {
     const res = await fetch(`${API_URL}/api/admin/appointments/${id}/complete`, {
         method: 'PATCH',
         headers: jsonHeaders(),
+        body: JSON.stringify(payload),
     });
     return handleJson<{ message: string; data: Appointment }>(res);
 }

@@ -45,7 +45,6 @@ export default function CardField({ value, onChange }: Props) {
 
     return (
         <div className="grid gap-2 md:gap-3 md:grid-cols-2">
-            {/* Número de tarjeta */}
             <div className="md:col-span-2 space-y-1">
                 <div className="relative">
                     <CreditCard className="h-4 w-4 text-white/60 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -75,7 +74,6 @@ export default function CardField({ value, onChange }: Props) {
                     )}
                 </div>
 
-                {/* Mensaje de error con espacio reservado */}
                 <p
                     className={`
       text-xs text-amber-300/90
@@ -89,7 +87,6 @@ export default function CardField({ value, onChange }: Props) {
                 </p>
             </div>
 
-            {/* CVC */}
             <div className="relative">
                 <Lock className="h-4 w-4 text-white/60 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -108,7 +105,6 @@ export default function CardField({ value, onChange }: Props) {
                 />
             </div>
 
-            {/* Mes */}
             <div className="relative">
                 <Calendar className="h-4 w-4 text-white/60 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -127,7 +123,6 @@ export default function CardField({ value, onChange }: Props) {
                 />
             </div>
 
-            {/* Año */}
             <div className="relative">
                 <Hash className="h-4 w-4 text-white/60 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input

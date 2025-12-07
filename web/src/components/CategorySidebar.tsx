@@ -35,8 +35,8 @@ function CatIcon({ name }: { name?: string }) {
 
 export default function CategorySidebar() {
     const [cats, setCats] = useState<Category[]>([]);
-    const [drawerOpen, setDrawerOpen] = useState(false);     // toggle general (mobile)
-    const [expanded, setExpanded] = useState(true);          // toggle de la lista de categorías
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [expanded, setExpanded] = useState(true);
     const [loading, setLoading] = useState(true);
     const [sp, setSp] = useSearchParams();
     const getCount = (c: Category) => c.products_count ?? 0;
@@ -60,13 +60,11 @@ export default function CategorySidebar() {
         else next.set("category", slug);
         next.delete("page");
         setSp(next, { replace: true });
-        // Cierra el drawer en mobile
         setDrawerOpen(false);
     };
 
     return (
         <>
-            {/* Botón toggle para mobile */}
             <div className="md:hidden mb-3">
                 <button
                     className="w-full text-left px-3 py-2 rounded-xl
@@ -81,7 +79,6 @@ export default function CategorySidebar() {
                 </button>
             </div>
 
-            {/* Sidebar pegado a la izquierda, vertical */}
             <aside
                 className={`
                     z-20
@@ -95,7 +92,6 @@ export default function CategorySidebar() {
                      border border-white/10 text-white/90
                      max-h-[calc(100vh-7rem)] flex flex-col"
                 >
-                    {/* Header + toggle del menú de categorías */}
                     <button
                         type="button"
                         onClick={() => setExpanded((e) => !e)}
@@ -116,7 +112,6 @@ export default function CategorySidebar() {
 
                     {expanded && (
                         <nav className="p-2 border-t border-white/5 overflow-y-auto">
-                            {/* Filtro "Todas" */}
                             <button
                                 onClick={() => select(undefined)}
                                 className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
@@ -138,7 +133,6 @@ export default function CategorySidebar() {
                                 )}
                             </button>
 
-                            {/* Lista de categorías */}
                             {loading ? (
                                 <div className="px-3 py-2 text-sm text-white/50">
                                     Cargando…

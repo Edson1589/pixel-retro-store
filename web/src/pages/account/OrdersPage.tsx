@@ -77,7 +77,6 @@ export default function OrdersPage() {
     return (
         <div className="min-h-screen bg-[#07101B]">
             <div className="max-w-4xl mx-auto p-4 space-y-6">
-                {/* Header */}
                 <section
                     className="rounded-[20px] px-8 py-6 text-white
         bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -93,7 +92,6 @@ export default function OrdersPage() {
                     </p>
                 </section>
 
-                {/* Errores */}
                 {err && (
                     <p className="flex items-center gap-2 text-sm text-red-400">
                         <AlertCircle className="h-4 w-4" />
@@ -107,7 +105,6 @@ export default function OrdersPage() {
                     </p>
                 )}
 
-                {/* Loading */}
                 {busy && (
                     <p className="flex items-center gap-2 text-white/70">
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -115,7 +112,6 @@ export default function OrdersPage() {
                     </p>
                 )}
 
-                {/* Lista de compras */}
                 {!busy && data && (
                     <>
                         {data.data.length === 0 ? (
@@ -134,7 +130,6 @@ export default function OrdersPage() {
                                             key={o.id}
                                             className="p-4 flex flex-wrap items-center gap-4 hover:bg-white/[0.03] transition-colors"
                                         >
-                                            {/* Icono lateral */}
                                             <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                                                 <Receipt className="h-5 w-5 text-[#06B6D4]" />
                                             </div>
@@ -167,7 +162,6 @@ export default function OrdersPage() {
                                                 )}
                                             </div>
 
-                                            {/* Acciones */}
                                             <div className="flex gap-2">
                                                 <Link
                                                     to={`/account/orders/${o.id}`}
@@ -191,7 +185,6 @@ export default function OrdersPage() {
                                     ))}
                                 </ul>
 
-                                {/* Paginación */}
                                 {hasPagination && (
                                     <div className="p-4 flex flex-wrap items-center gap-3 justify-between bg-white/[0.02] border-t border-white/10">
                                         <div className="text-sm text-white/70 flex items-center gap-1.5">
@@ -238,7 +231,6 @@ export default function OrdersPage() {
                     </>
                 )}
 
-                {/* Banner de ayuda */}
                 <div
                     className="rounded-[18px] p-5 text-center text-white
         bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]/15

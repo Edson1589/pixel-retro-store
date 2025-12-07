@@ -19,7 +19,6 @@ export default function AdminUserShow() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -70,9 +69,7 @@ export default function AdminUserShow() {
                     </button>
                 </div>
 
-                {/* CARD DE DETALLE */}
                 <div className="rounded-2xl border border-white/10 p-4 bg-white/[0.04] space-y-4">
-                    {/* Cabecera del usuario */}
                     <div className="flex items-center gap-3">
                         <div className="h-11 w-11 rounded-full bg-white/[0.08] border border-white/15 grid place-items-center">
                             <span className="text-lg font-semibold">
@@ -88,7 +85,6 @@ export default function AdminUserShow() {
                         </div>
                     </div>
 
-                    {/* Info en grid */}
                     <div className="grid sm:grid-cols-2 gap-3 text-sm">
                         <div className="rounded-xl bg-white/[0.03] border border-white/10 px-3 py-2 flex items-center gap-2">
                             <Shield className="h-4 w-4 text-cyan-300" />
@@ -122,8 +118,6 @@ export default function AdminUserShow() {
                         </div>
                     )}
                 </div>
-
-                {/* ACCIONES */}
             </div>
         </div>
     );

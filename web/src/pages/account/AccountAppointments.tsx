@@ -121,7 +121,6 @@ export default function AccountAppointments() {
     return (
         <div className="min-h-screen bg-[#07101B] text-white">
             <div className="max-w-5xl mx-auto p-4 space-y-5">
-                {/* Banner superior */}
                 <section
                     className="rounded-[20px] px-8 py-6 text-white
                 bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -157,7 +156,6 @@ export default function AccountAppointments() {
                     </div>
                 </section>
 
-                {/* Filtro por estado */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="inline-flex items-center gap-2 text-sm text-white/80">
                         <Filter className="h-4 w-4 text-white/60" />
@@ -202,7 +200,6 @@ export default function AccountAppointments() {
                             shadow-[0_16px_40px_-24px_rgba(2,6,23,0.8)]"
                             >
                                 <div className="flex flex-wrap items-center justify-between gap-3">
-                                    {/* Info principal */}
                                     <div className="flex items-start gap-3">
                                         <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
                                             <Gamepad2 className="h-5 w-5 text-[#06B6D4]" />
@@ -256,7 +253,6 @@ export default function AccountAppointments() {
                                         </div>
                                     </div>
 
-                                    {/* Botones */}
                                     <div className="flex flex-wrap justify-end gap-1.5">
                                         {a.status === 'confirmed' && (
                                             <button
@@ -327,7 +323,6 @@ export default function AccountAppointments() {
                     </div>
                 )}
 
-                {/* Banner inferior de ayuda */}
                 <div
                     className="rounded-[18px] p-5 text-center text-white
                 bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]/15
@@ -342,14 +337,11 @@ export default function AccountAppointments() {
                 </div>
             </div>
 
-            {/* Modal para nueva cita */}
             <AppointmentNewModal
                 open={showNew}
                 onClose={() => setShowNew(false)}
                 onCreated={() => {
                     setShowNew(false);
-                    // Aquí puedes volver a cargar las citas si lo necesitas
-                    // loadAppointments();
                 }}
             />
         </div>

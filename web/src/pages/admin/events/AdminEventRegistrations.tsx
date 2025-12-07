@@ -131,7 +131,6 @@ export default function AdminEventRegistrations() {
 
     return (
         <div className="text-white space-y-5">
-            {/* HEADER + FILTRO */}
             <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3">
                     <div
@@ -173,8 +172,6 @@ export default function AdminEventRegistrations() {
                 </div>
             </div>
 
-
-            {/* RESUMEN RÁPIDO (página actual) */}
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
                     <div className="h-8 w-8 rounded-xl bg-emerald-500/25 flex items-center justify-center">
@@ -219,7 +216,6 @@ export default function AdminEventRegistrations() {
                 </div>
             </section>
 
-            {/* TABLA */}
             <div
                 className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04]
                  shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]"
@@ -242,7 +238,6 @@ export default function AdminEventRegistrations() {
                                 key={r.id}
                                 className="border-t border-white/5 hover:bg-white/[0.03] transition-colors"
                             >
-                                {/* Participante */}
                                 <td className="p-3">
                                     <div className="flex items-center gap-2">
                                         <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white/80">
@@ -252,7 +247,6 @@ export default function AdminEventRegistrations() {
                                     </div>
                                 </td>
 
-                                {/* Email */}
                                 <td className="p-3 text-center">
                                     <div className="inline-flex items-center gap-1.5 text-white/85">
                                         <Mail className="h-4 w-4 text-white/50" />
@@ -260,7 +254,6 @@ export default function AdminEventRegistrations() {
                                     </div>
                                 </td>
 
-                                {/* Gamer tag */}
                                 <td className="p-3 text-center">
                                     <div className="inline-flex items-center gap-1.5 text-white/85">
                                         <Gamepad2 className="h-4 w-4 text-white/50" />
@@ -268,7 +261,6 @@ export default function AdminEventRegistrations() {
                                     </div>
                                 </td>
 
-                                {/* Equipo */}
                                 <td className="p-3 text-center">
                                     <div className="inline-flex items-center gap-1.5 text-white/85">
                                         <Users className="h-4 w-4 text-white/50" />
@@ -276,7 +268,6 @@ export default function AdminEventRegistrations() {
                                     </div>
                                 </td>
 
-                                {/* Estado */}
                                 <td className="p-3 text-center">
                                     <span
                                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs ${statusPill(
@@ -299,7 +290,6 @@ export default function AdminEventRegistrations() {
                                     </span>
                                 </td>
 
-                                {/* Acciones */}
                                 <td className="p-3 text-center">
                                     <div className="inline-flex gap-1.5">
                                         <button
@@ -345,7 +335,6 @@ export default function AdminEventRegistrations() {
                 </table>
             </div>
 
-            {/* PAGINACIÓN */}
             <div className="flex flex-wrap items-center gap-3 justify-between text-sm text-white/70">
                 <div>
                     {data.total > 0 ? (

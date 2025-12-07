@@ -63,7 +63,6 @@ export default function AdminEventShow() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-3xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -132,9 +131,7 @@ export default function AdminEventShow() {
                     </div>
                 </div>
 
-                {/* CONTENIDO */}
                 <div className="grid md:grid-cols-3 gap-5">
-                    {/* Banner + fechas */}
                     <div
                         className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] p-3
                        shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)]"
@@ -176,12 +173,10 @@ export default function AdminEventShow() {
                         </div>
                     </div>
 
-                    {/* Detalle principal */}
                     <div
                         className="md:col-span-2 rounded-2xl border border-white/10 bg-white/[0.04] p-5
                        shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)] space-y-5"
                     >
-                        {/* Título + pills */}
                         <div>
                             <div className="text-lg font-semibold text-white/90">
                                 {ev.title}
@@ -206,7 +201,6 @@ export default function AdminEventShow() {
                             </div>
                         </div>
 
-                        {/* Stats rápidos */}
                         <div className="grid sm:grid-cols-2 gap-3 text-sm">
                             <div className="rounded-xl bg-white/[0.03] border border-white/10 px-3 py-2 flex items-center gap-2">
                                 <Users className="h-4 w-4 text-cyan-300" />
@@ -233,7 +227,6 @@ export default function AdminEventShow() {
                             </div>
                         </div>
 
-                        {/* Descripción */}
                         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                             <div className="flex items-center gap-1 text-xs text-white/60 mb-1">
                                 <AlignLeft className="h-3 w-3" />

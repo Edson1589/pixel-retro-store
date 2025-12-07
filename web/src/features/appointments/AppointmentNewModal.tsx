@@ -64,7 +64,6 @@ export default function AppointmentNewModal({ open, onClose, onCreated }: Props)
     const [busy, setBusy] = useState(false);
     const [msg, setMsg] = useState<string | null>(null);
 
-    // reset al cerrar
     useEffect(() => {
         if (!open) {
             setForm(initialForm);
@@ -124,7 +123,6 @@ export default function AppointmentNewModal({ open, onClose, onCreated }: Props)
             maxWidthClass="max-w-2xl"
         >
             <form onSubmit={submit} className="grid gap-3">
-                {/* Fila 1: tipo + consola */}
                 <div className="grid md:grid-cols-2 gap-3">
                     <div>
                         <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
@@ -166,7 +164,6 @@ export default function AppointmentNewModal({ open, onClose, onCreated }: Props)
                     </div>
                 </div>
 
-                {/* Descripción */}
                 <div>
                     <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
@@ -182,7 +179,6 @@ export default function AppointmentNewModal({ open, onClose, onCreated }: Props)
                     />
                 </div>
 
-                {/* Lugar */}
                 <div className="grid md:grid-cols-3 gap-3">
                     <div>
                         <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
@@ -224,7 +220,6 @@ export default function AppointmentNewModal({ open, onClose, onCreated }: Props)
                     )}
                 </div>
 
-                {/* Contacto + fecha */}
                 <div className="grid md:grid-cols-2 gap-3">
                     <div>
                         <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
@@ -262,7 +257,6 @@ export default function AppointmentNewModal({ open, onClose, onCreated }: Props)
                     </div>
                 </div>
 
-                {/* Duración + notas */}
                 <div className="grid md:grid-cols-2 gap-3">
                     <div>
                         <label className="text-xs text-white/60 mb-1 flex items-center gap-1">

@@ -126,7 +126,6 @@ export default function AdminSaleShow() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-3xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -157,9 +156,7 @@ export default function AdminSaleShow() {
                     </Link>
                 </div>
 
-                {/* RESUMEN + CLIENTE */}
                 <div className="grid sm:grid-cols-2 gap-4">
-                    {/* RESUMEN */}
                     <div className="rounded-2xl p-4 bg-white/[0.04] border border-white/10 space-y-3">
                         <div className="flex items-center gap-2 text-sm">
                             <div className="h-8 w-8 rounded-xl bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center">
@@ -237,7 +234,6 @@ export default function AdminSaleShow() {
                         </div>
                     </div>
 
-                    {/* CLIENTE */}
                     <div className="rounded-2xl p-4 bg-white/[0.04] border border-white/10 space-y-3">
                         <div className="flex items-center gap-2 text-sm">
                             <div className="h-8 w-8 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center">
@@ -313,7 +309,6 @@ export default function AdminSaleShow() {
                     </div>
                 </div>
 
-                {/* TABLA DE DETALLES */}
                 <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04] text-white">
                     <table className="w-full text-sm">
                         <thead className="bg-white/[0.03] text-white/70">

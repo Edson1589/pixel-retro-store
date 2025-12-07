@@ -96,8 +96,23 @@ export async function fetchEvents<T = EventItem>(params?: {
     const base = `${API_URL}/api/events`;
     const url = qs.toString() ? `${base}?${qs}` : base;
 
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(await res.text());
+    const res = await fetch(url, {
+        headers: { Accept: 'application/json' },
+    });
+
+    if (!res.ok) {
+        let message = 'Error cargando eventos. Intenta de nuevo más tarde.';
+
+        if (res.status === 404) {
+            message = 'No hay eventos/torneos disponibles por el momento.';
+        } else if (res.status >= 500) {
+            message = 'Error del servidor al cargar los eventos.';
+        }
+
+        const err = new Error(message) as Error & { status?: number };
+        err.status = res.status;
+        throw err;
+    }
     return res.json() as Promise<Page<T>>;
 }
 

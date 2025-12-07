@@ -90,7 +90,6 @@ export default function CategoryDropdown({ onClose }: Props) {
                 </div>
 
                 <nav className="max-h-[70vh] overflow-y-auto p-2 text-sm">
-                    {/* Todas */}
                     <button
                         onClick={() => select(undefined)}
                         className={`group relative w-full flex items-center gap-3 px-3 py-2 rounded-xl
@@ -112,7 +111,6 @@ export default function CategoryDropdown({ onClose }: Props) {
                         )}
                     </button>
 
-                    {/* Lista de categorías */}
                     {loading ? (
                         <div className="px-3 py-2 text-white/60 text-sm">Cargando…</div>
                     ) : (

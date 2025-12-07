@@ -43,7 +43,6 @@ export default function Modal({
         flex flex-col
         max-h-[min(100vh-3rem,720px)]`}
                 >
-                    {/* header fijo */}
                     <div
                         className="flex items-center gap-2 p-4 border-b border-white/10
               bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent)]"
@@ -59,7 +58,6 @@ export default function Modal({
                         </button>
                     </div>
 
-                    {/* contenido scrollable */}
                     <div className="flex-1 overflow-y-auto p-4">
                         {children}
                     </div>

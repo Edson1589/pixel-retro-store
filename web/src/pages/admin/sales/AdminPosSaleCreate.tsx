@@ -294,7 +294,6 @@ export default function AdminPosSaleCreate() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-5xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -327,7 +326,6 @@ export default function AdminPosSaleCreate() {
                     </button>
                 </div>
 
-                {/* RESUMEN RÁPIDO */}
                 <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
                         <div className="h-8 w-8 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center">
@@ -358,7 +356,6 @@ export default function AdminPosSaleCreate() {
                     </div>
                 </section>
 
-                {/* MENSAJES */}
                 {errorMsg && (
                     <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-2 text-rose-200 text-sm flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
@@ -372,7 +369,6 @@ export default function AdminPosSaleCreate() {
                     </div>
                 )}
 
-                {/* CARD CLIENTE */}
                 <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4">
                     <div className="flex items-center gap-2 mb-1">
                         <UserCircle2 className="h-4 w-4 text-cyan-300" />
@@ -382,7 +378,6 @@ export default function AdminPosSaleCreate() {
                     </div>
 
                     <div className="flex flex-col lg:flex-row gap-4">
-                        {/* BUSCADOR CLIENTE */}
                         <div className="flex-1">
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <Search className="h-3 w-3" />
@@ -477,9 +472,7 @@ export default function AdminPosSaleCreate() {
                             </div>
                         </div>
 
-                        {/* DATOS CLIENTE */}
                         <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {/* Nombre */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <UserCircle2 className="h-3 w-3" />
@@ -498,7 +491,6 @@ export default function AdminPosSaleCreate() {
                                 </div>
                             </div>
 
-                            {/* CI */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <IdCard className="h-3 w-3" />
@@ -517,7 +509,6 @@ export default function AdminPosSaleCreate() {
                                 </div>
                             </div>
 
-                            {/* Email */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Mail className="h-3 w-3" />
@@ -536,7 +527,6 @@ export default function AdminPosSaleCreate() {
                                 </div>
                             </div>
 
-                            {/* Teléfono */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Phone className="h-3 w-3" />
@@ -555,7 +545,6 @@ export default function AdminPosSaleCreate() {
                                 </div>
                             </div>
 
-                            {/* Dirección */}
                             <div className="sm:col-span-2">
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <MapPin className="h-3 w-3" />
@@ -577,7 +566,6 @@ export default function AdminPosSaleCreate() {
                     </div>
                 </section>
 
-                {/* CARD PRODUCTOS + CARRITO */}
                 <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4">
                     <div className="flex items-center gap-2 mb-1">
                         <ShoppingCart className="h-4 w-4 text-violet-300" />
@@ -586,7 +574,6 @@ export default function AdminPosSaleCreate() {
                         </h2>
                     </div>
 
-                    {/* BUSCADOR PRODUCTO */}
                     <div className="flex flex-col md:flex-row md:items-end gap-4">
                         <div className="flex-1">
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
@@ -666,7 +653,6 @@ export default function AdminPosSaleCreate() {
                         </div>
                     </div>
 
-                    {/* TABLA CARRITO */}
                     <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.02] text-white">
                         <table className="w-full text-sm">
                             <thead className="bg-white/[0.03] text-white/70">
@@ -681,7 +667,6 @@ export default function AdminPosSaleCreate() {
                             <tbody className="divide-y divide-white/10">
                                 {lines.map((l) => (
                                     <tr key={l.product_id} className="hover:bg-white/[0.03] align-top">
-                                        {/* Cantidad */}
                                         <td className="p-3">
                                             <input
                                                 type="number"
@@ -696,7 +681,6 @@ export default function AdminPosSaleCreate() {
                                             />
                                         </td>
 
-                                        {/* Descripción */}
                                         <td className="p-3">
                                             <div className="flex items-start gap-3">
                                                 <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md border border-white/10 bg-white/[0.07] grid place-items-center">
@@ -724,17 +708,14 @@ export default function AdminPosSaleCreate() {
                                             </div>
                                         </td>
 
-                                        {/* Precio unitario */}
                                         <td className="p-3 text-center tabular-nums text-white/90">
                                             {money.format(l.unit_price)}
                                         </td>
 
-                                        {/* Importe */}
                                         <td className="p-3 text-center tabular-nums">
                                             {money.format(l.subtotal)}
                                         </td>
 
-                                        {/* Quitar */}
                                         <td className="p-3 text-center">
                                             <button
                                                 type="button"
@@ -772,7 +753,6 @@ export default function AdminPosSaleCreate() {
                         </table>
                     </div>
 
-                    {/* BOTÓN GUARDAR */}
                     <button
                         type="button"
                         disabled={saving}
@@ -787,7 +767,6 @@ export default function AdminPosSaleCreate() {
                     </button>
                 </section>
 
-                {/* MODAL CONFIRMACIÓN */}
                 {confirmOpen && (
                     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
                         <div className="w-full max-w-md rounded-2xl bg-[#0b1224] text-white border border-white/10 shadow-[0_24px_60px_-12px_rgba(6,182,212,0.4)] p-5 space-y-4">
@@ -859,7 +838,6 @@ export default function AdminPosSaleCreate() {
                     </div>
                 )}
 
-                {/* MODAL RECIBO */}
                 {receiptOpen && lastSale && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
                         <div className="w-full max-w-xl rounded-2xl bg-[#0b1224] text-white border border-white/10 shadow-[0_32px_80px_-12px_rgba(124,58,237,0.5)] p-6 space-y-4">

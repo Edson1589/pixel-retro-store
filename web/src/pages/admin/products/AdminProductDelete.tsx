@@ -66,7 +66,6 @@ export default function AdminProductDelete() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -97,13 +96,11 @@ export default function AdminProductDelete() {
                     </Link>
                 </div>
 
-                {/* CARD DE CONFIRMACIÓN */}
                 <div
                     className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 md:p-5
            shadow-[0_0_0_1px_rgba(2,6,23,0.5),0_30px_80px_-25px_rgba(2,6,23,0.45)] space-y-4"
                 >
                     <div className="flex flex-col sm:flex-row items-start gap-4">
-                        {/* Imagen */}
                         <div className="w-full sm:w-32 aspect-square rounded-xl border border-white/10 bg-white/[0.06] overflow-hidden grid place-items-center">
                             {p.image_url ? (
                                 <img
@@ -116,20 +113,17 @@ export default function AdminProductDelete() {
                             )}
                         </div>
 
-                        {/* Info producto */}
                         <div className="flex-1 space-y-2">
                             <div className="text-lg font-semibold text-white/90">
                                 {p.name}
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2 text-xs">
-                                {/* Precio */}
                                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-white/15 bg-white/10 text-white/80">
                                     <BadgeDollarSign className="h-3 w-3" />
                                     <span>Bs. {Number(p.price).toFixed(2)}</span>
                                 </span>
 
-                                {/* Estado */}
                                 <span
                                     className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border ${statusPill}`}
                                 >
@@ -137,7 +131,6 @@ export default function AdminProductDelete() {
                                     <span>{p.status === 'active' ? 'Activo' : 'Borrador'}</span>
                                 </span>
 
-                                {/* Condición */}
                                 {p.condition && (
                                     <span
                                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border ${condPill}`}
@@ -153,7 +146,6 @@ export default function AdminProductDelete() {
                                     </span>
                                 )}
 
-                                {/* Categoría */}
                                 {p.category?.name && (
                                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-white/20 bg-white/10 text-[11px] text-white/80">
                                         <Tag className="h-3 w-3" />
@@ -161,14 +153,12 @@ export default function AdminProductDelete() {
                                     </span>
                                 )}
 
-                                {/* Stock */}
                                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border border-white/15 bg-white/5 text-[11px] text-white/80">
                                     <Boxes className="h-3 w-3" />
                                     <span>Stock: {p.stock}</span>
                                 </span>
                             </div>
 
-                            {/* Meta en grid (similar a inicio/fin/cupo en eventos) */}
                             <div className="grid sm:grid-cols-2 gap-3 pt-2 text-sm">
                                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 flex flex-col gap-1">
                                     <div className="flex items-center gap-1 text-xs text-white/60">
@@ -192,7 +182,6 @@ export default function AdminProductDelete() {
                         </div>
                     </div>
 
-                    {/* Aviso fuerte */}
                     <div className="rounded-xl border border-rose-400/40 bg-rose-500/15 p-4 flex items-start gap-3">
                         <AlertTriangle className="h-5 w-5 text-rose-200 mt-0.5" />
                         <div className="text-sm">
@@ -203,7 +192,6 @@ export default function AdminProductDelete() {
                         </div>
                     </div>
 
-                    {/* Botones */}
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={doDelete}

@@ -140,13 +140,11 @@ export default function CartPage() {
 
             if (items.length === 0) throw new Error('Tu carrito está vacío.');
 
-            // Si no está logueado, lo mando a login
             if (!getCustomerToken()) {
                 nav('/login', { state: { next: loc.pathname } });
                 return;
             }
 
-            // 👇 Solo abrimos el modal, el intent se creará en confirmCard
             setShowCard(true);
         } catch (e) {
             setMsg(err(e));
@@ -157,13 +155,11 @@ export default function CartPage() {
 
 
     const confirmCard = async () => {
-        // Validar que haya ítems
         if (!items.length) {
             setMsg('Tu carrito está vacío.');
             return;
         }
 
-        // ✅ Validar datos del comprador AHORA (ya llenó el formulario del modal)
         if (!form.name || !form.email || !form.ci) {
             setMsg('Completa nombre, email y CI antes de confirmar el pago.');
             return;
@@ -175,7 +171,6 @@ export default function CartPage() {
 
             let currentIntent = intent;
 
-            // Si aún no existe un intent, lo creamos AHORA con los datos correctos
             if (!currentIntent) {
                 let pickupDocB64: string | null = null;
                 if (pickupDocFile) {
@@ -201,7 +196,6 @@ export default function CartPage() {
                 currentIntent = pi;
             }
 
-            // Ahora confirmamos el intent ya creado
             const r = (await confirmPaymentIntent(currentIntent.id, {
                 client_secret: currentIntent.client_secret,
                 card_number: card.number,
@@ -431,14 +425,11 @@ export default function CartPage() {
                     open={showCard}
                     onClose={() => {
                         setShowCard(false);
-                        // Si quieres conservar el intent en caso de cerrar, puedes NO resetearlo aquí.
-                        // setIntent(null);
                     }}
                     title="Pago con tarjeta"
                     maxWidthClass="max-w-lg sm:max-w-xl md:max-w-6xl"
                 >
                     <div className="text-white space-y-4">
-                        {/* Resumen arriba */}
                         <div className="text-sm text-white/70 flex flex-wrap items-center justify-between gap-2">
                             <div>
                                 <span className="opacity-70">Intent:</span>{' '}
@@ -453,8 +444,8 @@ export default function CartPage() {
                                     <b className="text-[#06B6D4]">
                                         {(
                                             intent
-                                                ? intent.amount / 100 // si ya hay intent, usamos lo que viene del backend
-                                                : total               // si no hay intent aún, usamos el total del carrito
+                                                ? intent.amount / 100
+                                                : total
                                         ).toFixed(2)}{' '}
                                         BOB
                                     </b>
@@ -462,16 +453,13 @@ export default function CartPage() {
                             </div>
                         </div>
 
-                        {/* Grid: datos del comprador + tarjeta */}
                         <div className="grid gap-4 md:grid-cols-2">
-                            {/* Datos del comprador */}
                             <div className="space-y-3">
                                 <h4 className="text-sm font-semibold text-white/90 flex items-center gap-2">
                                     <User className="h-4 w-4 text-[#06B6D4]" />
                                     <span>Datos del comprador</span>
                                 </h4>
 
-                                {/* Nombre */}
                                 <div className="relative">
                                     <User className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
                                     <input
@@ -484,7 +472,6 @@ export default function CartPage() {
                                     />
                                 </div>
 
-                                {/* CI */}
                                 <div className="relative">
                                     <IdCard className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
                                     <input
@@ -497,7 +484,6 @@ export default function CartPage() {
                                     />
                                 </div>
 
-                                {/* Email */}
                                 <div className="relative">
                                     <Mail className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
                                     <input
@@ -510,7 +496,6 @@ export default function CartPage() {
                                     />
                                 </div>
 
-                                {/* Teléfono */}
                                 <div className="relative">
                                     <Phone className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
                                     <input
@@ -523,7 +508,6 @@ export default function CartPage() {
                                     />
                                 </div>
 
-                                {/* Dirección */}
                                 <div className="relative">
                                     <MapPin className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
                                     <input
@@ -536,7 +520,6 @@ export default function CartPage() {
                                     />
                                 </div>
 
-                                {/* Documento de recojo */}
                                 <div className="flex flex-col text-white/80 text-sm">
                                     <label className="text-white/60 text-xs mb-1 flex items-center gap-1">
                                         <FileUp className="h-3 w-3" />
@@ -562,7 +545,6 @@ export default function CartPage() {
                                 </div>
                             </div>
 
-                            {/* Datos de la tarjeta */}
                             <div className="space-y-3">
                                 <h4 className="text-sm font-semibold text-white/90 flex items-center gap-2">
                                     <CreditCard className="h-4 w-4 text-[#06B6D4]" />

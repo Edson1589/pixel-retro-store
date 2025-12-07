@@ -15,20 +15,16 @@ export default function Footer() {
     const { user } = useCustomerAuth();
     const loc = useLocation();
 
-    // Ocultar footer en el panel admin
     if (loc.pathname.startsWith('/admin')) return null;
 
     const year = new Date().getFullYear();
 
     return (
         <footer className="mt-16 border-t border-white/5 bg-[#050814] text-white/80">
-            {/* Línea glow superior */}
             <div className="h-[2px] w-full bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)] opacity-70" />
 
             <div className="max-w-6xl mx-auto px-4 lg:px-8 py-10 space-y-10">
-                {/* Parte superior: info + columnas */}
                 <div className="grid gap-10 md:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
-                    {/* Marca / descripción */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-white">
                             <span className="grid place-items-center h-8 w-8 rounded-[5px] bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
@@ -63,7 +59,6 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* Columna: Tienda */}
                     <div className="space-y-3 text-sm">
                         <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
                             Tienda
@@ -94,7 +89,6 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Columna: Cuenta */}
                     <div className="space-y-3 text-sm">
                         <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
                             Tu cuenta
@@ -165,7 +159,6 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Columna: Soporte / redes */}
                     <div className="space-y-3 text-sm">
                         <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
                             Soporte & comunidad
@@ -210,7 +203,6 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Línea separadora */}
                 <div className="border-t border-white/5 pt-4 flex flex-col md:flex-row gap-3 items-center justify-between text-xs text-white/50">
                     <p>
                         © {year} Pixel Retro Store. Todos los derechos reservados.

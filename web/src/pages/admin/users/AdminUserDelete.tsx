@@ -32,7 +32,6 @@ export default function AdminUserDelete() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -64,7 +63,6 @@ export default function AdminUserDelete() {
                     </button>
                 </div>
 
-                {/* CARD DE CONFIRMACIÓN */}
                 <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4">
                     <div className="flex items-start gap-3">
                         <AlertTriangle className="h-5 w-5 text-rose-200 mt-0.5" />

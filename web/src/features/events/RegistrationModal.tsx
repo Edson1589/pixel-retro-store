@@ -51,7 +51,7 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
                 const res = await fetchMyRegistration(slug, debouncedEmail);
                 if (!abort) setAlready(res);
             } catch {
-                // ignora errores silenciosamente (p.ej. 404 si no hay registro)
+                //
             }
         }
         void run();
@@ -108,7 +108,6 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
             }
         >
             <div className="space-y-4 text-white">
-                {/* Cabecera breve dentro del modal */}
                 <div className="flex items-start gap-3">
                     <div className="h-9 w-9 rounded-full bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center">
                         <Gamepad2 className="h-4 w-4 text-cyan-300" />
@@ -124,9 +123,7 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
                     </div>
                 </div>
 
-                {/* Formulario */}
                 <div className="grid md:grid-cols-2 gap-3">
-                    {/* Nombre */}
                     <div className="relative">
                         <User className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
@@ -138,7 +135,6 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
                         />
                     </div>
 
-                    {/* Email */}
                     <div className="relative">
                         <Mail className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
@@ -151,7 +147,6 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
                         />
                     </div>
 
-                    {/* Gamer tag */}
                     <div className="relative">
                         <Gamepad2 className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
@@ -163,7 +158,6 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
                         />
                     </div>
 
-                    {/* Equipo */}
                     <div className="relative">
                         <Users className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
@@ -175,7 +169,6 @@ export default function RegistrationModal({ slug, open, onClose, onSuccess }: Pr
                         />
                     </div>
 
-                    {/* Notas */}
                     <div className="relative md:col-span-2">
                         <StickyNote className="h-4 w-4 text-white/50 absolute left-3 top-3 pointer-events-none" />
                         <textarea

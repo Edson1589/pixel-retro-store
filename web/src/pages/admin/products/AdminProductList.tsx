@@ -110,7 +110,6 @@ export default function AdminProductsList() {
 
     return (
         <div className="text-white space-y-5">
-            {/* HEADER + BUSCADOR */}
             <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3">
                     <div
@@ -138,7 +137,6 @@ export default function AdminProductsList() {
                     onSubmit={(e) => e.preventDefault()}
                     className="ml-auto flex flex-wrap items-center gap-2"
                 >
-                    {/* Buscador */}
                     <div className="relative">
                         <Search className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
@@ -152,7 +150,6 @@ export default function AdminProductsList() {
                         />
                     </div>
 
-                    {/* Filtros de estado */}
                     <div className="p-1 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center gap-1">
                         {(['all', 'active', 'inactive'] as const).map((v) => (
                             <button
@@ -178,7 +175,6 @@ export default function AdminProductsList() {
                         ))}
                     </div>
 
-                    {/* Nuevo producto */}
                     <Link
                         to="/admin/products/new"
                         className="inline-flex items-center gap-1.5 h-10 px-3 rounded-xl
@@ -193,7 +189,6 @@ export default function AdminProductsList() {
                 </form>
             </div>
 
-            {/* RESUMEN RÁPIDO */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
                     <div className="h-8 w-8 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center">
@@ -238,7 +233,6 @@ export default function AdminProductsList() {
                 </div>
             </section>
 
-            {/* TABLA */}
             {loading ? (
                 <p className="text-white/70">Cargando…</p>
             ) : (
@@ -272,7 +266,6 @@ export default function AdminProductsList() {
                                             key={p.id}
                                             className="hover:bg-white/[0.03] border-t border-white/5 transition-colors"
                                         >
-                                            {/* Nombre + imagen */}
                                             <td className="py-3 px-3">
                                                 <div className="flex items-center gap-3 min-w-0">
                                                     <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/[0.06]">
@@ -291,17 +284,14 @@ export default function AdminProductsList() {
                                                         <div className="truncate font-medium text-white/90">
                                                             {name}
                                                         </div>
-                                                        {/* Podrías mostrar SKU aquí si lo tienes */}
                                                     </div>
                                                 </div>
                                             </td>
 
-                                            {/* Precio */}
                                             <td className="py-3 px-2 text-center tabular-nums text-white/90">
                                                 Bs. {price.toFixed(2)}
                                             </td>
 
-                                            {/* Stock */}
                                             <td className="py-3 px-2 text-center">
                                                 <span
                                                     className={`inline-flex items-center justify-center min-w-[34px] px-2 py-0.5 rounded-full text-[11px] border tabular-nums
@@ -314,7 +304,6 @@ export default function AdminProductsList() {
                                                 </span>
                                             </td>
 
-                                            {/* Estado */}
                                             <td className="py-3 px-2 text-center">
                                                 <span
                                                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] border
@@ -328,7 +317,6 @@ export default function AdminProductsList() {
                                                 </span>
                                             </td>
 
-                                            {/* Acciones */}
                                             <td className="p-3 text-center">
                                                 <div className="inline-flex gap-1.5">
                                                     <Link
@@ -375,7 +363,6 @@ export default function AdminProductsList() {
                         </table>
                     </div>
 
-                    {/* PAGINACIÓN */}
                     <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/70">
                         <div>
                             {data.total > 0 ? (

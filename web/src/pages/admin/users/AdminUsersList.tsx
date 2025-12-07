@@ -48,7 +48,6 @@ export default function AdminUsersList() {
 
     return (
         <div className="text-white space-y-5">
-            {/* HEADER + BUSCADOR */}
             <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3">
                     <div
@@ -109,7 +108,6 @@ export default function AdminUsersList() {
                 </form>
             </div>
 
-            {/* RESUMEN RÁPIDO */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
                     <div className="h-8 w-8 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center">
@@ -140,7 +138,6 @@ export default function AdminUsersList() {
                 </div>
             </section>
 
-            {/* TABLA */}
             <div className="rounded-2xl overflow-hidden border border-white/10 bg-white/[0.04]">
                 <table className="w-full text-sm">
                     <thead className="bg-white/[0.03] text-white/70">
@@ -157,7 +154,6 @@ export default function AdminUsersList() {
                                 key={u.id}
                                 className="border-t border-white/5 hover:bg-white/[0.03] transition-colors"
                             >
-                                {/* Nombre */}
                                 <td className="p-3">
                                     <div className="flex items-center gap-2">
                                         <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white/80">
@@ -169,7 +165,6 @@ export default function AdminUsersList() {
                                     </div>
                                 </td>
 
-                                {/* Email */}
                                 <td className="p-3">
                                     <div className="flex items-center gap-2 text-white/80">
                                         <Mail className="h-4 w-4 text-white/50" />
@@ -177,7 +172,6 @@ export default function AdminUsersList() {
                                     </div>
                                 </td>
 
-                                {/* Rol */}
                                 <td className="p-3 text-center">
                                     <span
                                         className={`
@@ -200,7 +194,6 @@ export default function AdminUsersList() {
                                     )}
                                 </td>
 
-                                {/* Acciones */}
                                 <td className="p-3 text-center">
                                     <div className="inline-flex gap-1.5">
                                         <Link
@@ -249,7 +242,6 @@ export default function AdminUsersList() {
                 </table>
             </div>
 
-            {/* PAGINACIÓN */}
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/70">
                 <div>
                     {data.total > 0 ? (

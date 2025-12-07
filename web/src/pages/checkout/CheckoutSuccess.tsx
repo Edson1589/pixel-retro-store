@@ -42,7 +42,7 @@ export default function CheckoutSuccess() {
                 );
                 sessionStorage.setItem(key, '1');
             } catch {
-                // no bloquees la UI si falla; es telemetría
+                //
             }
         })();
     }, [state?.sale_id, user?.id]);
@@ -108,7 +108,6 @@ export default function CheckoutSuccess() {
     return (
         <div className="min-h-screen grid place-items-center bg-[#07101B] p-4">
             <div className="w-[620px] max-w-full space-y-6">
-                {/* Hero de confirmación */}
                 <section
                     className="rounded-[20px] px-8 py-6 text-white text-center
           bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
@@ -129,7 +128,6 @@ export default function CheckoutSuccess() {
                     </p>
                 </section>
 
-                {/* Resumen de la transacción */}
                 <section className="rounded-2xl p-5 text-white bg-white/[0.04] border border-white/10 space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="rounded-xl p-3 bg-white/[0.05] border border-white/10">

@@ -72,6 +72,9 @@ export default function AdminSalesList() {
     const [deliveryError, setDeliveryError] = useState<string | null>(null);
     const [deliverySubmitting, setDeliverySubmitting] = useState(false);
 
+    const [voidModalOpen, setVoidModalOpen] = useState(false);
+    const [voidReason, setVoidReason] = useState('');
+    const [saleToVoid, setSaleToVoid] = useState<Sale | null>(null);
 
     const onReceipt = async (id: number) => {
         setRowBusyId(id);
@@ -85,6 +88,21 @@ export default function AdminSalesList() {
             setRowBusyAction(null);
         }
     };
+
+    const openVoidModal = (s: Sale) => {
+        if (s.is_canceled) return;
+        setSaleToVoid(s);
+        setVoidReason('');
+        setVoidModalOpen(true);
+    };
+
+    const closeVoidModal = () => {
+        if (rowBusyAction === 'void') return;
+        setVoidModalOpen(false);
+        setSaleToVoid(null);
+        setVoidReason('');
+    };
+
 
     const openDeliveryModal = (s: Sale) => {
         setDeliverySale(s);
@@ -112,16 +130,13 @@ export default function AdminSalesList() {
                 notes: deliveryNotes.trim() || undefined,
             });
 
-            // Recargar lista y resumen desde el servidor
             await Promise.all([
                 load(),
                 loadSummary(),
             ]);
 
-            // Descargar la nota de entrega
             await adminDownloadDeliveryNote(deliverySale.id);
 
-            // Cerrar modal
             setDeliverySale(null);
             setDeliveryCi('');
             setDeliveryNotes('');
@@ -148,20 +163,26 @@ export default function AdminSalesList() {
         }
     };
 
-    const onVoidSale = async (s: Sale) => {
-        if (s.is_canceled) return;
+    const onVoidSale = async () => {
+        if (!saleToVoid) return;
 
-        const reason = window.prompt('Motivo de anulación (opcional):') ?? '';
+        const reason = voidReason.trim() || undefined;
 
-        setRowBusyId(s.id);
+        setRowBusyId(saleToVoid.id);
         setRowBusyAction('void');
         try {
-            const updated = await adminVoidSale(s.id, reason.trim() || undefined);
+            const updated = await adminVoidSale(saleToVoid.id, reason);
 
             setData(prev => ({
                 ...prev,
-                data: prev.data.map(row => row.id === s.id ? updated : row),
+                data: prev.data.map(row =>
+                    row.id === saleToVoid.id ? updated : row
+                ),
             }));
+
+            setVoidModalOpen(false);
+            setSaleToVoid(null);
+            setVoidReason('');
         } catch (e) {
             alert(e instanceof Error ? e.message : 'No se pudo anular la venta');
         } finally {
@@ -169,6 +190,7 @@ export default function AdminSalesList() {
             setRowBusyAction(null);
         }
     };
+
 
     const applyDateFilter = () => {
         setDateFrom(draftDateFrom);
@@ -306,7 +328,6 @@ export default function AdminSalesList() {
 
     return (
         <div className="text-white space-y-5">
-            {/* HEADER + BUSCADOR */}
             <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3">
                     <div
@@ -329,7 +350,6 @@ export default function AdminSalesList() {
                 </div>
 
                 <div className="ml-auto flex flex-wrap items-center gap-2">
-                    {/* Buscador texto */}
                     <div className="relative">
                         <Search className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                         <input
@@ -343,7 +363,6 @@ export default function AdminSalesList() {
                         />
                     </div>
 
-                    {/* Filtro fechas */}
                     <div className="flex items-center gap-2">
                         <div className="relative">
                             <CalendarRange className="h-4 w-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -373,7 +392,6 @@ export default function AdminSalesList() {
                         </div>
                     </div>
 
-                    {/* Botones filtro / limpiar / PDF */}
                     <button
                         type="button"
                         onClick={applyDateFilter}
@@ -416,9 +434,7 @@ export default function AdminSalesList() {
                 </div>
             </div>
 
-            {/* RESUMEN RÁPIDO */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {/* Card 1: total recaudado */}
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center">
@@ -443,7 +459,6 @@ export default function AdminSalesList() {
                     </div>
                 </div>
 
-                {/* Card 2: ventas general */}
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center">
@@ -506,7 +521,6 @@ export default function AdminSalesList() {
                     </div>
                 </div>
 
-                {/* Card 3: resumen productos */}
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-xl bg-violet-500/15 border border-violet-400/40 flex items-center justify-center">
@@ -581,7 +595,6 @@ export default function AdminSalesList() {
                 </div>
             </section>
 
-            {/* TABLA PRINCIPAL */}
             {loading ? (
                 <p className="text-white/70">Cargando…</p>
             ) : (
@@ -604,7 +617,6 @@ export default function AdminSalesList() {
                                         key={s.id}
                                         className="hover:bg-white/[0.035] transition-colors"
                                     >
-                                        {/* FECHA */}
                                         <td className="py-3 px-3">
                                             <div className="flex items-center gap-2 text-xs sm:text-sm">
                                                 <CalendarRange className="h-3.5 w-3.5 text-white/60" />
@@ -616,7 +628,6 @@ export default function AdminSalesList() {
                                             </div>
                                         </td>
 
-                                        {/* CLIENTE */}
                                         <td className="py-3 px-3">
                                             <div className="flex items-start gap-2 min-w-0">
                                                 <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white/80 shrink-0">
@@ -641,17 +652,14 @@ export default function AdminSalesList() {
                                             </div>
                                         </td>
 
-                                        {/* ÍTEMS */}
                                         <td className="py-3 px-2 text-center tabular-nums">
                                             {s.items_qty ?? '—'}
                                         </td>
 
-                                        {/* TOTAL */}
                                         <td className="py-3 px-2 text-center tabular-nums">
                                             {money.format(s.total ?? 0)}
                                         </td>
 
-                                        {/* ESTADOS */}
                                         <td className="py-3 px-2 text-center">
                                             <div className="flex flex-col items-center gap-1">
                                                 {paidBadge(s)}
@@ -659,7 +667,6 @@ export default function AdminSalesList() {
                                             </div>
                                         </td>
 
-                                        {/* ACCIONES */}
                                         <td className="p-3">
                                             <div className="flex flex-wrap items-center justify-center gap-2 text-[11px]">
                                                 <Link
@@ -742,13 +749,13 @@ export default function AdminSalesList() {
                                                 {!s.is_canceled && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => onVoidSale(s)}
+                                                        onClick={() => openVoidModal(s)}
                                                         disabled={
                                                             rowBusyId === s.id && rowBusyAction === 'void'
                                                         }
                                                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
-                                     border border-rose-400/20 bg-rose-500/10
-                                     hover:bg-rose-500/20"
+        border border-rose-400/20 bg-rose-500/10
+        hover:bg-rose-500/20"
                                                         title="Anular venta (devuelve stock)"
                                                     >
                                                         <RotateCcw className="h-3.5 w-3.5" />
@@ -758,6 +765,7 @@ export default function AdminSalesList() {
                                                                 : 'Anular'}
                                                         </span>
                                                     </button>
+
                                                 )}
                                             </div>
                                         </td>
@@ -778,7 +786,6 @@ export default function AdminSalesList() {
                         </table>
                     </div>
 
-                    {/* PAGINACIÓN */}
                     <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/70">
                         <div>
                             {data.total > 0 ? (
@@ -853,7 +860,7 @@ export default function AdminSalesList() {
             <Modal
                 open={!!deliverySale}
                 onClose={() => {
-                    if (deliverySubmitting) return; // no cerrar si está enviando
+                    if (deliverySubmitting) return;
                     setDeliverySale(null);
                     setDeliveryCi('');
                     setDeliveryNotes('');
@@ -865,7 +872,6 @@ export default function AdminSalesList() {
                 {deliverySale && (
                     <div className="space-y-4 text-sm">
 
-                        {/* Resumen de la venta */}
                         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
                             <h4 className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">
                                 Resumen de venta
@@ -908,7 +914,6 @@ export default function AdminSalesList() {
                             </div>
                         </div>
 
-                        {/* Campo CI */}
                         <div className="space-y-2">
                             <label className="block text-xs font-semibold text-white/70">
                                 CI de quien recoge <span className="text-red-400">*</span>
@@ -926,7 +931,6 @@ export default function AdminSalesList() {
                             </p>
                         </div>
 
-                        {/* Observaciones */}
                         <div className="space-y-2">
                             <label className="block text-xs font-semibold text-white/70">
                                 Observaciones (opcional)
@@ -941,14 +945,12 @@ export default function AdminSalesList() {
                             />
                         </div>
 
-                        {/* Error */}
                         {deliveryError && (
                             <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-100">
                                 {deliveryError}
                             </div>
                         )}
 
-                        {/* Botones */}
                         <div className="flex justify-end gap-2 pt-2">
                             <button
                                 type="button"
@@ -987,6 +989,71 @@ export default function AdminSalesList() {
                     </div>
                 )}
             </Modal>
+            <Modal
+                open={voidModalOpen}
+                onClose={closeVoidModal}
+                title="Anular venta"
+            >
+                {saleToVoid && (
+                    <form
+                        onSubmit={e => {
+                            e.preventDefault();
+                            if (
+                                rowBusyId === saleToVoid.id &&
+                                rowBusyAction === 'void'
+                            ) {
+                                return;
+                            }
+                            onVoidSale();
+                        }}
+                        className="space-y-4"
+                    >
+                        <p className="text-sm text-white/70">
+                            Estás a punto de anular la venta{' '}
+                            <span className="font-semibold">
+                                #{saleToVoid.id}
+                            </span>
+                            . Esta acción devolverá el stock asociado.
+                        </p>
+
+                        <label className="block text-sm text-white/80 space-y-1.5">
+                            <span>Motivo de anulación (opcional)</span>
+                            <textarea
+                                value={voidReason}
+                                onChange={e => setVoidReason(e.target.value)}
+                                rows={3}
+                                className="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                               placeholder:text-white/30 resize-none"
+                                placeholder="Ej: Error en el monto, cliente canceló, etc."
+                            />
+                        </label>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                onClick={closeVoidModal}
+                                className="px-3 py-1.5 rounded-lg text-sm
+                               bg-white/5 hover:bg-white/10 border border-white/10"
+                                disabled={rowBusyAction === 'void'}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={rowBusyAction === 'void'}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm
+                               bg-rose-500/80 hover:bg-rose-500
+                               border border-rose-400/60
+                               disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {rowBusyAction === 'void' ? 'Anulando…' : 'Anular venta'}
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </Modal>
+
         </div>
     );
 }

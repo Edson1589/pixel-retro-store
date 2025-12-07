@@ -24,7 +24,6 @@ export default function ProductCard({
     const slug = typeof extra.slug === 'string' ? extra.slug : undefined;
     const inStock = (p.stock ?? 0) > 0;
 
-    // Meta de condición para la etiqueta
     const conditionMeta: Record<
         Product['condition'],
         { label: string; bg: string; icon: ReactNode }
@@ -59,9 +58,7 @@ export default function ProductCard({
 
     const CardInner = (
         <>
-            {/* Imagen + etiqueta de condición */}
             <div className="relative h-44 bg-white/[0.06] overflow-hidden flex items-center justify-center">
-                {/* Etiqueta de condición */}
                 {cond && (
                     <span
                         className={`absolute left-3 top-3 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium shadow-[0_8px_20px_-10px_rgba(0,0,0,0.7)] ${cond.bg}`}
@@ -83,7 +80,6 @@ export default function ProductCard({
                 )}
             </div>
 
-            {/* Texto */}
             <div className="p-4 space-y-1.5">
                 <h3 className="text-[13px] font-semibold leading-tight text-white/90 line-clamp-2">
                     {p.name}
@@ -101,7 +97,8 @@ export default function ProductCard({
                     className={`text-[12px] ${inStock ? 'text-emerald-400' : 'text-rose-400'
                         }`}
                 >
-                    {inStock ? 'En stock' : 'Agotado'} : {p.stock}
+                    {inStock ? 'En stock' : 'Agotado'}
+                    {inStock && <> : {p.stock}</>}
                 </p>
             </div>
         </>

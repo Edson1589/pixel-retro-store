@@ -220,7 +220,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-3xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -253,13 +252,11 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                     </button>
                 </div>
 
-                {/* FORMULARIO */}
                 <form
                     onSubmit={submit}
                     className="mt-1 rounded-2xl border border-white/10 p-4 md:p-5 bg-white/[0.04]
                            w-full space-y-7 shadow-[0_20px_60px_-25px_rgba(2,6,23,0.55)]"
                 >
-                    {/* DATOS PRINCIPALES */}
                     <section className="space-y-3">
                         <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">
                             <div className="h-6 w-6 rounded-full bg-cyan-500/10 border border-cyan-400/40 flex items-center justify-center">
@@ -269,7 +266,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-3">
-                            {/* Título */}
                             <div className="md:col-span-2">
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Type className="h-3 w-3" />
@@ -290,7 +286,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                                 </div>
                             </div>
 
-                            {/* Slug */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Hash className="h-3 w-3" />
@@ -311,7 +306,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                                 </div>
                             </div>
 
-                            {/* Tipo */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Gamepad2 className="h-3 w-3" />
@@ -329,7 +323,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                         </div>
                     </section>
 
-                    {/* DETALLES */}
                     <section className="space-y-3">
                         <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.18em] uppercase text-[#06B6D4]">
                             <div className="h-6 w-6 rounded-full bg-violet-500/10 border border-violet-400/40 flex items-center justify-center">
@@ -339,7 +332,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                         </div>
 
                         <div className="grid md:grid-cols-3 gap-3">
-                            {/* Lugar */}
                             <div className="md:col-span-1">
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <MapPin className="h-3 w-3" />
@@ -360,7 +352,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                                 </div>
                             </div>
 
-                            {/* Fecha inicio */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <CalendarClock className="h-3 w-3" />
@@ -395,7 +386,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                                 )}
                             </div>
 
-                            {/* Fecha fin */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <CalendarClock className="h-3 w-3" />
@@ -424,7 +414,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                                 )}
                             </div>
 
-                            {/* Capacidad */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Users className="h-3 w-3" />
@@ -444,7 +433,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                                 </div>
                             </div>
 
-                            {/* Estado */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <BadgeCheck className="h-3 w-3" />
@@ -460,7 +448,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                                 />
                             </div>
 
-                            {/* Apertura registro */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Clock3 className="h-3 w-3" />
@@ -492,7 +479,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                                 )}
                             </div>
 
-                            {/* Cierre registro */}
                             <div>
                                 <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                     <Clock3 className="h-3 w-3" />
@@ -527,9 +513,7 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                         </div>
                     </section>
 
-                    {/* DESCRIPCIÓN + IMAGEN */}
                     <section className="space-y-4">
-                        {/* Descripción */}
                         <div>
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <AlignLeft className="h-3 w-3" />
@@ -550,7 +534,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                             />
                         </div>
 
-                        {/* Imagen */}
                         <div>
                             <label className="block text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <ImageIcon className="h-3 w-3" />
@@ -614,7 +597,6 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Guardar' }
                         </div>
                     </section>
 
-                    {/* BOTONES */}
                     <div className="flex gap-2 pt-2">
                         <button
                             disabled={busy}

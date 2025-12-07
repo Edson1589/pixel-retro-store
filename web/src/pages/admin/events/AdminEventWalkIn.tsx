@@ -121,7 +121,6 @@ export default function AdminEventWalkIn() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -154,7 +153,6 @@ export default function AdminEventWalkIn() {
                     </button>
                 </div>
 
-                {/* BLOQUE: BUSCAR EVENTO */}
                 <div className="rounded-2xl border border-white/10 p-4 bg-white/[0.04] space-y-3">
                     <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                         <Search className="h-3 w-3" />
@@ -283,10 +281,8 @@ export default function AdminEventWalkIn() {
                     )}
                 </div>
 
-                {/* FORMULARIO PARTICIPANTE */}
                 <div className="rounded-2xl border border-white/10 p-4 bg-white/[0.04] space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {/* Nombre */}
                         <div>
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <UserCircle2 className="h-3 w-3" />
@@ -307,7 +303,6 @@ export default function AdminEventWalkIn() {
                             </div>
                         </div>
 
-                        {/* Email */}
                         <div>
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <Mail className="h-3 w-3" />
@@ -328,7 +323,6 @@ export default function AdminEventWalkIn() {
                             </div>
                         </div>
 
-                        {/* Gamer tag */}
                         <div>
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <Gamepad2 className="h-3 w-3" />
@@ -349,7 +343,6 @@ export default function AdminEventWalkIn() {
                             </div>
                         </div>
 
-                        {/* Equipo */}
                         <div>
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <Users className="h-3 w-3" />
@@ -370,7 +363,6 @@ export default function AdminEventWalkIn() {
                             </div>
                         </div>
 
-                        {/* Notas */}
                         <div className="md:col-span-2">
                             <label className="text-xs text-white/60 mb-1 flex items-center gap-1">
                                 <StickyNote className="h-3 w-3" />
@@ -391,7 +383,6 @@ export default function AdminEventWalkIn() {
                         </div>
                     </div>
 
-                    {/* ESTADO + OPCIONES */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <fieldset className="rounded-xl border border-white/10 p-3">
                             <legend className="px-1 text-xs text-white/60 flex items-center gap-1">
@@ -457,7 +448,6 @@ export default function AdminEventWalkIn() {
                         </fieldset>
                     </div>
 
-                    {/* BOTONES */}
                     <div className="pt-2 flex flex-wrap items-center gap-2">
                         <button
                             disabled={disabled}
@@ -490,7 +480,6 @@ export default function AdminEventWalkIn() {
                         )}
                     </div>
 
-                    {/* MENSAJES */}
                     {error && (
                         <p className="mt-3 text-sm text-rose-300">
                             {error}

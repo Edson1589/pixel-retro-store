@@ -30,7 +30,6 @@ export default function AdminCategoryShow() {
     return (
         <div className="flex justify-center">
             <div className="w-full max-w-2xl text-white space-y-5">
-                {/* HEADER */}
                 <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -80,9 +79,7 @@ export default function AdminCategoryShow() {
                     </Link>
                 </div>
 
-                {/* CARD DETALLE */}
                 <div className="rounded-2xl border border-white/10 p-4 bg-white/[0.04] space-y-4">
-                    {/* Nombre + slug */}
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2">
                             <div className="h-11 w-11 rounded-xl bg-white/[0.08] border border-white/15 grid place-items-center">
@@ -101,7 +98,6 @@ export default function AdminCategoryShow() {
 
                     </div>
 
-                    {/* Métrica productos */}
                     {'products_count' in c && c.products_count !== undefined && (
                         <div className="grid sm:grid-cols-1 gap-3 text-sm">
                             <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 flex items-center gap-3">

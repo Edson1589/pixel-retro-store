@@ -24,6 +24,7 @@ import {
     Mail,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import Modal from '../../../components/ui/Modal';
 
 type OptStatus = '' | AppointmentStatus;
 
@@ -84,6 +85,11 @@ function RowActions({ a, onChanged }: { a: Appointment; onChanged(): void }) {
     const [reason, setReason] = useState('');
     const [proposed, setProposed] = useState('');
     const [note, setNote] = useState('');
+    const [showComplete, setShowComplete] = useState(false);
+    const [servicePrice, setServicePrice] = useState<number>(0);
+
+    const openComplete = () => setShowComplete(true);
+    const closeComplete = () => setShowComplete(false);
 
     const accept = async () => {
         if (!scheduleAt) return alert('Selecciona fecha/hora');
@@ -131,10 +137,15 @@ function RowActions({ a, onChanged }: { a: Appointment; onChanged(): void }) {
         }
     };
 
-    const complete = async () => {
+    const confirmComplete = async () => {
+        if (servicePrice < 0) return alert('Monto inválido');
         try {
             setBusy(true);
-            await adminCompleteAppointment(a.id);
+            await adminCompleteAppointment(a.id, {
+                service_amount: servicePrice,
+                payment_status: 'paid',
+            });
+            closeComplete();
             onChanged();
         } catch (e) {
             alert(e instanceof Error ? e.message : 'Error');
@@ -142,10 +153,8 @@ function RowActions({ a, onChanged }: { a: Appointment; onChanged(): void }) {
             setBusy(false);
         }
     };
-
     return (
         <>
-            {/* Agendar / Aceptar */}
             <td className="p-3 align-top">
                 {a.status === 'pending' ? (
                     <div className="flex flex-wrap items-center gap-2">
@@ -188,7 +197,6 @@ function RowActions({ a, onChanged }: { a: Appointment; onChanged(): void }) {
                 )}
             </td>
 
-            {/* Rechazar */}
             <td className="p-3 align-top">
                 {a.status === 'pending' ? (
                     <div className="flex flex-wrap items-center gap-2">
@@ -218,7 +226,6 @@ function RowActions({ a, onChanged }: { a: Appointment; onChanged(): void }) {
                 )}
             </td>
 
-            {/* Reprogramar */}
             <td className="p-3 align-top">
                 {a.status === 'pending' ? (
                     <div className="flex flex-wrap items-center gap-2">
@@ -257,20 +264,67 @@ function RowActions({ a, onChanged }: { a: Appointment; onChanged(): void }) {
                 )}
             </td>
 
-            {/* Completar */}
             <td className="p-3 align-top text-center">
                 {a.status === 'confirmed' ? (
-                    <button
-                        disabled={busy}
-                        onClick={complete}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
-                 text-[11px] border border-indigo-400/30 bg-indigo-500/10
-                 hover:bg-indigo-500/15
-                 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>Marcar completada</span>
-                    </button>
+                    <>
+                        <button
+                            onClick={openComplete}
+                            disabled={busy}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg
+                   text-[11px] border border-indigo-400/30 bg-indigo-500/10
+                   hover:bg-indigo-500/15 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            <span>Marcar completada</span>
+                        </button>
+
+                        <Modal open={showComplete} onClose={closeComplete} title="Cerrar reparación">
+                            <div className="space-y-4">
+                                <div className="text-sm text-white/80 space-y-1">
+                                    <div><span className="text-white/50">Cita #</span>{a.id}</div>
+                                    <div><span className="text-white/50">Cliente:</span> {a.customer?.name ?? a.customer_id}</div>
+                                    <div className="flex gap-2">
+                                        <span className="text-white/50">Correo:</span>
+                                        <span>{a.customer?.email ?? '—'}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <span className="text-white/50">Teléfono:</span>
+                                        <span>{a.contact_phone || '—'}</span>
+                                    </div>
+                                </div>
+
+                                <label className="block text-sm text-white/80">
+                                    Total de la reparación (Bs)
+                                    <input
+                                        type="number" min={0} step="0.01" required
+                                        className="mt-1 w-full h-10 rounded-xl px-3 bg-white/[0.06] text-white
+                         border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#7C3AED66]"
+                                        placeholder="0.00"
+                                        value={servicePrice}
+                                        onChange={(e) => setServicePrice(Number(e.target.value))}
+                                    />
+                                </label>
+
+                                <div className="flex items-center justify-end gap-2 pt-2">
+                                    <button
+                                        onClick={closeComplete}
+                                        className="h-9 px-3 rounded-xl border border-white/10 bg-white/10 hover:bg-white/15"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={confirmComplete}
+                                        disabled={busy || servicePrice < 0}
+                                        className="h-9 px-3 rounded-xl text-white font-medium
+                         bg-[linear-gradient(90deg,#7C3AED_0%,#06B6D4_100%)]
+                         hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Confirmar y crear venta
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
+                    </>
                 ) : (
                     <span className="text-white/40 text-sm">—</span>
                 )}
@@ -282,7 +336,7 @@ function RowActions({ a, onChanged }: { a: Appointment; onChanged(): void }) {
 
 export default function AdminAppointmentsList() {
     const [items, setItems] = useState<Appointment[]>([]);
-    const [status, setStatus] = useState<OptStatus>(''); // '' = todos
+    const [status, setStatus] = useState<OptStatus>('');
     const [loading, setLoading] = useState(true);
     const [msg, setMsg] = useState<string | null>(null);
 
@@ -306,7 +360,6 @@ export default function AdminAppointmentsList() {
         load();
     }, [status]);
 
-    // Opciones para el FancySelect
     const statusOptions: Option[] = [
         { label: 'Todos', value: '' },
         { label: 'Pendientes', value: 'pending' },
@@ -317,7 +370,6 @@ export default function AdminAppointmentsList() {
         { label: 'Canceladas', value: 'cancelled' },
     ];
 
-    // Mini-resumen basado en los ítems cargados (vista actual)
     const total = items.length;
     const pendingCount = items.filter((a) => a.status === 'pending').length;
     const confirmedCount = items.filter((a) => a.status === 'confirmed').length;
@@ -325,7 +377,6 @@ export default function AdminAppointmentsList() {
 
     return (
         <div className="text-white space-y-5">
-            {/* HEADER + FILTRO */}
             <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-3">
                     <div
@@ -371,7 +422,6 @@ export default function AdminAppointmentsList() {
                 </div>
             </div>
 
-            {/* RESUMEN RÁPIDO (vista actual) */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 flex items-center gap-3">
                     <div className="h-8 w-8 rounded-xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center">
@@ -430,10 +480,8 @@ export default function AdminAppointmentsList() {
                 </div>
             </section>
 
-            {/* MENSAJE DE ERROR */}
             {msg && <p className="text-sm text-rose-300">{msg}</p>}
 
-            {/* TABLA */}
             {loading ? (
                 <p className="text-white/70 text-sm">Cargando…</p>
             ) : (
@@ -451,7 +499,6 @@ export default function AdminAppointmentsList() {
                         <tbody className="divide-y divide-white/10">
                             {items.map((a) => (
                                 <tr key={a.id} className="align-top hover:bg-white/[0.035] transition-colors">
-                                    {/* Detalles */}
                                     <td className="p-3">
                                         <div className="flex flex-col gap-1">
                                             <div className="font-semibold text-white/90 flex flex-wrap items-center gap-2">
@@ -472,7 +519,6 @@ export default function AdminAppointmentsList() {
                                             </div>
 
                                             <div className="text-xs text-white/70 space-y-0.5">
-                                                {/* Preferida */}
                                                 <div className="flex flex-wrap items-center gap-2">
                                                     <CalendarClock className="h-3.5 w-3.5 opacity-80" />
                                                     <span>
@@ -483,7 +529,6 @@ export default function AdminAppointmentsList() {
                                                     </span>
                                                 </div>
 
-                                                {/* Agendada (solo si existe) */}
                                                 {a.scheduled_at && (
                                                     <div className="flex flex-wrap items-center gap-2">
                                                         <CalendarClock className="h-3.5 w-3.5 opacity-80" />
@@ -550,7 +595,6 @@ export default function AdminAppointmentsList() {
                                         </div>
                                     </td>
 
-                                    {/* Acciones en columnas */}
                                     <RowActions a={a} onChanged={load} />
                                 </tr>
                             ))}

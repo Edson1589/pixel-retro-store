@@ -65,7 +65,6 @@ export default function AdminChangePassword() {
                     onSubmit={submit}
                     className="mt-5 sm:mt-6 grid gap-2.5 sm:gap-3"
                 >
-                    {/* Contraseña actual */}
                     <div className="flex items-center rounded-xl bg-white/[0.05] border border-white/10 overflow-hidden focus-within:ring-2 focus-within:ring-[#7C3AED66]">
                         <div className="h-10 w-10 grid place-items-center bg-white/5 border-r border-white/10">
                             <LockKeyhole className="h-4 w-4 text-white/70" />
@@ -80,7 +79,6 @@ export default function AdminChangePassword() {
                         />
                     </div>
 
-                    {/* Nueva contraseña */}
                     <div
                         className={`flex items-center rounded-xl bg-white/[0.05] border border-white/10 overflow-hidden focus-within:ring-2 focus-within:ring-[#7C3AED66]
           ${next && !isStrong ? ' ring-2 ring-red-500 focus-within:ring-red-500' : ''}`}
@@ -99,7 +97,6 @@ export default function AdminChangePassword() {
                         />
                     </div>
 
-                    {/* Confirmar nueva contraseña */}
                     <div className="flex items-center rounded-xl bg-white/[0.05] border border-white/10 overflow-hidden focus-within:ring-2 focus-within:ring-[#7C3AED66]">
                         <div className="h-10 w-10 grid place-items-center bg-white/5 border-r border-white/10">
                             <ShieldCheck className="h-4 w-4 text-white/70" />
