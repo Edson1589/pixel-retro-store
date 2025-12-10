@@ -1,4 +1,37 @@
-DROP DATABASE pixelretro;
-CREATE DATABASE pixelretro
+services:
+  db:
+    image: mysql:8.0
+    container_name: pixelretro_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: pixelretro_db
+      MYSQL_USER: pixelretro_user
+      MYSQL_PASSWORD: pixelretro_pass
+    volumes:
+      - db_data:/var/lib/mysql
 
-php artisan migrate:fresh --seed
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: pixelretro_backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8000:80"
+
+  frontend:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    container_name: pixelretro_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+
+volumes:
+  db_data:
